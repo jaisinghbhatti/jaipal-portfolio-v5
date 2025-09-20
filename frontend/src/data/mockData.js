@@ -30,7 +30,7 @@ export const mockData = {
   
   experience: [
     {
-      company: "Gartner",
+      company: "Leading Technology Company",
       position: "Senior Marketing Manager",
       duration: "2019 - Present",
       description: "Leading a team of 12 marketing professionals, developing and executing digital marketing strategies for U.S. and Spain markets. Responsible for driving revenue growth through strategic marketing campaigns and initiatives.",
@@ -42,7 +42,7 @@ export const mockData = {
       ]
     },
     {
-      company: "Gartner",
+      company: "Technology Industry",
       position: "Marketing Manager",
       duration: "2016 - 2019",
       description: "Managed digital marketing campaigns, developed content strategies, and collaborated with cross-functional teams to drive business growth.",
