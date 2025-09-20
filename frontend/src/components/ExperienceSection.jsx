@@ -41,7 +41,7 @@ const ExperienceSection = () => {
                 </p>
                 
                 <div>
-                  <h4 className="text-lg font-semibold text-slate-900 mb-4">Key Achievements</h4>
+                  <h4 className="text-lg font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">Key Achievements</h4>
                   <div className="grid md:grid-cols-2 gap-3">
                     {exp.achievements.map((achievement, achIndex) => (
                       <div key={achIndex} className="flex items-start">
