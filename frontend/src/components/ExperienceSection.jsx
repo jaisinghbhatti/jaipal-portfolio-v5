@@ -29,7 +29,7 @@ const ExperienceSection = () => {
                   </div>
                   <div className="flex items-center text-slate-600">
                     <Calendar className="w-5 h-5 mr-2" />
-                    <Badge variant="outline" className="text-slate-600 border-slate-300">
+                    <Badge variant="outline" className="text-blue-600 border-blue-300 bg-blue-50 hover:bg-blue-100 font-medium">
                       {exp.duration}
                     </Badge>
                   </div>
