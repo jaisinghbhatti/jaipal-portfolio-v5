@@ -4,13 +4,19 @@ import os
 from pathlib import Path
 from jinja2 import Environment, FileSystemLoader
 
+# Get email configuration with defaults
+SMTP_USER = os.environ.get('SMTP_USER', 'noreply@portfolio.com')
+SMTP_PASS = os.environ.get('SMTP_PASS', 'dummy_password')
+SMTP_HOST = os.environ.get('SMTP_HOST', 'smtp.gmail.com')
+SMTP_PORT = int(os.environ.get('SMTP_PORT', 587))
+
 # Email configuration
 conf = ConnectionConfig(
-    MAIL_USERNAME=os.environ.get('SMTP_USER', ''),
-    MAIL_PASSWORD=os.environ.get('SMTP_PASS', ''),
-    MAIL_FROM=os.environ.get('SMTP_USER', ''),
-    MAIL_PORT=int(os.environ.get('SMTP_PORT', 587)),
-    MAIL_SERVER=os.environ.get('SMTP_HOST', 'smtp.gmail.com'),
+    MAIL_USERNAME=SMTP_USER,
+    MAIL_PASSWORD=SMTP_PASS,
+    MAIL_FROM=SMTP_USER,
+    MAIL_PORT=SMTP_PORT,
+    MAIL_SERVER=SMTP_HOST,
     MAIL_FROM_NAME="Jaipal Singh Portfolio",
     MAIL_STARTTLS=True,
     MAIL_SSL_TLS=False,
@@ -21,9 +27,6 @@ conf = ConnectionConfig(
 
 # Initialize FastMail
 fm = FastMail(conf)
-
-# Initialize Jinja2 environment
-template_env = Environment(loader=FileSystemLoader(Path(__file__).parent / 'templates'))
 
 async def send_contact_email(name: str, email: str, message: str):
     """Send contact form email to Jaipal Singh"""
