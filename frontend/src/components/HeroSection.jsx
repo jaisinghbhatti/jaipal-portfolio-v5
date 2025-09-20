@@ -48,16 +48,19 @@ const HeroSection = () => {
             </div>
             
             <div className="flex items-center space-x-4 pt-4">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 p-2 rounded-full"
+              <a
+                href="https://www.linkedin.com/in/singh-jaipal/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center space-x-3 text-blue-600 hover:text-blue-700 transition-colors duration-200 group"
               >
-                <LinkedinIcon className="h-6 w-6" />
-              </Button>
-              <div className="text-sm text-slate-600">
-                Connect with me on LinkedIn
-              </div>
+                <div className="p-2 rounded-full bg-blue-50 group-hover:bg-blue-100 transition-colors duration-200">
+                  <LinkedinIcon className="h-6 w-6" />
+                </div>
+                <div className="text-sm font-medium hover:underline">
+                  Connect with me on LinkedIn
+                </div>
+              </a>
             </div>
           </div>
           
