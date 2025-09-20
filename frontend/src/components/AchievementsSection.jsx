@@ -9,7 +9,7 @@ const AchievementsSection = () => {
     <section id="achievements" className="py-20 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold text-slate-900 mb-4">Awards & Recognition</h2>
+          <h2 className="text-4xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent mb-4">Awards & Recognition</h2>
           <p className="text-lg text-slate-600 max-w-2xl mx-auto">
             Recognition for excellence, leadership, and outstanding contributions to organizational success
           </p>
