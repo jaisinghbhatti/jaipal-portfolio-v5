@@ -55,43 +55,35 @@ async def submit_contact_form(contact_data: ContactSubmissionCreate):
             raise HTTPException(status_code=500, detail="Failed to store contact submission")
         
         # Send email to Jaipal Singh
+        email_sent = False
         try:
-            await send_contact_email(
+            email_sent = await send_contact_email(
                 name=contact_data.name,
                 email=contact_data.email,
                 message=contact_data.message
             )
             
             # Send confirmation email to sender (optional - won't fail if this fails)
-            await send_confirmation_email(
-                name=contact_data.name,
-                email=contact_data.email
-            )
+            if email_sent:
+                await send_confirmation_email(
+                    name=contact_data.name,
+                    email=contact_data.email
+                )
             
         except Exception as email_error:
-            # Update status to failed but still return success to user
-            await db.contact_submissions.update_one(
-                {"id": contact_submission.id},
-                {"$set": {"status": "email_failed"}}
-            )
             logger.error(f"Email sending failed: {str(email_error)}")
-            
-            # Still return success to user, but log the error
-            return ContactResponse(
-                success=True,
-                message="Message received successfully. I'll get back to you soon!",
-                id=contact_submission.id
-            )
+            email_sent = False
         
-        # Update status to processed
+        # Update status based on email success
+        status = "processed" if email_sent else "email_failed"
         await db.contact_submissions.update_one(
             {"id": contact_submission.id},
-            {"$set": {"status": "processed"}}
+            {"$set": {"status": status}}
         )
         
         return ContactResponse(
             success=True,
-            message="Message sent successfully! I'll get back to you soon.",
+            message="Message received successfully! I'll get back to you soon." if not email_sent else "Message sent successfully! I'll get back to you soon.",
             id=contact_submission.id
         )
         
