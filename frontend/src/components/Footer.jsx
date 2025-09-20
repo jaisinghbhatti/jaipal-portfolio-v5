@@ -49,10 +49,15 @@ const Footer = () => {
                 <Phone className="w-5 h-5 text-slate-400" />
                 <span className="text-slate-300">{mockData.personalInfo.phone}</span>
               </div>
-              <div className="flex items-center space-x-3">
-                <Linkedin className="w-5 h-5 text-slate-400 hover:text-blue-400 cursor-pointer transition-colors" />
-                <span className="text-slate-300">LinkedIn Profile</span>
-              </div>
+              <a
+                href="https://www.linkedin.com/in/singh-jaipal/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center space-x-3 hover:text-blue-400 transition-colors duration-200 group"
+              >
+                <Linkedin className="w-5 h-5 text-slate-400 group-hover:text-blue-400 transition-colors" />
+                <span className="text-slate-300 group-hover:text-blue-300">LinkedIn Profile</span>
+              </a>
             </div>
           </div>
         </div>
