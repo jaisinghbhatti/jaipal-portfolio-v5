@@ -70,25 +70,25 @@ export const mockData = {
   achievements: [
     {
       title: "Leadership Award",
-      organization: "Gartner",
+      organization: "Industry Expert Recognition",
       year: "2023",
       description: "Recognized for exceptional leadership and team management capabilities"
     },
     {
       title: "Outpaced Award",
-      organization: "Gartner",
+      organization: "Industry Expert Recognition",
       year: "2022",
       description: "Awarded for exceeding performance targets and driving exceptional results"
     },
     {
       title: "Total Ownership Mindset Award",
-      organization: "Gartner",
+      organization: "Industry Expert Recognition",
       year: "2021",
       description: "Recognized for taking complete ownership of projects and delivering outstanding outcomes"
     },
     {
       title: "Excel Guru",
-      organization: "Gartner",
+      organization: "Industry Expert Recognition",
       year: "2020",
       description: "Acknowledged as Excel expert for advanced data analysis and reporting capabilities"
     }
