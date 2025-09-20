@@ -44,11 +44,11 @@ const AchievementsSection = () => {
         </div>
         
         <div className="mt-16 text-center">
-          <Card className="inline-block p-8 shadow-lg border-0 bg-gradient-to-r from-blue-50 to-slate-50">
+          <Card className="inline-block p-8 shadow-xl border-0 bg-gradient-to-r from-blue-100 via-purple-100 to-indigo-100 hover:shadow-2xl transition-shadow duration-300">
             <CardContent className="p-0">
-              <div className="text-3xl font-bold text-slate-900 mb-2">4+</div>
-              <div className="text-slate-600">Awards & Recognition</div>
-              <div className="text-sm text-slate-500 mt-2">
+              <div className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">4+</div>
+              <div className="text-slate-700 font-medium">Awards & Recognition</div>
+              <div className="text-sm text-slate-600 mt-2">
                 Consistent recognition for excellence and leadership
               </div>
             </CardContent>
