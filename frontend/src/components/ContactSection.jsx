@@ -7,6 +7,10 @@ import { Label } from "./ui/label";
 import { Mail, Phone, MapPin, Send } from "lucide-react";
 import { useToast } from "../hooks/use-toast";
 import { mockData } from "../data/mockData";
+import axios from "axios";
+
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+const API = `${BACKEND_URL}/api`;
 
 const ContactSection = () => {
   const [formData, setFormData] = useState({
