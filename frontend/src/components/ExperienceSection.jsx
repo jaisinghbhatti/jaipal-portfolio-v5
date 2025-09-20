@@ -21,7 +21,7 @@ const ExperienceSection = () => {
               <CardHeader className="bg-gradient-to-r from-blue-50 to-purple-50">
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between">
                   <div>
-                    <CardTitle className="text-2xl text-slate-900 mb-2">{exp.position}</CardTitle>
+                    <CardTitle className="text-2xl bg-gradient-to-r from-blue-700 to-purple-700 bg-clip-text text-transparent mb-2">{exp.position}</CardTitle>
                     <div className="flex items-center text-slate-600 mb-2">
                       <Building2 className="w-5 h-5 mr-2" />
                       <span className="font-medium">{exp.company}</span>
