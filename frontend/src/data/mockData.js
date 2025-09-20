@@ -4,8 +4,8 @@ export const mockData = {
     title: "Senior Marketing Manager",
     email: "jaisinghbhatti@gmail.com",
     phone: "8130033706",
-    bio: "Highly accomplished and results-driven Digital Marketing leader with over 10 years of experience in digital marketing. Currently serving as Senior Marketing Manager at Gartner, leading a team of 12 professionals and driving strategic marketing initiatives across multiple markets.",
-    personalBio: "Beyond my professional achievements, I'm passionate about giving back to the community and spending quality time with my family. I currently serve as Chairman of the Gartner India CSR Board, where I lead social initiatives and community outreach programs.",
+    bio: "Highly accomplished and results-driven Digital Marketing leader with over 10 years of experience in digital marketing. Currently serving as Senior Marketing Manager in Industry, leading a team of 12 professionals and driving strategic marketing initiatives across multiple markets.",
+    personalBio: "Beyond my professional achievements, I'm passionate about giving back to the community and spending quality time with my family. I currently serve as Chairman of Industry CSR Board, where I lead social initiatives and community outreach programs.",
     location: "India"
   },
   
