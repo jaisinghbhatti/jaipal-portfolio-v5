@@ -22,7 +22,7 @@ const AboutSection = () => {
                   {mockData.personalInfo.bio}
                 </p>
                 <p className="text-slate-700 leading-relaxed">
-                  With a proven track record at Gartner, I've specialized in developing comprehensive 
+                  With a proven track record in the technology industry, I've specialized in developing comprehensive 
                   digital marketing strategies, managing cross-functional teams, and driving measurable 
                   business results across diverse markets including the U.S. and Spain.
                 </p>
