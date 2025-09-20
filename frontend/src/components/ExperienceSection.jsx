@@ -17,7 +17,7 @@ const ExperienceSection = () => {
         
         <div className="space-y-8">
           {mockData.experience.map((exp, index) => (
-            <Card key={index} className="shadow-lg border-0 hover:shadow-xl transition-shadow duration-300">
+            <Card key={index} className="shadow-xl border-0 hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] transform bg-gradient-to-br from-white to-blue-50">
               <CardHeader className="bg-slate-50">
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between">
                   <div>
