@@ -18,7 +18,7 @@ const AchievementsSection = () => {
         <div className="grid md:grid-cols-2 gap-8">
           {mockData.achievements.map((achievement, index) => (
             <Card key={index} className="shadow-xl border-0 hover:shadow-2xl transition-all duration-300 hover:scale-105 bg-gradient-to-br from-white to-blue-50">
-              <CardHeader className="bg-gradient-to-r from-slate-800 to-slate-700 text-white">
+              <CardHeader className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 text-white">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
                     <Award className="w-6 h-6 mr-3" />
