@@ -1,0 +1,63 @@
+import React from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import { Badge } from "./ui/badge";
+import { Building2, Calendar } from "lucide-react";
+import { mockData } from "../data/mockData";
+
+const ExperienceSection = () => {
+  return (
+    <section id="experience" className="py-20 bg-white">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-16">
+          <h2 className="text-4xl font-bold text-slate-900 mb-4">Professional Experience</h2>
+          <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+            A journey of growth, leadership, and measurable impact in digital marketing
+          </p>
+        </div>
+        
+        <div className="space-y-8">
+          {mockData.experience.map((exp, index) => (
+            <Card key={index} className="shadow-lg border-0 hover:shadow-xl transition-shadow duration-300">
+              <CardHeader className="bg-slate-50">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+                  <div>
+                    <CardTitle className="text-2xl text-slate-900 mb-2">{exp.position}</CardTitle>
+                    <div className="flex items-center text-slate-600 mb-2">
+                      <Building2 className="w-5 h-5 mr-2" />
+                      <span className="font-medium">{exp.company}</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center text-slate-600">
+                    <Calendar className="w-5 h-5 mr-2" />
+                    <Badge variant="outline" className="text-slate-600 border-slate-300">
+                      {exp.duration}
+                    </Badge>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="pt-6">
+                <p className="text-slate-600 leading-relaxed mb-6">
+                  {exp.description}
+                </p>
+                
+                <div>
+                  <h4 className="text-lg font-semibold text-slate-900 mb-4">Key Achievements</h4>
+                  <div className="grid md:grid-cols-2 gap-3">
+                    {exp.achievements.map((achievement, achIndex) => (
+                      <div key={achIndex} className="flex items-start">
+                        <div className="w-2 h-2 bg-slate-800 rounded-full mt-2 mr-3 flex-shrink-0"></div>
+                        <span className="text-slate-600">{achievement}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+};
+
+export default ExperienceSection;
