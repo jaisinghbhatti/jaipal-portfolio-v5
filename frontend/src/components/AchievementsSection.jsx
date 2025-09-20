@@ -6,7 +6,7 @@ import { mockData } from "../data/mockData";
 
 const AchievementsSection = () => {
   return (
-    <section id="achievements" className="py-20 bg-slate-50">
+    <section id="achievements" className="py-20 bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-4xl font-bold text-slate-900 mb-4">Awards & Recognition</h2>
