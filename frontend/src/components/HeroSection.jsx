@@ -67,7 +67,8 @@ const HeroSection = () => {
                 <img
                   src="https://customer-assets.emergentagent.com/job_jsb-showcase/artifacts/iozlvq2a_PSX_20171017_182352.jpg"
                   alt="Jaipal Singh - Professional Headshot"
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover object-center"
+                  style={{ objectPosition: 'center 20%' }}
                 />
               </div>
               <div className="absolute -bottom-4 -right-4 bg-slate-800 text-white px-4 py-2 rounded-full text-sm font-medium shadow-lg">
