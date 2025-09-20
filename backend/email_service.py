@@ -31,6 +31,11 @@ fm = FastMail(conf)
 async def send_contact_email(name: str, email: str, message: str):
     """Send contact form email to Jaipal Singh"""
     try:
+        # Check if email is properly configured
+        if SMTP_USER == 'noreply@portfolio.com' or SMTP_PASS == 'dummy_password':
+            print("Warning: Email not configured. Contact form data will be stored in database only.")
+            return True
+            
         # Create email content
         html_content = f"""
         <html>
@@ -84,7 +89,8 @@ async def send_contact_email(name: str, email: str, message: str):
         
     except Exception as e:
         print(f"Error sending email: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Failed to send email: {str(e)}")
+        # Don't raise exception - just log and continue
+        return False
 
 async def send_confirmation_email(name: str, email: str):
     """Send confirmation email to the person who submitted the form"""
