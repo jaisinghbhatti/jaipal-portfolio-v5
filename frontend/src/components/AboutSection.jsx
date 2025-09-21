@@ -8,9 +8,6 @@ const AboutSection = () => {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-4xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent mb-4">About Me</h2>
-          <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-            Get to know the person behind the professional achievements
-          </p>
         </div>
         
         <div className="grid lg:grid-cols-2 gap-12 items-center">
