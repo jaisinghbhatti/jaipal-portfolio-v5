@@ -1,7 +1,7 @@
 export const mockData = {
   personalInfo: {
     name: "Jaipal Singh",
-    title: "Senior Marketing Manager",
+    title: "Research-Oriented Digital Marketing Leader",
     email: "jaisinghbhatti@gmail.com",
     phone: "8130033706",
     bio: "Highly accomplished and results-driven Digital Marketing leader with over 10 years of experience in digital marketing. Currently serving as Senior Marketing Manager in Industry, leading a team of 12 professionals and driving strategic marketing initiatives across multiple markets.",
