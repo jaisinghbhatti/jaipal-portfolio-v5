@@ -16,12 +16,15 @@ const AboutSection = () => {
               <CardContent className="p-0">
                 <h3 className="text-2xl font-semibold text-blue-800 mb-4">Professional Journey</h3>
                 <p className="text-slate-700 leading-relaxed mb-4">
-                  {mockData.personalInfo.bio}
+                  Year 2015, I graduated and stepped into the corporate world. While as a fresher, all the verticals seemed interesting, 
+                  I chose Digital Marketing as that was the hot buzzing word of that time. In my early career, I spent a lot of time 
+                  learning and polishing my data research and analytical skills and after spending almost 5 years, I moved into the 
+                  hard-core Digital Marketing side, taking care of technical and non-technical SEO for business websites.
                 </p>
                 <p className="text-slate-700 leading-relaxed">
-                  With a proven track record in the technology industry, I've specialized in developing comprehensive 
-                  digital marketing strategies, managing cross-functional teams, and driving measurable 
-                  business results across diverse markets including the U.S. and Spain.
+                  Over the years, I have built and scaled multiple teams within the Digital Marketing vertical. With a proven track record 
+                  in the technology industry, I've specialized in developing comprehensive digital marketing strategies, managing cross-functional 
+                  teams, and driving measurable business results across diverse markets.
                 </p>
               </CardContent>
             </Card>
