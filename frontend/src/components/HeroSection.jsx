@@ -38,14 +38,21 @@ const HeroSection = () => {
                 <MailIcon className="mr-2 h-5 w-5" />
                 Get In Touch
               </Button>
-              <Button
-                variant="outline"
-                size="lg"
-                className="border-2 border-blue-500 text-blue-600 hover:bg-blue-500 hover:text-white px-8 py-3 text-lg shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-300"
+              <a
+                href="https://customer-assets.emergentagent.com/job_jsb-showcase/artifacts/s9985tg5_Jaipal%20Singh_Sr_Marketing%20Manager_8130033706%20-%202025.docx"
+                download="Jaipal_Singh_Resume_2025.docx"
+                target="_blank"
+                rel="noopener noreferrer"
               >
-                <DownloadIcon className="mr-2 h-5 w-5" />
-                Download Resume
-              </Button>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="border-2 border-blue-500 text-blue-600 hover:bg-blue-500 hover:text-white px-8 py-3 text-lg shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-300"
+                >
+                  <DownloadIcon className="mr-2 h-5 w-5" />
+                  Download Resume
+                </Button>
+              </a>
             </div>
             
             <div className="flex items-center space-x-4 pt-4">
