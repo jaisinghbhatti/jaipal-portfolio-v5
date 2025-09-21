@@ -20,11 +20,12 @@ const HeroSection = () => {
                 Jaipal Singh
               </h1>
               <h2 className="text-xl md:text-2xl text-slate-700 font-medium">
-                Senior Marketing Manager & Digital Marketing Leader
+                Research-Oriented Digital Marketing Leader
               </h2>
               <p className="text-lg text-slate-600 leading-relaxed max-w-xl">
-                Highly accomplished and results-driven Digital Marketing leader with 10+ years of experience 
-                in driving revenue growth, leading high-performing teams, and executing strategic marketing initiatives.
+                Highly accomplished and result-driven Marketer with over 10 years of experience in the Digital Marketing space, 
+                working for Enterprise-level organizations. Passionate about data-driven strategies, research methodologies, 
+                and building scalable marketing systems that deliver measurable business impact.
               </p>
             </div>
             
