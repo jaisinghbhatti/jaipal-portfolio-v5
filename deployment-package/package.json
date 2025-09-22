@@ -1,0 +1,20 @@
+{
+  "name": "jaipal-portfolio",
+  "version": "1.0.0",
+  "description": "Professional portfolio website for Jaipal Singh - Research-Oriented Digital Marketing Leader",
+  "main": "index.js",
+  "scripts": {
+    "dev": "cd frontend && npm start",
+    "build": "cd frontend && npm run build",
+    "start": "cd frontend && npm start"
+  },
+  "keywords": [
+    "portfolio",
+    "digital-marketing",
+    "react",
+    "professional-website"
+  ],
+  "author": "Jaipal Singh <jaisinghbhatti@gmail.com>",
+  "license": "MIT",
+  "homepage": "https://www.jaipal.in"
+}
