@@ -1,0 +1,26 @@
+{
+  "version": 2,
+  "name": "jaipal-portfolio",
+  "builds": [
+    {
+      "src": "frontend/package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "build"
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/static/(.*)",
+      "dest": "/frontend/build/static/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/frontend/build/index.html"
+    }
+  ],
+  "env": {
+    "REACT_APP_BACKEND_URL": "https://your-backend-url.vercel.app"
+  }
+}
