@@ -1,6 +1,6 @@
 import React from "react";
 import { Button } from "./ui/button";
-import { LinkedinIcon, MailIcon, DownloadIcon } from "lucide-react";
+import { LinkedinIcon, MailIcon } from "lucide-react";
 
 const HeroSection = () => {
   const scrollToSection = (sectionId) => {
