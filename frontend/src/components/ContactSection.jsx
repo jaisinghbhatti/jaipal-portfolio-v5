@@ -4,7 +4,7 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
 import { Label } from "./ui/label";
-import { Mail, Phone, MapPin, Send, AlertCircle } from "lucide-react";
+import { Mail, MapPin, Send, AlertCircle } from "lucide-react";
 import { useToast } from "../hooks/use-toast";
 import { mockData } from "../data/mockData";
 import axios from "axios";
