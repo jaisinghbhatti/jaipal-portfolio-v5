@@ -57,12 +57,12 @@ export const mockData = {
       company: "Previous Organizations",
       position: "Digital Marketing Specialist",
       duration: "2014 - 2016",
-      description: "Specialized in SEO, content marketing, and digital analytics. Built foundational expertise in digital marketing tools and techniques.",
+      description: "Specialized in technical and on-page SEO, content marketing strategy, and digital analytics. Built expertise in search engine optimization and performance measurement.",
       achievements: [
-        "Improved organic search rankings",
-        "Developed content marketing strategies",
-        "Managed social media presence",
-        "Analyzed marketing performance metrics"
+        "Improved organic search rankings for 50+ keywords to first page positions",
+        "Developed comprehensive content marketing strategies driving 200% traffic increase",
+        "Implemented advanced tracking and analytics setup for multi-channel attribution",
+        "Optimized website performance resulting in 40% reduction in bounce rate"
       ]
     }
   ],
