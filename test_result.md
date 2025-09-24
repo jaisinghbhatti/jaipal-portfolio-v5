@@ -188,7 +188,7 @@ frontend:
     status_history:
         - working: true
           agent: "testing"
-          comment: "✅ PASSED: Homepage loads successfully at https://jsb-showcase.preview.emergentagent.com. All navigation menu items (About, Expertise, Experience, Achievements, Contact) are present and functional with smooth scrolling. LinkedIn link (https://www.linkedin.com/in/singh-jaipal/) opens in new tab correctly. All 8 sections present and accessible."
+          comment: "✅ PASSED: Homepage loads successfully at https://jais-webfolio.preview.emergentagent.com. All navigation menu items (About, Expertise, Experience, Achievements, Contact) are present and functional with smooth scrolling. LinkedIn link (https://www.linkedin.com/in/singh-jaipal/) opens in new tab correctly. All 8 sections present and accessible."
 
   - task: "Visual & Design Testing"
     implemented: true
@@ -279,6 +279,6 @@ agent_communication:
     - agent: "testing"
       message: "✅ BACKEND TESTING COMPLETE: All contact form API endpoints tested successfully. 12/12 tests passed with 100% success rate. The backend is fully functional with proper validation, database integration, and graceful email failure handling. No critical issues found. System ready for production use."
     - agent: "testing"
-      message: "🔄 FRONTEND TESTING INITIATED: Added comprehensive frontend testing tasks based on user requirements. Will test page load, navigation, visual design, hero section, content sections, contact form integration, interactive elements, and mobile responsiveness. Backend URL configured as https://jsb-showcase.preview.emergentagent.com"
+      message: "🔄 FRONTEND TESTING INITIATED: Added comprehensive frontend testing tasks based on user requirements. Will test page load, navigation, visual design, hero section, content sections, contact form integration, interactive elements, and mobile responsiveness. Backend URL configured as https://jais-webfolio.preview.emergentagent.com"
     - agent: "testing"
       message: "🎉 FRONTEND TESTING COMPLETE: Comprehensive testing completed successfully! All 7 frontend tasks PASSED including critical contact form integration. Portfolio website is fully functional with: ✅ Perfect page load & navigation ✅ Beautiful visual design with gradients ✅ Functional hero section ✅ All content sections displaying correctly ✅ CRITICAL: Contact form working with backend integration, email sending, and toast notifications ✅ All interactive elements functional ✅ Mobile responsiveness working perfectly. Website ready for production use!"

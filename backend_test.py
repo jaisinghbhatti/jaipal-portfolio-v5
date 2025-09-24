@@ -6,7 +6,7 @@ from datetime import datetime
 import sys
 
 # Get the backend URL from frontend .env file
-BACKEND_URL = "https://jsb-showcase.preview.emergentagent.com/api"
+BACKEND_URL = "https://jais-webfolio.preview.emergentagent.com/api"
 
 class ContactFormTester:
     def __init__(self):
