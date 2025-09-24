@@ -61,7 +61,7 @@ const AboutSection = () => {
             <div className="text-blue-600 font-medium">Years Experience</div>
           </div>
           <div className="text-center p-6 bg-gradient-to-br from-purple-100 to-purple-200 rounded-xl shadow-lg">
-            <div className="text-4xl font-bold text-purple-700 mb-2">50+</div>
+            <div className="text-4xl font-bold text-purple-700 mb-2">250+</div>
             <div className="text-purple-600 font-medium">Marketing Campaigns</div>
           </div>
           <div className="text-center p-6 bg-gradient-to-br from-indigo-100 to-indigo-200 rounded-xl shadow-lg">
