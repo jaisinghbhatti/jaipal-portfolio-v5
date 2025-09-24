@@ -45,12 +45,12 @@ export const mockData = {
       company: "Technology Industry",
       position: "Marketing Manager",
       duration: "2016 - 2019",
-      description: "Managed digital marketing campaigns, developed content strategies, and collaborated with cross-functional teams to drive business growth.",
+      description: "Specialized in performance marketing campaigns, marketing automation, and data analytics to drive business growth and optimize marketing ROI.",
       achievements: [
-        "Implemented marketing automation systems",
-        "Improved email marketing open rates by 35%",
-        "Launched successful product marketing campaigns",
-        "Established relationships with key stakeholders"
+        "Implemented marketing automation systems reducing manual workflows by 60%",
+        "Improved email marketing open rates by 35% through A/B testing and segmentation",
+        "Launched multi-channel product marketing campaigns with 45% conversion improvement",
+        "Developed advanced analytics dashboards for real-time campaign performance tracking"
       ]
     },
     {
