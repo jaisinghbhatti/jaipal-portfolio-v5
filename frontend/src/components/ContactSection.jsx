@@ -223,10 +223,18 @@ const ContactSection = () => {
                     name="name"
                     value={formData.name}
                     onChange={handleInputChange}
+                    onBlur={handleBlur}
                     placeholder="Your full name"
-                    className="border-blue-200 focus:border-blue-500 focus:ring-blue-500"
-                    required
+                    className={`border-blue-200 focus:border-blue-500 focus:ring-blue-500 ${
+                      errors.name ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''
+                    }`}
                   />
+                  {errors.name && (
+                    <div className="flex items-center space-x-2 text-red-600 text-sm">
+                      <AlertCircle className="h-4 w-4" />
+                      <span>{errors.name}</span>
+                    </div>
+                  )}
                 </div>
                 
                 <div className="space-y-2">
@@ -237,30 +245,51 @@ const ContactSection = () => {
                     type="email"
                     value={formData.email}
                     onChange={handleInputChange}
+                    onBlur={handleBlur}
                     placeholder="your.email@example.com"
-                    className="border-blue-200 focus:border-blue-500 focus:ring-blue-500"
-                    required
+                    className={`border-blue-200 focus:border-blue-500 focus:ring-blue-500 ${
+                      errors.email ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''
+                    }`}
                   />
+                  {errors.email && (
+                    <div className="flex items-center space-x-2 text-red-600 text-sm">
+                      <AlertCircle className="h-4 w-4" />
+                      <span>{errors.email}</span>
+                    </div>
+                  )}
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="message" className="text-slate-700 font-medium">Message</Label>
+                  <Label htmlFor="message" className="text-slate-700 font-medium">
+                    Message
+                    <span className="text-slate-400 text-xs ml-2">
+                      ({formData.message.length}/1000)
+                    </span>
+                  </Label>
                   <Textarea
                     id="message"
                     name="message"
                     value={formData.message}
                     onChange={handleInputChange}
-                    placeholder="Tell me about your project or inquiry..."
+                    onBlur={handleBlur}
+                    placeholder="Tell me about your project or inquiry... (minimum 10 characters)"
                     rows={5}
-                    className="border-blue-200 focus:border-blue-500 focus:ring-blue-500"
-                    required
+                    className={`border-blue-200 focus:border-blue-500 focus:ring-blue-500 ${
+                      errors.message ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''
+                    }`}
                   />
+                  {errors.message && (
+                    <div className="flex items-center space-x-2 text-red-600 text-sm">
+                      <AlertCircle className="h-4 w-4" />
+                      <span>{errors.message}</span>
+                    </div>
+                  )}
                 </div>
                 
                 <Button
                   type="submit"
-                  disabled={isSubmitting}
-                  className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+                  disabled={isSubmitting || Object.keys(errors).some(key => errors[key])}
+                  className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                   size="lg"
                 >
                   {isSubmitting ? (
