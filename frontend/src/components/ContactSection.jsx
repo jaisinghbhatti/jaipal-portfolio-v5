@@ -64,10 +64,51 @@ const ContactSection = () => {
       ...prev,
       [name]: value
     }));
+
+    // Real-time validation
+    if (touched[name]) {
+      const error = validateField(name, value);
+      setErrors(prev => ({
+        ...prev,
+        [name]: error
+      }));
+    }
+  };
+
+  const handleBlur = (e) => {
+    const { name, value } = e.target;
+    setTouched(prev => ({
+      ...prev,
+      [name]: true
+    }));
+    
+    const error = validateField(name, value);
+    setErrors(prev => ({
+      ...prev,
+      [name]: error
+    }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Mark all fields as touched
+    setTouched({
+      name: true,
+      email: true,
+      message: true
+    });
+
+    // Validate form
+    if (!validateForm()) {
+      toast({
+        title: "Please fix the errors below",
+        description: "All fields are required and must be valid.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsSubmitting(true);
     
     try {
@@ -76,10 +117,13 @@ const ContactSection = () => {
       if (response.data.success) {
         toast({
           title: "Message sent successfully!",
-          description: response.data.message,
+          description: "I'll get back to you soon.",
         });
         
+        // Reset form and validation state
         setFormData({ name: "", email: "", message: "" });
+        setErrors({});
+        setTouched({});
       } else {
         throw new Error(response.data.message || "Failed to send message");
       }
