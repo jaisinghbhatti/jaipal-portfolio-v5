@@ -33,12 +33,12 @@ export const mockData = {
       company: "Leading Technology Company",
       position: "Senior Marketing Manager",
       duration: "2019 - Present",
-      description: "Leading a team of 12 marketing professionals, developing and executing digital marketing strategies for U.S. and Spain markets. Responsible for driving revenue growth through strategic marketing campaigns and initiatives.",
+      description: "Developing and executing comprehensive digital marketing strategies for U.S. and Spain markets. Specialized in data-driven campaign optimization and advanced SEO techniques to drive revenue growth.",
       achievements: [
-        "Led team of 12 marketing professionals",
-        "Developed digital marketing strategies for U.S. and Spain markets",
+        "Implemented advanced SEO strategies increasing organic traffic by 150%",
+        "Developed comprehensive digital marketing frameworks for international markets",
         "Increased marketing qualified leads by 40%",
-        "Managed multi-million dollar marketing budget"
+        "Optimized conversion funnels resulting in 25% improvement in lead quality"
       ]
     },
     {
