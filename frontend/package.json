@@ -1,7 +1,8 @@
 {
-  "name": "frontend",
-  "version": "0.1.0",
+  "name": "jaipal-singh-portfolio",
+  "version": "2.0.0",
   "private": true,
+  "description": "Professional portfolio for Jaipal Singh - Digital Marketing Expert",
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",
     "@radix-ui/react-accordion": "^1.2.8",
