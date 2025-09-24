@@ -3,7 +3,6 @@ export const mockData = {
     name: "Jaipal Singh",
     title: "Research-Oriented Digital Marketing Leader",
     email: "jaisinghbhatti@gmail.com",
-    phone: "8130033706",
     bio: "Highly accomplished and result-driven Marketer with over 10 years of experience in the Digital Marketing space, working for Enterprise-level organizations. Passionate about data-driven strategies, research methodologies, and building scalable marketing systems that deliver measurable business impact.",
     personalBio: "When I am not working, I am busy training my toddlersaurus, something I love doing the most. Parallely, learning how to be a good husband, but honestly I am not great at and my wife has given up on me. In her words, I may be something close to good in another 40-50 years. Well I am optimistic 😊 Lets see!",
     location: "India"
