@@ -176,16 +176,6 @@ const ContactSection = () => {
                 </div>
                 
                 <div className="flex items-center space-x-4 group hover:scale-105 transition-transform duration-200">
-                  <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center shadow-lg">
-                    <Phone className="w-6 h-6 text-white" />
-                  </div>
-                  <div>
-                    <div className="font-medium text-slate-900">Phone</div>
-                    <div className="text-purple-600 font-medium">{mockData.personalInfo.phone}</div>
-                  </div>
-                </div>
-                
-                <div className="flex items-center space-x-4 group hover:scale-105 transition-transform duration-200">
                   <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-teal-500 rounded-full flex items-center justify-center shadow-lg">
                     <MapPin className="w-6 h-6 text-white" />
                   </div>
