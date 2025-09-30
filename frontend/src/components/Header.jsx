@@ -1,14 +1,29 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "./ui/button";
 import { Menu, X, ChevronDown } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
-import { mockData } from "../data/mockData";
+import { blogService } from "../services/blogService";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isBlogDropdownOpen, setIsBlogDropdownOpen] = useState(false);
+  const [blogs, setBlogs] = useState([]);
   const location = useLocation();
   const isHomePage = location.pathname === '/';
+
+  useEffect(() => {
+    // Fetch blogs for dropdown
+    const fetchBlogs = async () => {
+      try {
+        const blogData = await blogService.getAllBlogs();
+        setBlogs(blogData);
+      } catch (error) {
+        console.error('Error fetching blogs for header:', error);
+      }
+    };
+
+    fetchBlogs();
+  }, []);
 
   const scrollToSection = (sectionId) => {
     const element = document.getElementById(sectionId);
