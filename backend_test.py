@@ -247,8 +247,33 @@ class BlogCMSTester:
                 
     async def test_update_blog_post(self):
         """Test PUT /api/blogs/{blog_id} - updating blog post"""
-        # First create a blog to update
-        blog_id = await self.test_create_blog_post()
+        # Create a blog specifically for update testing with unique slug
+        update_test_blog_data = {
+            "title": "Blog for Update Testing",
+            "slug": "blog-for-update-testing-unique",
+            "content": "This is a comprehensive test blog post created specifically for update testing by the automated testing system. It contains enough content to meet the minimum requirements for blog post creation and will be updated to verify the update functionality.",
+            "excerpt": "A test blog post created specifically for update testing to verify the update API endpoint functionality.",
+            "author": "API Test System",
+            "read_time": "3 min",
+            "tags": ["testing", "api", "update"],
+            "status": "draft"
+        }
+        
+        blog_id = None
+        try:
+            async with self.session.post(
+                f"{BACKEND_URL}/blogs",
+                json=update_test_blog_data,
+                headers={"Content-Type": "application/json"}
+            ) as response:
+                
+                if response.status == 200:
+                    data = await response.json()
+                    blog_id = data.get("blog", {}).get("id")
+                    if blog_id:
+                        self.created_blog_ids.append(blog_id)  # Track for cleanup
+        except Exception as e:
+            pass
         
         if not blog_id:
             self.log_result("Update Blog Post", False, "Cannot test update - blog creation failed")
