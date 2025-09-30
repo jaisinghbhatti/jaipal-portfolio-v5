@@ -163,9 +163,15 @@ const BlogPage = () => {
           const items = paragraph.split('\n').filter(item => item.startsWith('* '));
           return (
             <ul key={index} className="list-disc list-inside space-y-2 mb-6 text-slate-700">
-              {items.map((item, i) => (
-                <li key={i}>{item.replace('* ', '').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}</li>
-              ))}
+              {items.map((item, i) => {
+                const formattedItem = item.replace('* ', '').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                return (
+                  <li 
+                    key={i} 
+                    dangerouslySetInnerHTML={{ __html: formattedItem }} 
+                  />
+                );
+              })}
             </ul>
           );
         }
