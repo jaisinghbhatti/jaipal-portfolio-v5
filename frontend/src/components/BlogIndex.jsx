@@ -154,7 +154,7 @@ const BlogIndex = () => {
               <div className="w-px h-8 bg-slate-200"></div>
               <div className="text-center">
                 <div className="text-2xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
-                  {blogService.getUniqueTags(blogs).length}
+                  {getUniqueTags(blogs).length}
                 </div>
                 <div className="text-slate-600 text-sm font-medium">Unique Topics</div>
               </div>
