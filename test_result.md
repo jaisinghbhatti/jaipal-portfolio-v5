@@ -180,20 +180,41 @@ frontend:
           agent: "testing"
           comment: "✅ PASSED: Phone number (8130033706) completely removed from Contact section. No traces of the phone number found anywhere on the page. Email (jaisinghbhatti@gmail.com) and Location (India) remain properly displayed. Complete removal confirmed."
 
-  - task: "Blog Section Implementation"
+  - task: "Multi-Page Blog Implementation"
     implemented: true
-    working: true
-    file: "/app/frontend/src/components/BlogSection.jsx"
+    working: "NA"
+    file: "/app/frontend/src/components/BlogPage.jsx"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
         - working: "NA"
           agent: "main"
-          comment: "Implemented complete Blog section with navigation menu item, SEO content blog post, LinkedIn share functionality, Author section, comment form with validation, and 'Written On' date (September 24, 2025). Blog positioned between About and Expertise sections. Needs comprehensive testing of all blog features."
-        - working: true
-          agent: "testing"
-          comment: "✅ PASSED: Blog section implementation fully successful. ALL FEATURES WORKING: ✅ 'Blog' appears in navigation menu ✅ Blog section accessible and positioned correctly between About and Expertise ✅ SEO blog post 'Why SEO Isn't Dead' displays with full content ✅ LinkedIn share button present and functional ✅ Author section displays correctly with profile image and bio ✅ Comment form with all fields (name, email, comment) working ✅ Form validation working - shows 3 error messages for empty form ✅ 'Written On' date shows September 24, 2025 correctly. Complete blog functionality confirmed."
+          comment: "Implemented multi-page blog functionality with separate /blog route. Home page no longer has embedded blog section. Blog page includes full SEO content, LinkedIn share, author section, comment form validation, and 'Back to Portfolio' navigation. Needs comprehensive testing of multi-page navigation and functionality."
+
+  - task: "Home Page Layout Update"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/HomePage.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Updated home page to remove embedded blog section. Layout now flows: Hero → About → Expertise → Experience → Achievements → Contact. Blog link added to navigation menu. Needs testing to verify clean layout and navigation."
+
+  - task: "Header Navigation Update"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/Header.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Updated header navigation to include Blog link that routes to /blog page. Navigation handles both home page section scrolling and cross-page navigation. Logo/title links back to homepage. Needs testing for navigation consistency across pages."
 
 metadata:
   created_by: "testing_agent"
