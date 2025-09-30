@@ -5,6 +5,7 @@ from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import logging
 from pathlib import Path
+from datetime import datetime
 from models import (
     StatusCheck, StatusCheckCreate, 
     ContactSubmission, ContactSubmissionCreate, ContactResponse,
