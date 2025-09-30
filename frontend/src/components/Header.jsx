@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import { Button } from "./ui/button";
-import { Menu, X } from "lucide-react";
+import { Menu, X, ChevronDown } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
+import { mockData } from "../data/mockData";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isBlogDropdownOpen, setIsBlogDropdownOpen] = useState(false);
   const location = useLocation();
   const isHomePage = location.pathname === '/';
 
@@ -45,12 +47,60 @@ const Header = () => {
             >
               About
             </button>
-            <Link
-              to="/blog"
-              className="text-slate-600 hover:text-blue-600 transition-colors duration-200 font-medium"
+            
+            {/* Blog Dropdown */}
+            <div 
+              className="relative"
+              onMouseEnter={() => setIsBlogDropdownOpen(true)}
+              onMouseLeave={() => setIsBlogDropdownOpen(false)}
             >
-              Blog
-            </Link>
+              <Link
+                to="/blog"
+                className="flex items-center space-x-1 text-slate-600 hover:text-blue-600 transition-colors duration-200 font-medium"
+              >
+                <span>Blog</span>
+                <ChevronDown className="h-4 w-4" />
+              </Link>
+              
+              {/* Dropdown Menu */}
+              {isBlogDropdownOpen && (
+                <div className="absolute top-full left-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-blue-100 py-2 z-50">
+                  <Link
+                    to="/blog"
+                    className="block px-4 py-2 text-sm text-slate-700 hover:bg-blue-50 hover:text-blue-600 transition-colors duration-200"
+                  >
+                    <div className="font-medium">All Articles</div>
+                    <div className="text-xs text-slate-500">View all {mockData.blogs.length} blog posts</div>
+                  </Link>
+                  <div className="border-t border-slate-100 my-2"></div>
+                  {mockData.blogs.slice(0, 3).map((blog) => (
+                    <Link
+                      key={blog.id}
+                      to={`/blog/${blog.slug}`}
+                      className="block px-4 py-3 hover:bg-blue-50 transition-colors duration-200"
+                    >
+                      <div className="font-medium text-sm text-slate-800 hover:text-blue-600 line-clamp-2">
+                        {blog.title}
+                      </div>
+                      <div className="text-xs text-slate-500 mt-1">
+                        {blog.readTime} • {new Date(blog.publishedDate).toLocaleDateString()}
+                      </div>
+                    </Link>
+                  ))}
+                  {mockData.blogs.length > 3 && (
+                    <div className="border-t border-slate-100 mt-2 pt-2">
+                      <Link
+                        to="/blog"
+                        className="block px-4 py-2 text-sm text-blue-600 hover:text-blue-700 font-medium"
+                      >
+                        View all {mockData.blogs.length} articles →
+                      </Link>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+            
             <button
               onClick={() => handleNavigate("expertise")}
               className="text-slate-600 hover:text-blue-600 transition-colors duration-200 font-medium"
