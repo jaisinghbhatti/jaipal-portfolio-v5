@@ -2,6 +2,7 @@ import React from "react";
 import "./App.css";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import HomePage from "./components/HomePage";
+import BlogPage from "./components/BlogPage";
 import { Toaster } from "./components/ui/toaster";
 import { Analytics } from '@vercel/analytics/react';
 
@@ -11,6 +12,7 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<HomePage />} />
+          <Route path="/blog" element={<BlogPage />} />
         </Routes>
         <Toaster />
         <Analytics />
