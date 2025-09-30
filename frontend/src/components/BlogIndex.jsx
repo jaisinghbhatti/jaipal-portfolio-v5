@@ -121,7 +121,7 @@ const BlogIndex = () => {
                       </div>
                       <div className="flex items-center space-x-1">
                         <Clock className="h-4 w-4" />
-                        <span>{blog.readTime}</span>
+                        <span>{blog.read_time}</span>
                       </div>
                     </div>
                   </div>
