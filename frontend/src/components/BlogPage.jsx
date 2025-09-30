@@ -4,10 +4,10 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
 import { Label } from "./ui/label";
-import { Calendar, Clock, User, Share2, MessageCircle, Send, AlertCircle, ArrowLeft } from "lucide-react";
+import { Calendar, Clock, User, Share2, MessageCircle, Send, AlertCircle, ArrowLeft, ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { useToast } from "../hooks/use-toast";
 import { mockData } from "../data/mockData";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import axios from "axios";
 import Header from "./Header";
 import Footer from "./Footer";
@@ -16,7 +16,19 @@ const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
 const BlogPage = () => {
-  const [selectedBlog, setSelectedBlog] = useState(mockData.blogs[0]);
+  const { slug } = useParams();
+  
+  // Find the blog post by slug, default to first blog if no slug or not found
+  const allBlogs = mockData.blogs;
+  const selectedBlog = slug 
+    ? allBlogs.find(blog => blog.slug === slug) || allBlogs[0]
+    : allBlogs[0];
+  
+  // Find previous and next blogs
+  const currentIndex = allBlogs.findIndex(blog => blog.id === selectedBlog.id);
+  const prevBlog = currentIndex > 0 ? allBlogs[currentIndex - 1] : null;
+  const nextBlog = currentIndex < allBlogs.length - 1 ? allBlogs[currentIndex + 1] : null;
+
   const [commentData, setCommentData] = useState({
     name: "",
     email: "",
