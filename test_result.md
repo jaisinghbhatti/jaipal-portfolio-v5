@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Test all 6 implemented changes on the Jaipal Singh portfolio website: 1) Meta Title Test, 2) Download Resume Button Removal, 3) Marketing Campaigns Update (250+), 4) Professional Experience Changes, 5) Phone Number Removal, 6) Blog Section Implementation with full functionality."
+user_problem_statement: "Test the newly implemented multi-page blog functionality on https://jais-webfolio.preview.emergentagent.com: 1) Home Page Layout Test (blog section removed), 2) Blog Page Navigation Test, 3) Blog Page Content Test, 4) Navigation Between Pages Test, 5) Mobile Responsiveness Test, 6) Header Functionality Test"
 
 frontend:
   - task: "Meta Title Test"
