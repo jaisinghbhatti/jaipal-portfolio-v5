@@ -46,58 +46,12 @@ const Header = () => {
               About
             </button>
             
-            {/* Blog Dropdown */}
-            <div 
-              className="relative"
-              onMouseEnter={() => setIsBlogDropdownOpen(true)}
-              onMouseLeave={() => setIsBlogDropdownOpen(false)}
+            <Link
+              to="/blog"
+              className="text-slate-600 hover:text-blue-600 transition-colors duration-200 font-medium"
             >
-              <Link
-                to="/blog"
-                className="flex items-center space-x-1 text-slate-600 hover:text-blue-600 transition-colors duration-200 font-medium"
-              >
-                <span>Blog</span>
-                <ChevronDown className="h-4 w-4" />
-              </Link>
-              
-              {/* Dropdown Menu */}
-              {isBlogDropdownOpen && (
-                <div className="absolute top-full left-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-blue-100 py-2 z-50">
-                  <Link
-                    to="/blog"
-                    className="block px-4 py-2 text-sm text-slate-700 hover:bg-blue-50 hover:text-blue-600 transition-colors duration-200"
-                  >
-                    <div className="font-medium">All Articles</div>
-                    <div className="text-xs text-slate-500">View all {blogs.length} blog posts</div>
-                  </Link>
-                  <div className="border-t border-slate-100 my-2"></div>
-                  {blogs.slice(0, 3).map((blog) => (
-                    <Link
-                      key={blog.id}
-                      to={`/blog/${blog.slug}`}
-                      className="block px-4 py-3 hover:bg-blue-50 transition-colors duration-200"
-                    >
-                      <div className="font-medium text-sm text-slate-800 hover:text-blue-600 line-clamp-2">
-                        {blog.title}
-                      </div>
-                      <div className="text-xs text-slate-500 mt-1">
-                        {blog.read_time} • {blogService.formatDate(blog.published_date)}
-                      </div>
-                    </Link>
-                  ))}
-                  {blogs.length > 3 && (
-                    <div className="border-t border-slate-100 mt-2 pt-2">
-                      <Link
-                        to="/blog"
-                        className="block px-4 py-2 text-sm text-blue-600 hover:text-blue-700 font-medium"
-                      >
-                        View all {blogs.length} articles →
-                      </Link>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
+              Blog
+            </Link>
             
             <button
               onClick={() => handleNavigate("expertise")}
