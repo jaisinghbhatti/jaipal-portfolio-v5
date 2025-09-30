@@ -2,7 +2,6 @@ import React from "react";
 import Header from "./Header";
 import HeroSection from "./HeroSection";
 import AboutSection from "./AboutSection";
-import BlogSection from "./BlogSection";
 import ExpertiseSection from "./ExpertiseSection";
 import ExperienceSection from "./ExperienceSection";
 import AchievementsSection from "./AchievementsSection";
@@ -15,7 +14,6 @@ const HomePage = () => {
       <Header />
       <HeroSection />
       <AboutSection />
-      <BlogSection />
       <ExpertiseSection />
       <ExperienceSection />
       <AchievementsSection />
