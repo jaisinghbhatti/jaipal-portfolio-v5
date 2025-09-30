@@ -182,7 +182,7 @@ const BlogIndex = () => {
               <div className="w-px h-8 bg-slate-200"></div>
               <div className="text-center">
                 <div className="text-2xl font-bold bg-gradient-to-r from-green-600 to-teal-600 bg-clip-text text-transparent">
-                  {blogs.reduce((total, blog) => total + parseInt(blog.readTime), 0)}
+                  {blogService.calculateTotalReadTime(blogs)}
                 </div>
                 <div className="text-slate-600 text-sm font-medium">Minutes of Content</div>
               </div>
