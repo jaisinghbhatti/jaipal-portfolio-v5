@@ -8,20 +8,6 @@ const Header = () => {
   const location = useLocation();
   const isHomePage = location.pathname === '/';
 
-  useEffect(() => {
-    // Fetch blogs for dropdown
-    const fetchBlogs = async () => {
-      try {
-        const blogData = await blogService.getAllBlogs();
-        setBlogs(blogData);
-      } catch (error) {
-        console.error('Error fetching blogs for header:', error);
-      }
-    };
-
-    fetchBlogs();
-  }, []);
-
   const scrollToSection = (sectionId) => {
     const element = document.getElementById(sectionId);
     if (element) {
