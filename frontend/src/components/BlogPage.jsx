@@ -300,7 +300,7 @@ const BlogPage = () => {
                 <div className="flex items-center space-x-4 text-sm text-slate-500">
                   <div className="flex items-center space-x-2">
                     <Calendar className="h-4 w-4" />
-                    <span>{new Date(selectedBlog.publishedDate).toLocaleDateString('en-US', { 
+                    <span>{new Date(selectedBlog.published_date).toLocaleDateString('en-US', { 
                       year: 'numeric', 
                       month: 'long', 
                       day: 'numeric' 
