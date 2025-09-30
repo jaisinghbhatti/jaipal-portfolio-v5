@@ -297,7 +297,7 @@ const BlogPage = () => {
                   </div>
                   <div className="flex items-center space-x-2">
                     <Clock className="h-4 w-4" />
-                    <span>{selectedBlog.read_time}</span>
+                    <span>{selectedBlog.readTime}</span>
                   </div>
                 </div>
                 <Button
