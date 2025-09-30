@@ -6,7 +6,7 @@ import { Textarea } from "./ui/textarea";
 import { Label } from "./ui/label";
 import { Calendar, Clock, User, Share2, MessageCircle, Send, AlertCircle, ArrowLeft, ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { useToast } from "../hooks/use-toast";
-import { blogService } from "../services/blogService";
+import { mockData } from "../data/mockData";
 import { Link, useParams } from "react-router-dom";
 import axios from "axios";
 import Header from "./Header";
