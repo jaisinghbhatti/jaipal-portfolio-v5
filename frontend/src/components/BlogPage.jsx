@@ -212,18 +212,18 @@ const BlogPage = () => {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <Link 
-              to="/" 
+              to="/blog" 
               className="inline-flex items-center space-x-2 text-blue-600 hover:text-blue-700 mb-6 transition-colors duration-200"
             >
               <ArrowLeft className="h-4 w-4" />
-              <span>Back to Portfolio</span>
+              <span>Back to All Blogs</span>
             </Link>
             
             <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent mb-4">
               Blog & Insights
             </h1>
             <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-              Sharing insights, strategies, and thoughts on digital marketing, SEO, and the evolving landscape of online business.
+              Article {allBlogs.findIndex(blog => blog.id === selectedBlog.id) + 1} of {allBlogs.length}
             </p>
           </div>
         </div>
