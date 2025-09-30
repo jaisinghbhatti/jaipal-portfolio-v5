@@ -117,7 +117,7 @@ const BlogIndex = () => {
                     <div className="flex items-center space-x-4">
                       <div className="flex items-center space-x-1">
                         <Calendar className="h-4 w-4" />
-                        <span>{formatDate(blog.publishedDate)}</span>
+                        <span>{formatDate(blog.published_date)}</span>
                       </div>
                       <div className="flex items-center space-x-1">
                         <Clock className="h-4 w-4" />
