@@ -430,6 +430,75 @@ const BlogPage = () => {
               </form>
             </CardContent>
           </Card>
+
+          {/* Previous/Next Blog Navigation */}
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 mt-12 mb-8">
+            {/* Previous Blog */}
+            <div className="flex-1">
+              {prevBlog ? (
+                <Link 
+                  to={`/blog/${prevBlog.slug}`}
+                  className="group flex items-start space-x-4 p-6 bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+                >
+                  <div className="flex-shrink-0">
+                    <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white group-hover:scale-110 transition-transform duration-200">
+                      <ChevronLeft className="h-6 w-6" />
+                    </div>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-slate-500 font-medium mb-1">Previous Article</p>
+                    <h3 className="text-lg font-semibold text-slate-800 group-hover:text-blue-600 transition-colors duration-200 line-clamp-2">
+                      {prevBlog.title}
+                    </h3>
+                    <p className="text-sm text-slate-600 mt-1">{prevBlog.readTime}</p>
+                  </div>
+                </Link>
+              ) : (
+                <div className="text-center text-slate-400 py-8">
+                  <p>This is the first article</p>
+                </div>
+              )}
+            </div>
+
+            {/* Blog Index Link */}
+            <div className="flex-shrink-0">
+              <Link 
+                to="/blog"
+                className="inline-flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-300 hover:scale-105 shadow-lg"
+              >
+                <span>All Articles</span>
+                <div className="w-2 h-2 bg-white rounded-full"></div>
+                <span className="text-sm opacity-90">{allBlogs.length}</span>
+              </Link>
+            </div>
+
+            {/* Next Blog */}
+            <div className="flex-1">
+              {nextBlog ? (
+                <Link 
+                  to={`/blog/${nextBlog.slug}`}
+                  className="group flex items-start space-x-4 p-6 bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 text-right"
+                >
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-slate-500 font-medium mb-1">Next Article</p>
+                    <h3 className="text-lg font-semibold text-slate-800 group-hover:text-blue-600 transition-colors duration-200 line-clamp-2">
+                      {nextBlog.title}
+                    </h3>
+                    <p className="text-sm text-slate-600 mt-1">{nextBlog.readTime}</p>
+                  </div>
+                  <div className="flex-shrink-0">
+                    <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white group-hover:scale-110 transition-transform duration-200">
+                      <ChevronRight className="h-6 w-6" />
+                    </div>
+                  </div>
+                </Link>
+              ) : (
+                <div className="text-center text-slate-400 py-8">
+                  <p>This is the latest article</p>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </section>
       
