@@ -18,33 +18,17 @@ const BlogIndex = () => {
     });
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <Header />
-        <div className="flex items-center justify-center min-h-screen">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="mt-4 text-slate-600">Loading blog posts...</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const calculateTotalReadTime = (blogs) => {
+    return blogs.reduce((total, blog) => {
+      const minutes = parseInt(blog.readTime.replace(' min read', '')) || 0;
+      return total + minutes;
+    }, 0);
+  };
 
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <Header />
-        <div className="flex items-center justify-center min-h-screen">
-          <div className="text-center">
-            <p className="text-red-600 mb-4">{error}</p>
-            <Button onClick={() => window.location.reload()}>Retry</Button>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const getUniqueTags = (blogs) => {
+    const allTags = blogs.flatMap(blog => blog.tags || []);
+    return [...new Set(allTags)];
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
