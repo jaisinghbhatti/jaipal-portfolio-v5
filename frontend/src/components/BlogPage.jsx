@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -6,7 +6,7 @@ import { Textarea } from "./ui/textarea";
 import { Label } from "./ui/label";
 import { Calendar, Clock, User, Share2, MessageCircle, Send, AlertCircle, ArrowLeft, ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { useToast } from "../hooks/use-toast";
-import { mockData } from "../data/mockData";
+import { blogService } from "../services/blogService";
 import { Link, useParams } from "react-router-dom";
 import axios from "axios";
 import Header from "./Header";
@@ -18,17 +18,13 @@ const API = `${BACKEND_URL}/api`;
 const BlogPage = () => {
   const { slug } = useParams();
   
-  // Find the blog post by slug, default to first blog if no slug or not found
-  const allBlogs = mockData.blogs;
-  const selectedBlog = slug 
-    ? allBlogs.find(blog => blog.slug === slug) || allBlogs[0]
-    : allBlogs[0];
+  const [selectedBlog, setSelectedBlog] = useState(null);
+  const [allBlogs, setAllBlogs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [prevBlog, setPrevBlog] = useState(null);
+  const [nextBlog, setNextBlog] = useState(null);
   
-  // Find previous and next blogs
-  const currentIndex = allBlogs.findIndex(blog => blog.id === selectedBlog.id);
-  const prevBlog = currentIndex > 0 ? allBlogs[currentIndex - 1] : null;
-  const nextBlog = currentIndex < allBlogs.length - 1 ? allBlogs[currentIndex + 1] : null;
-
   const [commentData, setCommentData] = useState({
     name: "",
     email: "",
@@ -38,6 +34,71 @@ const BlogPage = () => {
   const [touched, setTouched] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+
+  useEffect(() => {
+    const fetchBlogData = async () => {
+      try {
+        setLoading(true);
+        
+        // Fetch all blogs for navigation
+        const allBlogsData = await blogService.getAllBlogs();
+        setAllBlogs(allBlogsData);
+        
+        // If slug is provided, fetch specific blog, otherwise use first blog
+        if (slug) {
+          const blog = await blogService.getBlogBySlug(slug);
+          setSelectedBlog(blog);
+          
+          // Find prev/next blogs
+          const currentIndex = allBlogsData.findIndex(b => b.slug === slug);
+          setPrevBlog(currentIndex > 0 ? allBlogsData[currentIndex - 1] : null);
+          setNextBlog(currentIndex < allBlogsData.length - 1 ? allBlogsData[currentIndex + 1] : null);
+        } else if (allBlogsData.length > 0) {
+          setSelectedBlog(allBlogsData[0]);
+          setPrevBlog(null);
+          setNextBlog(allBlogsData.length > 1 ? allBlogsData[1] : null);
+        }
+        
+      } catch (err) {
+        setError('Failed to load blog post');
+        console.error('Error fetching blog:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBlogData();
+  }, [slug]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="mt-4 text-slate-600">Loading blog post...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !selectedBlog) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <p className="text-red-600 mb-4">{error || 'Blog post not found'}</p>
+            <Link to="/blog">
+              <Button>Back to All Blogs</Button>
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Validation functions
   const validateField = (name, value) => {
