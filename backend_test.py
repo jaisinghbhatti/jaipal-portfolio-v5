@@ -198,7 +198,7 @@ class BlogCMSTester:
                 "data": {
                     "title": "Duplicate Test",
                     "slug": "test-blog-post-api-testing",  # Same as previous test
-                    "content": "This should fail due to duplicate slug validation in the system.",
+                    "content": "This should fail due to duplicate slug validation in the system. This content is long enough to meet the minimum character requirements for blog post creation but should still fail due to the duplicate slug constraint.",
                     "excerpt": "Testing duplicate slug validation",
                     "read_time": "2 min"
                 },
