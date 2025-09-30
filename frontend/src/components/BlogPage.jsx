@@ -511,7 +511,7 @@ const BlogPage = () => {
                     <h3 className="text-lg font-semibold text-slate-800 group-hover:text-blue-600 transition-colors duration-200 line-clamp-2">
                       {prevBlog.title}
                     </h3>
-                    <p className="text-sm text-slate-600 mt-1">{prevBlog.readTime}</p>
+                    <p className="text-sm text-slate-600 mt-1">{prevBlog.read_time}</p>
                   </div>
                 </Link>
               ) : (
