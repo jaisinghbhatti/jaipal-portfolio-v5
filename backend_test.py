@@ -781,12 +781,35 @@ class ContactFormTester:
 
 async def main():
     """Main test runner"""
-    tester = ContactFormTester()
-    results = await tester.run_all_tests()
+    print("🎯 COMPREHENSIVE BACKEND API TESTING")
+    print("=" * 80)
+    
+    # Run Blog CMS tests first (as requested)
+    blog_tester = BlogCMSTester()
+    blog_results = await blog_tester.run_all_tests()
+    
+    print("\n" + "=" * 80)
+    
+    # Run Contact Form tests
+    contact_tester = ContactFormTester()
+    contact_results = await contact_tester.run_all_tests()
+    
+    # Combined summary
+    all_results = blog_results + contact_results
+    total_passed = sum(1 for result in all_results if result["success"])
+    total_tests = len(all_results)
+    
+    print("\n" + "=" * 80)
+    print("🎯 OVERALL TEST SUMMARY")
+    print("=" * 80)
+    print(f"Blog CMS Tests: {sum(1 for r in blog_results if r['success'])}/{len(blog_results)} passed")
+    print(f"Contact Form Tests: {sum(1 for r in contact_results if r['success'])}/{len(contact_results)} passed")
+    print(f"Total: {total_passed}/{total_tests} passed ({(total_passed/total_tests)*100:.1f}%)")
     
     # Return appropriate exit code
-    failed_count = sum(1 for result in results if not result["success"])
-    sys.exit(failed_count)
+    failed_count = total_tests - total_passed
+    return failed_count
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    failed_count = asyncio.run(main())
+    sys.exit(failed_count)
