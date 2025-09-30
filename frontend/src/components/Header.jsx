@@ -5,8 +5,6 @@ import { Link, useLocation } from "react-router-dom";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isBlogDropdownOpen, setIsBlogDropdownOpen] = useState(false);
-  const [blogs, setBlogs] = useState([]);
   const location = useLocation();
   const isHomePage = location.pathname === '/';
 
