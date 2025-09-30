@@ -85,10 +85,10 @@ const Header = () => {
                     className="block px-4 py-2 text-sm text-slate-700 hover:bg-blue-50 hover:text-blue-600 transition-colors duration-200"
                   >
                     <div className="font-medium">All Articles</div>
-                    <div className="text-xs text-slate-500">View all {mockData.blogs.length} blog posts</div>
+                    <div className="text-xs text-slate-500">View all {blogs.length} blog posts</div>
                   </Link>
                   <div className="border-t border-slate-100 my-2"></div>
-                  {mockData.blogs.slice(0, 3).map((blog) => (
+                  {blogs.slice(0, 3).map((blog) => (
                     <Link
                       key={blog.id}
                       to={`/blog/${blog.slug}`}
@@ -98,17 +98,17 @@ const Header = () => {
                         {blog.title}
                       </div>
                       <div className="text-xs text-slate-500 mt-1">
-                        {blog.readTime} • {new Date(blog.publishedDate).toLocaleDateString()}
+                        {blog.read_time} • {blogService.formatDate(blog.published_date)}
                       </div>
                     </Link>
                   ))}
-                  {mockData.blogs.length > 3 && (
+                  {blogs.length > 3 && (
                     <div className="border-t border-slate-100 mt-2 pt-2">
                       <Link
                         to="/blog"
                         className="block px-4 py-2 text-sm text-blue-600 hover:text-blue-700 font-medium"
                       >
-                        View all {mockData.blogs.length} articles →
+                        View all {blogs.length} articles →
                       </Link>
                     </div>
                   )}
