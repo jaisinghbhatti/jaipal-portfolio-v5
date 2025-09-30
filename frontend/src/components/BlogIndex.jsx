@@ -1,33 +1,14 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
 import { Calendar, Clock, ArrowRight, ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
-import { blogService } from "../services/blogService";
+import { mockData } from "../data/mockData";
 import Header from "./Header";
 import Footer from "./Footer";
 
 const BlogIndex = () => {
-  const [blogs, setBlogs] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    const fetchBlogs = async () => {
-      try {
-        setLoading(true);
-        const blogData = await blogService.getAllBlogs();
-        setBlogs(blogData);
-      } catch (err) {
-        setError('Failed to load blog posts');
-        console.error('Error fetching blogs:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchBlogs();
-  }, []);
+  const blogs = mockData.blogs;
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', { 
