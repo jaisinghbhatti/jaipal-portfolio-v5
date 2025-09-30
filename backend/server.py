@@ -5,7 +5,11 @@ from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import logging
 from pathlib import Path
-from models import StatusCheck, StatusCheckCreate, ContactSubmission, ContactSubmissionCreate, ContactResponse
+from models import (
+    StatusCheck, StatusCheckCreate, 
+    ContactSubmission, ContactSubmissionCreate, ContactResponse,
+    BlogPost, BlogPostCreate, BlogPostUpdate, BlogResponse
+)
 from email_service import send_contact_email, send_confirmation_email
 from typing import List
 
