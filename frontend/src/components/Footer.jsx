@@ -45,10 +45,6 @@ const Footer = () => {
                 <Mail className="w-5 h-5 text-slate-400" />
                 <span className="text-slate-300">{mockData.personalInfo.email}</span>
               </div>
-              <div className="flex items-center space-x-3">
-                <Phone className="w-5 h-5 text-slate-400" />
-                <span className="text-slate-300">{mockData.personalInfo.phone}</span>
-              </div>
               <a
                 href="https://www.linkedin.com/in/singh-jaipal/"
                 target="_blank"
