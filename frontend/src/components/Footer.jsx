@@ -1,5 +1,5 @@
 import React from "react";
-import { Linkedin, Mail, Phone } from "lucide-react";
+import { Linkedin, Mail } from "lucide-react";
 import { mockData } from "../data/mockData";
 
 const Footer = () => {
