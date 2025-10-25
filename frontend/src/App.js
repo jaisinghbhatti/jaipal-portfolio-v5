@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import HomePage from "./components/HomePage";
 import BlogIndex from "./components/BlogIndex";
 import BlogPage from "./components/BlogPage";
+import BlogEditor from "./components/BlogEditor";
 import { Toaster } from "./components/ui/toaster";
 import { Analytics } from '@vercel/analytics/react';
 
