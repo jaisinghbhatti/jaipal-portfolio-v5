@@ -299,19 +299,65 @@ const BlogEditor = () => {
             <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
               Blog Editor
             </h1>
-            <Button
-              onClick={handleLogout}
-              variant="outline"
-              className="border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300"
-            >
-              <LogOut className="w-4 h-4 mr-2" />
-              Logout
-            </Button>
+            <div className="flex space-x-3">
+              {mode === 'edit' && (
+                <Button
+                  onClick={resetForm}
+                  variant="outline"
+                  className="border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  New Post
+                </Button>
+              )}
+              <Button
+                onClick={handleLogout}
+                variant="outline"
+                className="border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300"
+              >
+                <LogOut className="w-4 h-4 mr-2" />
+                Logout
+              </Button>
+            </div>
           </div>
           <p className="text-lg text-slate-600">
-            Create and publish your blog posts instantly
+            {mode === 'create' ? 'Create and publish your blog posts instantly' : 'Edit your existing blog post'}
           </p>
         </div>
+
+        {/* Existing Posts Section */}
+        {existingPosts.length > 0 && mode === 'create' && (
+          <Card className="shadow-lg border-0 bg-gradient-to-br from-white to-blue-50 mb-8">
+            <CardHeader>
+              <CardTitle className="text-xl bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                Edit Existing Posts
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-3 max-h-60 overflow-y-auto">
+                {existingPosts.map((post) => (
+                  <div key={post._id} className="flex items-center justify-between p-3 bg-white rounded-lg border border-blue-100 hover:border-blue-300 transition-colors">
+                    <div>
+                      <h4 className="font-medium text-slate-900">{post.title}</h4>
+                      <p className="text-sm text-slate-500">
+                        {new Date(post.publishedDate).toLocaleDateString()} • {post.status}
+                      </p>
+                    </div>
+                    <Button
+                      onClick={() => loadPostForEditing(post._id)}
+                      variant="outline"
+                      size="sm"
+                      className="border-purple-200 text-purple-600 hover:bg-purple-50"
+                    >
+                      <Edit className="w-4 h-4 mr-1" />
+                      Edit
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         <Card className="shadow-xl border-0 bg-gradient-to-br from-white to-purple-50">
           <CardHeader>
