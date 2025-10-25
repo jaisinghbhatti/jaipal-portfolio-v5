@@ -37,27 +37,42 @@ const BlogPage = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    const allBlogs = mockData.blogs;
-    setAllBlogs(allBlogs);
-    
-    // If slug is provided, find specific blog, otherwise use first blog
-    if (slug) {
-      const blog = allBlogs.find(b => b.slug === slug);
-      if (blog) {
-        setSelectedBlog(blog);
-      } else {
-        setError('Blog post not found');
+    const fetchBlogData = async () => {
+      try {
+        setLoading(true);
+        
+        // Fetch all blogs for navigation
+        const allBlogsData = await getPublishedPosts();
+        setAllBlogs(allBlogsData);
+        
+        // If slug is provided, fetch specific blog, otherwise use first blog
+        if (slug) {
+          const blog = await getPostBySlug(slug);
+          if (blog) {
+            setSelectedBlog(blog);
+          } else {
+            setError('Blog post not found');
+          }
+        } else {
+          setSelectedBlog(allBlogsData[0]); // Default to first blog
+        }
+        
+        // Set navigation blogs
+        const currentIndex = allBlogsData.findIndex(b => 
+          (b.slug?.current || b.slug) === slug
+        ) || 0;
+        setPrevBlog(currentIndex > 0 ? allBlogsData[currentIndex - 1] : null);
+        setNextBlog(currentIndex < allBlogsData.length - 1 ? allBlogsData[currentIndex + 1] : null);
+        
+      } catch (err) {
+        console.error('Error fetching blog data:', err);
+        setError('Failed to load blog post');
+      } finally {
+        setLoading(false);
       }
-    } else {
-      setSelectedBlog(allBlogs[0]); // Default to first blog
-    }
-    
-    // Set navigation blogs
-    const currentIndex = allBlogs.findIndex(b => b.slug === slug) || 0;
-    setPrevBlog(currentIndex > 0 ? allBlogs[currentIndex - 1] : null);
-    setNextBlog(currentIndex < allBlogs.length - 1 ? allBlogs[currentIndex + 1] : null);
-    
-    setLoading(false);
+    };
+
+    fetchBlogData();
   }, [slug]);
 
   if (loading) {
