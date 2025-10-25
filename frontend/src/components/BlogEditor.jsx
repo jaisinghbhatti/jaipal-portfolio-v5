@@ -7,7 +7,6 @@ import { Label } from "./ui/label";
 import { AlertCircle, CheckCircle, Send, LogOut, Edit, Plus, Save } from "lucide-react";
 import { client } from "../services/sanityService";
 import BlogLogin from "./BlogLogin";
-import { Editor } from '@tinymce/tinymce-react';
 import Header from "./Header";
 import Footer from "./Footer";
 
