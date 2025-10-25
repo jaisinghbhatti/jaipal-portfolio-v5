@@ -1,14 +1,33 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
 import { Calendar, Clock, ArrowRight, ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
-import { mockData } from "../data/mockData";
+import { getPublishedPosts } from "../services/sanityService";
 import Header from "./Header";
 import Footer from "./Footer";
 
 const BlogIndex = () => {
-  const blogs = mockData.blogs;
+  const [blogs, setBlogs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchBlogs = async () => {
+      try {
+        setLoading(true);
+        const posts = await getPublishedPosts();
+        setBlogs(posts);
+      } catch (err) {
+        setError('Failed to load blog posts');
+        console.error('Error fetching blogs:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBlogs();
+  }, []);
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', { 
@@ -20,7 +39,7 @@ const BlogIndex = () => {
 
   const calculateTotalReadTime = (blogs) => {
     return blogs.reduce((total, blog) => {
-      const minutes = parseInt(blog.readTime.replace(' min read', '')) || 0;
+      const minutes = parseInt(blog.readTime?.replace(' min read', '')) || 0;
       return total + minutes;
     }, 0);
   };
@@ -29,6 +48,34 @@ const BlogIndex = () => {
     const allTags = blogs.flatMap(blog => blog.tags || []);
     return [...new Set(allTags)];
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="mt-4 text-slate-600">Loading blog posts...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <p className="text-red-600 mb-4">{error}</p>
+            <Button onClick={() => window.location.reload()}>Retry</Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
