@@ -562,7 +562,7 @@ const BlogPage = () => {
             <div className="flex-1">
               {nextBlog ? (
                 <Link 
-                  to={`/blog/${nextBlog.slug}`}
+                  to={`/blog/${nextBlog.slug?.current || nextBlog.slug}`}
                   className="group flex items-start space-x-4 p-6 bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 text-right"
                 >
                   <div className="flex-1 min-w-0">
