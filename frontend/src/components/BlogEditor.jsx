@@ -389,16 +389,58 @@ const BlogEditor = () => {
                 <Label htmlFor="content" className="text-slate-700 font-medium">
                   Content *
                 </Label>
-                <div className="border border-blue-200 rounded-md overflow-hidden">
-                  <Editor
-                    apiKey="no-api-key"
-                    value={formData.content}
-                    onEditorChange={(content) => setFormData(prev => ({ ...prev, content }))}
-                    init={editorConfig}
-                  />
+                
+                {/* Rich Text Toolbar */}
+                <div className="border border-blue-200 rounded-t-md bg-gray-50 p-2 flex flex-wrap gap-2">
+                  <button type="button" onClick={() => document.execCommand('bold')} className="px-2 py-1 border rounded text-sm hover:bg-gray-200">
+                    <strong>B</strong>
+                  </button>
+                  <button type="button" onClick={() => document.execCommand('italic')} className="px-2 py-1 border rounded text-sm hover:bg-gray-200">
+                    <em>I</em>
+                  </button>
+                  <button type="button" onClick={() => document.execCommand('underline')} className="px-2 py-1 border rounded text-sm hover:bg-gray-200">
+                    <u>U</u>
+                  </button>
+                  <button type="button" onClick={() => document.execCommand('formatBlock', false, 'h1')} className="px-2 py-1 border rounded text-sm hover:bg-gray-200">
+                    H1
+                  </button>
+                  <button type="button" onClick={() => document.execCommand('formatBlock', false, 'h2')} className="px-2 py-1 border rounded text-sm hover:bg-gray-200">
+                    H2
+                  </button>
+                  <button type="button" onClick={() => document.execCommand('formatBlock', false, 'h3')} className="px-2 py-1 border rounded text-sm hover:bg-gray-200">
+                    H3
+                  </button>
+                  <button type="button" onClick={() => document.execCommand('insertUnorderedList')} className="px-2 py-1 border rounded text-sm hover:bg-gray-200">
+                    • List
+                  </button>
+                  <button type="button" onClick={() => document.execCommand('insertOrderedList')} className="px-2 py-1 border rounded text-sm hover:bg-gray-200">
+                    1. List
+                  </button>
+                  <button type="button" onClick={() => document.execCommand('justifyLeft')} className="px-2 py-1 border rounded text-sm hover:bg-gray-200">
+                    ←
+                  </button>
+                  <button type="button" onClick={() => document.execCommand('justifyCenter')} className="px-2 py-1 border rounded text-sm hover:bg-gray-200">
+                    ↔
+                  </button>
+                  <button type="button" onClick={() => document.execCommand('justifyRight')} className="px-2 py-1 border rounded text-sm hover:bg-gray-200">
+                    →
+                  </button>
                 </div>
+
+                {/* Rich Text Editor Area */}
+                <div 
+                  contentEditable
+                  className="border border-blue-200 rounded-b-md p-4 min-h-[300px] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                  style={{ minHeight: '300px' }}
+                  onInput={(e) => {
+                    setFormData(prev => ({ ...prev, content: e.target.innerHTML }));
+                  }}
+                  dangerouslySetInnerHTML={{ __html: formData.content }}
+                  placeholder="Start writing your blog post here. Use the toolbar above to format your text..."
+                />
+                
                 <p className="text-xs text-slate-500">
-                  Use the toolbar to format your text with bold, italic, colors, headers, lists, and more!
+                  Use the toolbar above to format your text with <strong>bold</strong>, <em>italic</em>, headers, lists, and alignment!
                 </p>
               </div>
 
