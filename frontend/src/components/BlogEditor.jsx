@@ -630,27 +630,6 @@ const BlogEditor = () => {
                       B
                     </button>
                     
-                    <button 
-                      type="button" 
-                      onClick={(e) => {
-                        e.preventDefault();
-                        const editor = document.getElementById('contentEditor');
-                        const start = editor.selectionStart;
-                        const end = editor.selectionEnd;
-                        const selectedText = editor.value.substring(start, end);
-                        const newText = editor.value.substring(0, start) + '*' + selectedText + '*' + editor.value.substring(end);
-                        setFormData(prev => ({ ...prev, content: newText }));
-                        setTimeout(() => {
-                          editor.focus();
-                          editor.setSelectionRange(start + 1, end + 1);
-                        }, 0);
-                      }}
-                      className="p-2 border rounded text-sm hover:bg-blue-50 italic transition-colors"
-                      title="Italic (*text*)"
-                    >
-                      I
-                    </button>
-                    
                     <div className="h-px bg-gray-300 my-1"></div>
                     
                     <button 
@@ -696,6 +675,28 @@ const BlogEditor = () => {
                     </button>
                     
                     <div className="h-px bg-gray-300 my-1"></div>
+                    
+                    <button 
+                      type="button" 
+                      onClick={(e) => {
+                        e.preventDefault();
+                        const editor = document.getElementById('contentEditor');
+                        const start = editor.selectionStart;
+                        const end = editor.selectionEnd;
+                        const selectedText = editor.value.substring(start, end);
+                        // Add bullet point to selected text or at cursor
+                        const newText = editor.value.substring(0, start) + '* ' + selectedText + editor.value.substring(end);
+                        setFormData(prev => ({ ...prev, content: newText }));
+                        setTimeout(() => {
+                          editor.focus();
+                          editor.setSelectionRange(start + 2, end + 2);
+                        }, 0);
+                      }}
+                      className="p-2 border rounded text-sm hover:bg-blue-50 transition-colors"
+                      title="Bullet List (* item)"
+                    >
+                      •
+                    </button>
                     
                     <button 
                       type="button" 
