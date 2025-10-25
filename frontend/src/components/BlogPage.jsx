@@ -570,7 +570,7 @@ const BlogPage = () => {
                     <h3 className="text-lg font-semibold text-slate-800 group-hover:text-blue-600 transition-colors duration-200 line-clamp-2">
                       {nextBlog.title}
                     </h3>
-                    <p className="text-sm text-slate-600 mt-1">{nextBlog.readTime}</p>
+                    <p className="text-sm text-slate-600 mt-1">{nextBlog.readTime || '5 min read'}</p>
                   </div>
                   <div className="flex-shrink-0">
                     <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white group-hover:scale-110 transition-transform duration-200">
