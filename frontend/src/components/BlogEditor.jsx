@@ -266,62 +266,110 @@ const BlogEditor = () => {
     // Convert simple markdown-style content to PortableText blocks
     if (!content) return [];
     
-    // Convert markdown-style formatting to HTML, then to blocks
-    let htmlContent = content
-      // Bold: **text** -> <strong>text</strong>
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      // Italic: *text* -> <em>text</em>
-      .replace(/\*(.*?)\*/g, '<em>$1</em>')
-      // Headers: ## text -> <h2>text</h2>
-      .replace(/^## (.*$)/gm, '<h2>$1</h2>')
-      .replace(/^### (.*$)/gm, '<h3>$1</h3>')
-      // Line breaks to paragraphs
-      .split('\n\n')
-      .filter(para => para.trim())
-      .map(para => {
-        if (para.includes('<h2>') || para.includes('<h3>')) {
-          return para;
-        }
-        return `<p>${para}</p>`;
-      })
-      .join('');
-    
-    // Convert HTML to PortableText blocks
-    const tempDiv = document.createElement('div');
-    tempDiv.innerHTML = htmlContent;
-    
     const blocks = [];
-    Array.from(tempDiv.children).forEach(element => {
-      const tagName = element.tagName.toLowerCase();
-      let style = 'normal';
+    const paragraphs = content.split('\n\n').filter(para => para.trim());
+    
+    paragraphs.forEach(paragraph => {
+      const trimmed = paragraph.trim();
       
-      if (tagName === 'h2') style = 'h2';
-      else if (tagName === 'h3') style = 'h3';
-      
-      blocks.push({
-        _type: "block",
-        children: [
-          {
-            _type: "span",
-            text: element.textContent || element.innerText || ''
-          }
-        ],
-        style: style
-      });
+      // Handle headers
+      if (trimmed.startsWith('## ')) {
+        const text = trimmed.replace('## ', '');
+        blocks.push({
+          _type: "block",
+          style: "h2",
+          children: parseInlineMarks(text)
+        });
+      } 
+      else if (trimmed.startsWith('### ')) {
+        const text = trimmed.replace('### ', '');
+        blocks.push({
+          _type: "block",
+          style: "h3",
+          children: parseInlineMarks(text)
+        });
+      }
+      // Handle bullet lists
+      else if (trimmed.includes('\n* ') || trimmed.startsWith('* ')) {
+        const listItems = trimmed.split('\n').filter(line => line.startsWith('* '));
+        listItems.forEach(item => {
+          const text = item.replace('* ', '');
+          blocks.push({
+            _type: "block",
+            style: "normal",
+            listItem: "bullet",
+            children: parseInlineMarks(text)
+          });
+        });
+      }
+      // Handle normal paragraphs
+      else {
+        blocks.push({
+          _type: "block",
+          style: "normal",
+          children: parseInlineMarks(trimmed)
+        });
+      }
     });
     
     return blocks.length > 0 ? blocks : [
       {
         _type: "block",
-        children: [
-          {
-            _type: "span",
-            text: content
-          }
-        ],
-        style: "normal"
+        style: "normal",
+        children: [{ _type: "span", text: content }]
       }
     ];
+  };
+  
+  // Helper function to parse inline marks (bold, italic)
+  const parseInlineMarks = (text) => {
+    const children = [];
+    let currentPos = 0;
+    
+    // Regex to find **bold** and *italic* patterns
+    const markRegex = /(\*\*.*?\*\*|\*.*?\*)/g;
+    let match;
+    
+    while ((match = markRegex.exec(text)) !== null) {
+      // Add text before the mark
+      if (match.index > currentPos) {
+        children.push({
+          _type: "span",
+          text: text.substring(currentPos, match.index)
+        });
+      }
+      
+      // Add the marked text
+      const markedText = match[0];
+      if (markedText.startsWith('**') && markedText.endsWith('**')) {
+        // Bold text
+        children.push({
+          _type: "span",
+          text: markedText.slice(2, -2),
+          marks: ["strong"]
+        });
+      } else if (markedText.startsWith('*') && markedText.endsWith('*')) {
+        // Italic text
+        children.push({
+          _type: "span",
+          text: markedText.slice(1, -1),
+          marks: ["em"]
+        });
+      }
+      
+      currentPos = match.index + markedText.length;
+    }
+    
+    // Add remaining text
+    if (currentPos < text.length) {
+      children.push({
+        _type: "span",
+        text: text.substring(currentPos)
+      });
+    }
+    
+    // If no marks found, return simple text span
+    return children.length > 0 ? children : [{ _type: "span", text: text }];
   };
 
   const handleSubmit = async (e) => {
