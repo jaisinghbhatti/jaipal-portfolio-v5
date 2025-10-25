@@ -313,7 +313,7 @@ const BlogPage = () => {
                   </div>
                   <div className="flex items-center space-x-2">
                     <Clock className="h-4 w-4" />
-                    <span>{selectedBlog.readTime}</span>
+                    <span>{selectedBlog.readTime || '5 min read'}</span>
                   </div>
                 </div>
                 <Button
