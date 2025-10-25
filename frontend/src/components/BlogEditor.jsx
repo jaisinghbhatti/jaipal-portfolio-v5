@@ -263,34 +263,65 @@ const BlogEditor = () => {
   };
 
   const formatContentAsBlocks = (content) => {
-    // Convert HTML content to PortableText blocks
+    // Convert simple markdown-style content to PortableText blocks
     if (!content) return [];
     
-    // Simple HTML to PortableText conversion
-    // Split by HTML tags and create blocks
-    const htmlBlocks = content.split(/<\/(p|h1|h2|h3|blockquote)>/).filter(block => block.trim());
+    // Convert markdown-style formatting to HTML, then to blocks
+    let htmlContent = content
+      // Bold: **text** -> <strong>text</strong>
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      // Italic: *text* -> <em>text</em>
+      .replace(/\*(.*?)\*/g, '<em>$1</em>')
+      // Headers: ## text -> <h2>text</h2>
+      .replace(/^## (.*$)/gm, '<h2>$1</h2>')
+      .replace(/^### (.*$)/gm, '<h3>$1</h3>')
+      // Line breaks to paragraphs
+      .split('\n\n')
+      .filter(para => para.trim())
+      .map(para => {
+        if (para.includes('<h2>') || para.includes('<h3>')) {
+          return para;
+        }
+        return `<p>${para}</p>`;
+      })
+      .join('');
     
-    return htmlBlocks.map(block => {
-      const cleanBlock = block.replace(/<[^>]*>/g, '').trim();
-      if (!cleanBlock) return null;
-      
+    // Convert HTML to PortableText blocks
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = htmlContent;
+    
+    const blocks = [];
+    Array.from(tempDiv.children).forEach(element => {
+      const tagName = element.tagName.toLowerCase();
       let style = 'normal';
-      if (block.includes('<h1>')) style = 'h1';
-      else if (block.includes('<h2>')) style = 'h2';
-      else if (block.includes('<h3>')) style = 'h3';
-      else if (block.includes('<blockquote>')) style = 'blockquote';
       
-      return {
+      if (tagName === 'h2') style = 'h2';
+      else if (tagName === 'h3') style = 'h3';
+      
+      blocks.push({
         _type: "block",
         children: [
           {
             _type: "span",
-            text: cleanBlock
+            text: element.textContent || element.innerText || ''
           }
         ],
         style: style
-      };
-    }).filter(Boolean);
+      });
+    });
+    
+    return blocks.length > 0 ? blocks : [
+      {
+        _type: "block",
+        children: [
+          {
+            _type: "span",
+            text: content
+          }
+        ],
+        style: "normal"
+      }
+    ];
   };
 
   const handleSubmit = async (e) => {
