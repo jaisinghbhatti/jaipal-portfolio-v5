@@ -203,19 +203,34 @@ const BlogEditor = () => {
   };
 
   const formatContentAsBlocks = (content) => {
-    // Split content by double newlines to create paragraphs
-    const paragraphs = content.split('\n\n').filter(para => para.trim());
+    // Convert HTML content to PortableText blocks
+    if (!content) return [];
     
-    return paragraphs.map(paragraph => ({
-      _type: "block",
-      children: [
-        {
-          _type: "span",
-          text: paragraph.trim()
-        }
-      ],
-      style: "normal"
-    }));
+    // Simple HTML to PortableText conversion
+    // Split by HTML tags and create blocks
+    const htmlBlocks = content.split(/<\/(p|h1|h2|h3|blockquote)>/).filter(block => block.trim());
+    
+    return htmlBlocks.map(block => {
+      const cleanBlock = block.replace(/<[^>]*>/g, '').trim();
+      if (!cleanBlock) return null;
+      
+      let style = 'normal';
+      if (block.includes('<h1>')) style = 'h1';
+      else if (block.includes('<h2>')) style = 'h2';
+      else if (block.includes('<h3>')) style = 'h3';
+      else if (block.includes('<blockquote>')) style = 'blockquote';
+      
+      return {
+        _type: "block",
+        children: [
+          {
+            _type: "span",
+            text: cleanBlock
+          }
+        ],
+        style: style
+      };
+    }).filter(Boolean);
   };
 
   const handleSubmit = async (e) => {
@@ -231,11 +246,10 @@ const BlogEditor = () => {
     setSubmitStatus(null);
 
     try {
-      // Prepare the blog post data
       const blogPost = {
         _type: "post",
         title: formData.title,
-        slug: {
+        slug: selectedPostId ? undefined : { // Don't update slug when editing
           _type: "slug",
           current: generateSlug(formData.title)
         },
@@ -243,35 +257,33 @@ const BlogEditor = () => {
         publishedDate: formData.publishedDate,
         readTime: formData.readTime || "5 min read",
         tags: formData.tags ? formData.tags.split(',').map(tag => tag.trim()) : [],
-        excerpt: formData.excerpt || formData.content.substring(0, 150) + "...",
+        excerpt: formData.excerpt || formData.content.replace(/<[^>]*>/g, '').substring(0, 150) + "...",
         thumbnail: formData.thumbnail,
         content: formatContentAsBlocks(formData.content),
         status: formData.status
       };
 
-      // Create the blog post using Sanity client
-      const result = await client.create(blogPost);
+      let result;
+      if (mode === 'edit' && selectedPostId) {
+        // Update existing post
+        result = await client.patch(selectedPostId).set(blogPost).commit();
+        setSubmitStatus('success');
+        setSubmitMessage(`Blog post "${formData.title}" updated successfully!`);
+      } else {
+        // Create new post
+        result = await client.create(blogPost);
+        setSubmitStatus('success');
+        setSubmitMessage(`Blog post "${formData.title}" published successfully!`);
+      }
       
-      setSubmitStatus('success');
-      setSubmitMessage(`Blog post "${formData.title}" published successfully!`);
-      
-      // Reset form after successful submission
-      setFormData({
-        title: "",
-        content: "",
-        tags: "",
-        readTime: "",
-        excerpt: "",
-        thumbnail: "https://images.unsplash.com/photo-1486312338219-ce68e2c6316a",
-        author: "Jaipal Singh",
-        publishedDate: new Date().toISOString().split('T')[0],
-        status: "published"
-      });
+      // Reload existing posts and reset form
+      await loadExistingPosts();
+      resetForm();
 
     } catch (error) {
-      console.error('Error creating blog post:', error);
+      console.error('Error saving blog post:', error);
       setSubmitStatus('error');
-      setSubmitMessage('Failed to publish blog post. Please try again.');
+      setSubmitMessage('Failed to save blog post. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
