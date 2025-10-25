@@ -175,7 +175,31 @@ const BlogEditor = () => {
       .trim('-'); // Remove leading/trailing hyphens
   };
 
-  // Word document upload and processing
+  // Delete blog post
+  const handleDeletePost = async (postId, postTitle) => {
+    if (!window.confirm(`Are you sure you want to delete "${postTitle}"? This action cannot be undone.`)) {
+      return;
+    }
+
+    setIsDeleting(true);
+    try {
+      await client.delete(postId);
+      setSubmitStatus('success');
+      setSubmitMessage(`Blog post "${postTitle}" deleted successfully!`);
+      
+      // Reload existing posts and reset form if we were editing the deleted post
+      await loadExistingPosts();
+      if (selectedPostId === postId) {
+        resetForm();
+      }
+    } catch (error) {
+      console.error('Error deleting blog post:', error);
+      setSubmitStatus('error');
+      setSubmitMessage('Failed to delete blog post. Please try again.');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
   const handleDocumentUpload = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
