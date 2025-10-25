@@ -489,173 +489,155 @@ const BlogEditor = () => {
                 />
               </div>
 
-              {/* Content - Rich Text Editor */}
+              {/* Content - Fixed Rich Text Editor */}
               <div className="space-y-2">
                 <Label htmlFor="content" className="text-slate-700 font-medium">
                   Content *
                 </Label>
                 
                 {/* Sticky Rich Text Toolbar */}
-                <div className="sticky top-4 z-10 border border-blue-200 rounded-md bg-white shadow-lg p-2 flex flex-wrap gap-2 mb-2">
+                <div className="sticky top-4 z-10 border border-blue-200 rounded-md bg-white shadow-lg p-3 flex flex-wrap gap-2 mb-2">
                   <button 
                     type="button" 
-                    onClick={() => {
-                      document.execCommand('bold');
-                      document.querySelector('[contenteditable="true"]').focus();
+                    onClick={(e) => {
+                      e.preventDefault();
+                      const editor = document.getElementById('contentEditor');
+                      editor.focus();
+                      document.execCommand('bold', false, null);
                     }}
-                    className="px-3 py-1 border rounded text-sm hover:bg-blue-50 font-bold"
+                    className="px-3 py-1 border rounded text-sm hover:bg-blue-50 font-bold transition-colors"
+                    title="Bold"
                   >
                     B
                   </button>
                   <button 
                     type="button" 
-                    onClick={() => {
-                      document.execCommand('italic');
-                      document.querySelector('[contenteditable="true"]').focus();
+                    onClick={(e) => {
+                      e.preventDefault();
+                      const editor = document.getElementById('contentEditor');
+                      editor.focus();
+                      document.execCommand('italic', false, null);
                     }}
-                    className="px-3 py-1 border rounded text-sm hover:bg-blue-50 italic"
+                    className="px-3 py-1 border rounded text-sm hover:bg-blue-50 italic transition-colors"
+                    title="Italic"
                   >
                     I
                   </button>
                   <button 
                     type="button" 
-                    onClick={() => {
-                      document.execCommand('underline');
-                      document.querySelector('[contenteditable="true"]').focus();
+                    onClick={(e) => {
+                      e.preventDefault();
+                      const editor = document.getElementById('contentEditor');
+                      editor.focus();
+                      document.execCommand('underline', false, null);
                     }}
-                    className="px-3 py-1 border rounded text-sm hover:bg-blue-50 underline"
+                    className="px-3 py-1 border rounded text-sm hover:bg-blue-50 underline transition-colors"
+                    title="Underline"
                   >
                     U
                   </button>
-                  <div className="w-px h-6 bg-gray-300"></div>
+                  
+                  <div className="w-px h-6 bg-gray-300 mx-1"></div>
+                  
                   <button 
                     type="button" 
-                    onClick={() => {
-                      document.execCommand('formatBlock', false, 'h1');
-                      document.querySelector('[contenteditable="true"]').focus();
+                    onClick={(e) => {
+                      e.preventDefault();
+                      const editor = document.getElementById('contentEditor');
+                      editor.focus();
+                      document.execCommand('formatBlock', false, '<h2>');
                     }}
-                    className="px-3 py-1 border rounded text-sm hover:bg-blue-50 font-bold text-lg"
-                  >
-                    H1
-                  </button>
-                  <button 
-                    type="button" 
-                    onClick={() => {
-                      document.execCommand('formatBlock', false, 'h2');
-                      document.querySelector('[contenteditable="true"]').focus();
-                    }}
-                    className="px-3 py-1 border rounded text-sm hover:bg-blue-50 font-semibold"
+                    className="px-3 py-1 border rounded text-sm hover:bg-blue-50 font-bold text-lg transition-colors"
+                    title="Heading 2"
                   >
                     H2
                   </button>
                   <button 
                     type="button" 
-                    onClick={() => {
-                      document.execCommand('formatBlock', false, 'h3');
-                      document.querySelector('[contenteditable="true"]').focus();
+                    onClick={(e) => {
+                      e.preventDefault();
+                      const editor = document.getElementById('contentEditor');
+                      editor.focus();
+                      document.execCommand('formatBlock', false, '<h3>');
                     }}
-                    className="px-3 py-1 border rounded text-sm hover:bg-blue-50 font-medium"
+                    className="px-3 py-1 border rounded text-sm hover:bg-blue-50 font-semibold transition-colors"
+                    title="Heading 3"
                   >
                     H3
                   </button>
-                  <div className="w-px h-6 bg-gray-300"></div>
+                  
+                  <div className="w-px h-6 bg-gray-300 mx-1"></div>
+                  
                   <button 
                     type="button" 
-                    onClick={() => {
-                      document.execCommand('insertUnorderedList');
-                      document.querySelector('[contenteditable="true"]').focus();
+                    onClick={(e) => {
+                      e.preventDefault();
+                      const editor = document.getElementById('contentEditor');
+                      editor.focus();
+                      document.execCommand('insertUnorderedList', false, null);
                     }}
-                    className="px-3 py-1 border rounded text-sm hover:bg-blue-50"
+                    className="px-3 py-1 border rounded text-sm hover:bg-blue-50 transition-colors"
+                    title="Bullet List"
                   >
                     • List
                   </button>
                   <button 
                     type="button" 
-                    onClick={() => {
-                      document.execCommand('insertOrderedList');
-                      document.querySelector('[contenteditable="true"]').focus();
+                    onClick={(e) => {
+                      e.preventDefault();
+                      const editor = document.getElementById('contentEditor');
+                      editor.focus();
+                      document.execCommand('insertOrderedList', false, null);
                     }}
-                    className="px-3 py-1 border rounded text-sm hover:bg-blue-50"
+                    className="px-3 py-1 border rounded text-sm hover:bg-blue-50 transition-colors"
+                    title="Numbered List"
                   >
                     1. List
                   </button>
-                  <div className="w-px h-6 bg-gray-300"></div>
+                  
+                  <div className="w-px h-6 bg-gray-300 mx-1"></div>
+                  
                   <button 
                     type="button" 
-                    onClick={() => {
-                      document.execCommand('justifyLeft');
-                      document.querySelector('[contenteditable="true"]').focus();
+                    onClick={(e) => {
+                      e.preventDefault();
+                      const editor = document.getElementById('contentEditor');
+                      editor.focus();
+                      document.execCommand('removeFormat', false, null);
                     }}
-                    className="px-3 py-1 border rounded text-sm hover:bg-blue-50"
+                    className="px-3 py-1 border rounded text-sm hover:bg-red-50 text-red-600 transition-colors"
+                    title="Clear Formatting"
                   >
-                    ←
-                  </button>
-                  <button 
-                    type="button" 
-                    onClick={() => {
-                      document.execCommand('justifyCenter');
-                      document.querySelector('[contenteditable="true"]').focus();
-                    }}
-                    className="px-3 py-1 border rounded text-sm hover:bg-blue-50"
-                  >
-                    ↔
-                  </button>
-                  <button 
-                    type="button" 
-                    onClick={() => {
-                      document.execCommand('justifyRight');
-                      document.querySelector('[contenteditable="true"]').focus();
-                    }}
-                    className="px-3 py-1 border rounded text-sm hover:bg-blue-50"
-                  >
-                    →
+                    Clear
                   </button>
                 </div>
 
-                {/* Rich Text Editor Area - Fixed cursor position */}
+                {/* Rich Text Editor Area - Fixed */}
                 <div 
-                  ref={(el) => {
-                    if (el && !el.innerHTML && formData.content) {
-                      el.innerHTML = formData.content;
-                    }
-                  }}
+                  id="contentEditor"
                   contentEditable
-                  className="border border-blue-200 rounded-md p-4 min-h-[400px] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-slate-700 leading-relaxed"
+                  className="border border-blue-200 rounded-md p-4 min-h-[400px] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-slate-700 leading-relaxed prose prose-sm max-w-none"
                   style={{ minHeight: '400px' }}
                   onInput={(e) => {
-                    // Save cursor position before updating state
-                    const selection = window.getSelection();
-                    const range = selection.rangeCount > 0 ? selection.getRangeAt(0) : null;
-                    
                     setFormData(prev => ({ ...prev, content: e.target.innerHTML }));
-                    
-                    // Restore cursor position after state update
-                    if (range) {
-                      setTimeout(() => {
-                        try {
-                          selection.removeAllRanges();
-                          selection.addRange(range);
-                        } catch (err) {
-                          // Fallback: place cursor at end
-                          const newRange = document.createRange();
-                          newRange.selectNodeContents(e.target);
-                          newRange.collapse(false);
-                          selection.removeAllRanges();
-                          selection.addRange(newRange);
-                        }
-                      }, 0);
+                  }}
+                  onKeyDown={(e) => {
+                    // Handle Enter key to create proper paragraphs
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      document.execCommand('insertHTML', false, '<br><br>');
                     }
                   }}
-                  onPaste={(e) => {
-                    e.preventDefault();
-                    const text = e.clipboardData.getData('text/plain');
-                    document.execCommand('insertHTML', false, text);
-                  }}
+                  dangerouslySetInnerHTML={{ __html: formData.content }}
                   suppressContentEditableWarning={true}
                 />
                 
                 <p className="text-xs text-slate-500">
-                  <strong>💡 Tip:</strong> The formatting toolbar will stay visible as you scroll! Use <strong>bold</strong>, <em>italic</em>, headers, lists, and alignment to make your content engaging.
+                  <strong>💡 Tips:</strong> 
+                  • Use the sticky toolbar for formatting 
+                  • Press <kbd>Enter</kbd> for new paragraphs 
+                  • Use "Clear" to remove unwanted formatting 
+                  • Bold and italic will render properly
                 </p>
               </div>
 
