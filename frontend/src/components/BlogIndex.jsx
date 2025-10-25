@@ -133,7 +133,7 @@ const BlogIndex = () => {
                       </div>
                       <div className="flex items-center space-x-1">
                         <Clock className="h-4 w-4" />
-                        <span>{blog.readTime}</span>
+                        <span>{blog.readTime || '5 min read'}</span>
                       </div>
                     </div>
                   </div>
