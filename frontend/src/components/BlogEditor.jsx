@@ -399,21 +399,25 @@ const BlogEditor = () => {
                 />
               </div>
 
-              {/* Content */}
+              {/* Content - Rich Text Editor */}
               <div className="space-y-2">
                 <Label htmlFor="content" className="text-slate-700 font-medium">
                   Content *
                 </Label>
-                <Textarea
-                  id="content"
-                  name="content"
-                  value={formData.content}
-                  onChange={handleInputChange}
-                  placeholder="Write your blog post content here... Use double line breaks to separate paragraphs."
-                  rows={12}
-                  className="border-blue-200 focus:border-blue-500 focus:ring-blue-500"
-                  required
-                />
+                <div className="border border-blue-200 rounded-md">
+                  <ReactQuill
+                    theme="snow"
+                    value={formData.content}
+                    onChange={(content) => setFormData(prev => ({ ...prev, content }))}
+                    modules={quillModules}
+                    formats={quillFormats}
+                    placeholder="Write your blog post content here... Use the toolbar above for rich formatting!"
+                    style={{ minHeight: '300px' }}
+                  />
+                </div>
+                <p className="text-xs text-slate-500">
+                  Use the toolbar to format your text with bold, italic, colors, headers, and more!
+                </p>
               </div>
 
               {/* Excerpt */}
