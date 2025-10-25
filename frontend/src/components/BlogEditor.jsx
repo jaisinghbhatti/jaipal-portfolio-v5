@@ -511,11 +511,20 @@ const BlogEditor = () => {
                 size="lg"
               >
                 {isSubmitting ? (
-                  "Publishing..."
+                  mode === 'edit' ? "Updating..." : "Publishing..."
                 ) : (
                   <>
-                    <Send className="mr-2 h-5 w-5" />
-                    Publish Blog Post
+                    {mode === 'edit' ? (
+                      <>
+                        <Save className="mr-2 h-5 w-5" />
+                        Update Blog Post
+                      </>
+                    ) : (
+                      <>
+                        <Send className="mr-2 h-5 w-5" />
+                        Publish Blog Post
+                      </>
+                    )}
                   </>
                 )}
               </Button>
