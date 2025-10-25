@@ -168,7 +168,7 @@ const BlogIndex = () => {
                   </p>
                   
                   {/* Read More Button */}
-                  <Link to={`/blog/${blog.slug}`}>
+                  <Link to={`/blog/${blog.slug?.current || blog.slug}`}>
                     <Button 
                       variant="outline" 
                       className="w-full border-blue-500 text-blue-600 hover:bg-blue-500 hover:text-white transition-all duration-300 group"
