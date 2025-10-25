@@ -146,9 +146,19 @@ const BlogEditor = () => {
       
       <div className="max-w-4xl mx-auto px-4 py-8">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent mb-4">
-            Blog Editor
-          </h1>
+          <div className="flex justify-between items-center mb-4">
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
+              Blog Editor
+            </h1>
+            <Button
+              onClick={handleLogout}
+              variant="outline"
+              className="border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300"
+            >
+              <LogOut className="w-4 h-4 mr-2" />
+              Logout
+            </Button>
+          </div>
           <p className="text-lg text-slate-600">
             Create and publish your blog posts instantly
           </p>
