@@ -397,21 +397,33 @@ const BlogEditor = () => {
               <div className="grid gap-3 max-h-60 overflow-y-auto">
                 {existingPosts.map((post) => (
                   <div key={post._id} className="flex items-center justify-between p-3 bg-white rounded-lg border border-blue-100 hover:border-blue-300 transition-colors">
-                    <div>
+                    <div className="flex-1">
                       <h4 className="font-medium text-slate-900">{post.title}</h4>
                       <p className="text-sm text-slate-500">
                         {new Date(post.publishedDate).toLocaleDateString()} • {post.status}
                       </p>
                     </div>
-                    <Button
-                      onClick={() => loadPostForEditing(post._id)}
-                      variant="outline"
-                      size="sm"
-                      className="border-purple-200 text-purple-600 hover:bg-purple-50"
-                    >
-                      <Edit className="w-4 h-4 mr-1" />
-                      Edit
-                    </Button>
+                    <div className="flex space-x-2">
+                      <Button
+                        onClick={() => loadPostForEditing(post._id)}
+                        variant="outline"
+                        size="sm"
+                        className="border-purple-200 text-purple-600 hover:bg-purple-50"
+                        disabled={isDeleting}
+                      >
+                        <Edit className="w-4 h-4 mr-1" />
+                        Edit
+                      </Button>
+                      <Button
+                        onClick={() => handleDeletePost(post._id, post.title)}
+                        variant="outline"
+                        size="sm"
+                        className="border-red-200 text-red-600 hover:bg-red-50"
+                        disabled={isDeleting}
+                      >
+                        {isDeleting ? "..." : "Delete"}
+                      </Button>
+                    </div>
                   </div>
                 ))}
               </div>
