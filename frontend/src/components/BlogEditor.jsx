@@ -37,7 +37,93 @@ const BlogEditor = () => {
   useEffect(() => {
     const authStatus = sessionStorage.getItem('blogEditorAuth');
     setIsAuthenticated(authStatus === 'true');
+    
+    // Load existing posts if authenticated
+    if (authStatus === 'true') {
+      loadExistingPosts();
+    }
   }, []);
+
+  const loadExistingPosts = async () => {
+    try {
+      const posts = await client.fetch(
+        `*[_type == "post"] | order(publishedDate desc) {
+          _id,
+          title,
+          slug,
+          publishedDate,
+          status
+        }`
+      );
+      setExistingPosts(posts);
+    } catch (error) {
+      console.error('Error loading existing posts:', error);
+    }
+  };
+
+  const loadPostForEditing = async (postId) => {
+    try {
+      const post = await client.fetch(
+        `*[_type == "post" && _id == $postId][0] {
+          _id,
+          title,
+          slug,
+          author,
+          publishedDate,
+          readTime,
+          tags,
+          excerpt,
+          thumbnail,
+          content,
+          status
+        }`,
+        { postId }
+      );
+      
+      if (post) {
+        // Convert PortableText content back to HTML for editing
+        const contentHtml = convertPortableTextToHtml(post.content);
+        
+        setFormData({
+          title: post.title || "",
+          content: contentHtml,
+          tags: post.tags ? post.tags.join(', ') : "",
+          readTime: post.readTime || "",
+          excerpt: post.excerpt || "",
+          thumbnail: post.thumbnail || "https://images.unsplash.com/photo-1486312338219-ce68e2c6316a",
+          author: post.author || "Jaipal Singh",
+          publishedDate: post.publishedDate || new Date().toISOString().split('T')[0],
+          status: post.status || "published"
+        });
+        
+        setSelectedPostId(postId);
+        setMode('edit');
+      }
+    } catch (error) {
+      console.error('Error loading post for editing:', error);
+      setSubmitStatus('error');
+      setSubmitMessage('Failed to load post for editing.');
+    }
+  };
+
+  const convertPortableTextToHtml = (portableText) => {
+    if (!portableText || !Array.isArray(portableText)) return '';
+    
+    return portableText.map(block => {
+      if (block._type === 'block' && block.children) {
+        const text = block.children.map(child => child.text || '').join('');
+        
+        switch (block.style) {
+          case 'h1': return `<h1>${text}</h1>`;
+          case 'h2': return `<h2>${text}</h2>`;
+          case 'h3': return `<h3>${text}</h3>`;
+          case 'blockquote': return `<blockquote>${text}</blockquote>`;
+          default: return `<p>${text}</p>`;
+        }
+      }
+      return '';
+    }).join('');
+  };
 
   const handleLogin = (status) => {
     setIsAuthenticated(status);
