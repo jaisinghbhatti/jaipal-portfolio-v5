@@ -362,7 +362,7 @@ const BlogEditor = () => {
         <Card className="shadow-xl border-0 bg-gradient-to-br from-white to-purple-50">
           <CardHeader>
             <CardTitle className="text-2xl bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
-              Create New Blog Post
+              {mode === 'create' ? 'Create New Blog Post' : 'Edit Blog Post'}
             </CardTitle>
           </CardHeader>
           
