@@ -149,35 +149,21 @@ const BlogEditor = () => {
     setMode('create');
   };
 
-  // Rich text editor configuration
-  const quillModules = {
-    toolbar: [
-      [{ 'header': [1, 2, 3, false] }],
-      [{ 'font': [] }],
-      [{ 'size': ['small', false, 'large', 'huge'] }],
-      ['bold', 'italic', 'underline', 'strike'],
-      [{ 'color': [] }, { 'background': [] }],
-      [{ 'script': 'sub'}, { 'script': 'super' }],
-      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-      [{ 'indent': '-1'}, { 'indent': '+1' }],
-      [{ 'align': [] }],
-      ['blockquote', 'code-block'],
-      ['link'],
-      ['clean']
+  // Rich text editor configuration for TinyMCE
+  const editorConfig = {
+    height: 400,
+    menubar: false,
+    plugins: [
+      'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
+      'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
+      'insertdatetime', 'media', 'table', 'help', 'wordcount'
     ],
+    toolbar: 'undo redo | blocks | ' +
+      'bold italic forecolor backcolor | alignleft aligncenter ' +
+      'alignright alignjustify | bullist numlist outdent indent | ' +
+      'removeformat | help',
+    content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }'
   };
-
-  const quillFormats = [
-    'header', 'font', 'size',
-    'bold', 'italic', 'underline', 'strike',
-    'color', 'background',
-    'script',
-    'list', 'bullet',
-    'indent',
-    'align',
-    'blockquote', 'code-block',
-    'link'
-  ];
 
   // If not authenticated, show login page
   if (!isAuthenticated) {
