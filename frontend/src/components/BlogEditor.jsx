@@ -134,6 +134,52 @@ const BlogEditor = () => {
     setIsAuthenticated(false);
   };
 
+  const resetForm = () => {
+    setFormData({
+      title: "",
+      content: "",
+      tags: "",
+      readTime: "",
+      excerpt: "",
+      thumbnail: "https://images.unsplash.com/photo-1486312338219-ce68e2c6316a",
+      author: "Jaipal Singh",
+      publishedDate: new Date().toISOString().split('T')[0],
+      status: "published"
+    });
+    setSelectedPostId(null);
+    setMode('create');
+  };
+
+  // Rich text editor configuration
+  const quillModules = {
+    toolbar: [
+      [{ 'header': [1, 2, 3, false] }],
+      [{ 'font': [] }],
+      [{ 'size': ['small', false, 'large', 'huge'] }],
+      ['bold', 'italic', 'underline', 'strike'],
+      [{ 'color': [] }, { 'background': [] }],
+      [{ 'script': 'sub'}, { 'script': 'super' }],
+      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+      [{ 'indent': '-1'}, { 'indent': '+1' }],
+      [{ 'align': [] }],
+      ['blockquote', 'code-block'],
+      ['link'],
+      ['clean']
+    ],
+  };
+
+  const quillFormats = [
+    'header', 'font', 'size',
+    'bold', 'italic', 'underline', 'strike',
+    'color', 'background',
+    'script',
+    'list', 'bullet',
+    'indent',
+    'align',
+    'blockquote', 'code-block',
+    'link'
+  ];
+
   // If not authenticated, show login page
   if (!isAuthenticated) {
     return <BlogLogin onLogin={handleLogin} />;
