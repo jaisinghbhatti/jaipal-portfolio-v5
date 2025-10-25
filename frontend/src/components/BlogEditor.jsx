@@ -421,6 +421,7 @@ const BlogEditor = () => {
                         className="border-red-200 text-red-600 hover:bg-red-50"
                         disabled={isDeleting}
                       >
+                        <Trash2 className="w-4 h-4 mr-1" />
                         {isDeleting ? "..." : "Delete"}
                       </Button>
                     </div>
