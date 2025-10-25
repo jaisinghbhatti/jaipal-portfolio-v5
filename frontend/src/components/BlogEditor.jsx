@@ -745,15 +745,15 @@ Use the floating toolbar on the right for quick formatting..."
                   <div className="grid grid-cols-2 gap-4 text-xs text-blue-700">
                     <div>
                       <p><code>**Bold text**</code> → <strong>Bold text</strong></p>
-                      <p><code>*Italic text*</code> → <em>Italic text</em></p>
+                      <p><code>## Heading 2</code> → Large heading</p>
                     </div>
                     <div>
-                      <p><code>## Heading 2</code> → Large heading</p>
                       <p><code>### Heading 3</code> → Medium heading</p>
+                      <p><code>* List item</code> → Bullet list</p>
                     </div>
                   </div>
                   <p className="text-xs text-green-600 mt-2">
-                    💡 <strong>No HTML codes!</strong> Just type naturally and use the floating toolbar for quick formatting.
+                    💡 <strong>Focus on bold and lists!</strong> Use the floating toolbar for quick formatting.
                   </p>
                 </div>
               </div>
