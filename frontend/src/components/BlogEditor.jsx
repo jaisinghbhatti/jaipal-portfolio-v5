@@ -727,9 +727,13 @@ const BlogEditor = () => {
                     placeholder="Write your blog content here using simple formatting:
 
 **Bold text**
-*Italic text*  
 ## Main Heading
 ### Sub Heading
+
+Bullet List:
+* First item
+* Second item
+* Third item
 
 Use the floating toolbar on the right for quick formatting..."
                   />
