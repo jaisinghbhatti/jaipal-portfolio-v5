@@ -16,6 +16,7 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/blog" element={<BlogIndex />} />
           <Route path="/blog/:slug" element={<BlogPage />} />
+          <Route path="/blog-editor" element={<BlogEditor />} />
         </Routes>
         <Toaster />
         <Analytics />
