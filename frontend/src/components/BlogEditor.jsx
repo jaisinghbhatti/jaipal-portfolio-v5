@@ -418,6 +418,36 @@ const BlogEditor = () => {
             )}
 
             <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Document Upload Section */}
+              <Card className="bg-gradient-to-r from-green-50 to-blue-50 border-green-200">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center space-x-2">
+                      <FileText className="h-5 w-5 text-green-600" />
+                      <Label className="text-green-800 font-medium">
+                        Quick Upload: Word Document
+                      </Label>
+                    </div>
+                  </div>
+                  <div className="space-y-3">
+                    <Input
+                      type="file"
+                      accept=".doc,.docx"
+                      onChange={handleDocumentUpload}
+                      className="border-green-300 focus:border-green-500"
+                      disabled={isProcessingDoc}
+                    />
+                    <div className="text-xs text-green-700 flex items-center space-x-2">
+                      <Upload className="h-3 w-3" />
+                      <span>
+                        Upload a .doc or .docx file to automatically populate title and content. 
+                        {isProcessingDoc && <span className="font-medium ml-2">Processing document...</span>}
+                      </span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
               {/* Title */}
               <div className="space-y-2">
                 <Label htmlFor="title" className="text-slate-700 font-medium">
