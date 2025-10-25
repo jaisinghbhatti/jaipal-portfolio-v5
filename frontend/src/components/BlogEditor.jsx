@@ -112,18 +112,37 @@ const BlogEditor = () => {
     
     return portableText.map(block => {
       if (block._type === 'block' && block.children) {
-        const text = block.children.map(child => child.text || '').join('');
+        // Convert children with marks back to markdown
+        const text = block.children.map(child => {
+          let childText = child.text || '';
+          
+          // Apply marks as markdown
+          if (child.marks && child.marks.length > 0) {
+            if (child.marks.includes('strong')) {
+              childText = `**${childText}**`;
+            }
+            if (child.marks.includes('em')) {
+              childText = `*${childText}*`;
+            }
+          }
+          
+          return childText;
+        }).join('');
         
+        // Handle list items
+        if (block.listItem === 'bullet') {
+          return `* ${text}`;
+        }
+        
+        // Handle different styles
         switch (block.style) {
-          case 'h1': return `<h1>${text}</h1>`;
-          case 'h2': return `<h2>${text}</h2>`;
-          case 'h3': return `<h3>${text}</h3>`;
-          case 'blockquote': return `<blockquote>${text}</blockquote>`;
-          default: return `<p>${text}</p>`;
+          case 'h2': return `## ${text}`;
+          case 'h3': return `### ${text}`;
+          default: return text;
         }
       }
       return '';
-    }).join('');
+    }).join('\n\n');
   };
 
   const handleLogin = (status) => {
