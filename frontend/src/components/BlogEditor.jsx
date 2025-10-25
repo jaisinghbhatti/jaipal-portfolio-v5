@@ -174,6 +174,69 @@ const BlogEditor = () => {
       .trim('-'); // Remove leading/trailing hyphens
   };
 
+  // Word document upload and processing
+  const handleDocumentUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    if (!file.name.endsWith('.docx') && !file.name.endsWith('.doc')) {
+      setSubmitStatus('error');
+      setSubmitMessage('Please upload a .doc or .docx file');
+      return;
+    }
+
+    setIsProcessingDoc(true);
+    setSubmitStatus(null);
+
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      const result = await mammoth.convertToHtml({ arrayBuffer });
+      const html = result.value;
+      
+      // Extract title (first h1 or first line)
+      const titleMatch = html.match(/<h1[^>]*>(.*?)<\/h1>/i) || html.match(/<p[^>]*><strong>(.*?)<\/strong><\/p>/i);
+      const extractedTitle = titleMatch ? titleMatch[1].replace(/<[^>]*>/g, '') : '';
+      
+      // Remove the title from content if it was extracted
+      let content = html;
+      if (titleMatch) {
+        content = content.replace(titleMatch[0], '');
+      }
+      
+      // Clean up the content
+      content = content
+        .replace(/<p><\/p>/g, '') // Remove empty paragraphs
+        .replace(/^[\s]*/, '') // Remove leading whitespace
+        .trim();
+      
+      // Extract first paragraph as excerpt
+      const excerptMatch = content.match(/<p[^>]*>(.*?)<\/p>/i);
+      const extractedExcerpt = excerptMatch ? 
+        excerptMatch[1].replace(/<[^>]*>/g, '').substring(0, 150) + '...' : '';
+      
+      // Auto-populate form
+      setFormData(prev => ({
+        ...prev,
+        title: extractedTitle || prev.title,
+        content: content,
+        excerpt: extractedExcerpt || prev.excerpt,
+        publishedDate: new Date().toISOString().split('T')[0],
+      }));
+
+      setSubmitStatus('success');
+      setSubmitMessage(`Document "${file.name}" uploaded and processed successfully! Review and edit the content below.`);
+      
+    } catch (error) {
+      console.error('Error processing document:', error);
+      setSubmitStatus('error');
+      setSubmitMessage('Failed to process the document. Please try again or copy-paste the content manually.');
+    } finally {
+      setIsProcessingDoc(false);
+      // Clear the file input
+      event.target.value = '';
+    }
+  };
+
   const formatContentAsBlocks = (content) => {
     // Convert HTML content to PortableText blocks
     if (!content) return [];
