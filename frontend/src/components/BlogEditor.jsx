@@ -31,6 +31,7 @@ const BlogEditor = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState(null); // 'success', 'error', null
   const [submitMessage, setSubmitMessage] = useState("");
+  const [isProcessingDoc, setIsProcessingDoc] = useState(false);
 
   // Check authentication on component mount
   useEffect(() => {
