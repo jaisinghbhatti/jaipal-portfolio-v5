@@ -28,6 +28,26 @@ const BlogEditor = () => {
   const [submitStatus, setSubmitStatus] = useState(null); // 'success', 'error', null
   const [submitMessage, setSubmitMessage] = useState("");
 
+  // Check authentication on component mount
+  useEffect(() => {
+    const authStatus = sessionStorage.getItem('blogEditorAuth');
+    setIsAuthenticated(authStatus === 'true');
+  }, []);
+
+  const handleLogin = (status) => {
+    setIsAuthenticated(status);
+  };
+
+  const handleLogout = () => {
+    sessionStorage.removeItem('blogEditorAuth');
+    setIsAuthenticated(false);
+  };
+
+  // If not authenticated, show login page
+  if (!isAuthenticated) {
+    return <BlogLogin onLogin={handleLogin} />;
+  }
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
