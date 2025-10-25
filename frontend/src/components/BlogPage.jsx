@@ -523,7 +523,7 @@ const BlogPage = () => {
             <div className="flex-1">
               {prevBlog ? (
                 <Link 
-                  to={`/blog/${prevBlog.slug}`}
+                  to={`/blog/${prevBlog.slug?.current || prevBlog.slug}`}
                   className="group flex items-start space-x-4 p-6 bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
                 >
                   <div className="flex-shrink-0">
