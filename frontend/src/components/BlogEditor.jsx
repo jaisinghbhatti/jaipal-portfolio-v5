@@ -389,19 +389,16 @@ const BlogEditor = () => {
                 <Label htmlFor="content" className="text-slate-700 font-medium">
                   Content *
                 </Label>
-                <div className="border border-blue-200 rounded-md">
-                  <ReactQuill
-                    theme="snow"
+                <div className="border border-blue-200 rounded-md overflow-hidden">
+                  <Editor
+                    apiKey="no-api-key"
                     value={formData.content}
-                    onChange={(content) => setFormData(prev => ({ ...prev, content }))}
-                    modules={quillModules}
-                    formats={quillFormats}
-                    placeholder="Write your blog post content here... Use the toolbar above for rich formatting!"
-                    style={{ minHeight: '300px' }}
+                    onEditorChange={(content) => setFormData(prev => ({ ...prev, content }))}
+                    init={editorConfig}
                   />
                 </div>
                 <p className="text-xs text-slate-500">
-                  Use the toolbar to format your text with bold, italic, colors, headers, and more!
+                  Use the toolbar to format your text with bold, italic, colors, headers, lists, and more!
                 </p>
               </div>
 
