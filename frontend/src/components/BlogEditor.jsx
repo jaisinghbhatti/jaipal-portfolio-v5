@@ -533,7 +533,7 @@ const BlogEditor = () => {
                 />
               </div>
 
-              {/* Content - Fixed Rich Text Editor with Floating Toolbar */}
+              {/* Content - Simple Text Editor with Floating Toolbar */}
               <div className="space-y-2">
                 <Label htmlFor="content" className="text-slate-700 font-medium">
                   Content *
@@ -541,28 +541,24 @@ const BlogEditor = () => {
                 
                 <div className="relative">
                   {/* Floating Toolbar - Right Side */}
-                  <div className="absolute right-0 top-0 z-20 bg-white border border-blue-200 rounded-lg shadow-lg p-2 flex flex-col gap-1 w-12" style={{ position: 'sticky', top: '100px' }}>
+                  <div className="absolute -right-16 top-0 z-20 bg-white border border-blue-200 rounded-lg shadow-lg p-2 flex flex-col gap-1 w-14" style={{ position: 'sticky', top: '120px' }}>
                     <button 
                       type="button" 
                       onClick={(e) => {
                         e.preventDefault();
                         const editor = document.getElementById('contentEditor');
-                        editor.focus();
-                        const selection = window.getSelection();
-                        if (selection.rangeCount > 0) {
-                          const range = selection.getRangeAt(0);
-                          const bold = document.createElement('strong');
-                          try {
-                            range.surroundContents(bold);
-                          } catch (err) {
-                            bold.textContent = range.toString();
-                            range.deleteContents();
-                            range.insertNode(bold);
-                          }
-                        }
+                        const start = editor.selectionStart;
+                        const end = editor.selectionEnd;
+                        const selectedText = editor.value.substring(start, end);
+                        const newText = editor.value.substring(0, start) + '**' + selectedText + '**' + editor.value.substring(end);
+                        setFormData(prev => ({ ...prev, content: newText }));
+                        setTimeout(() => {
+                          editor.focus();
+                          editor.setSelectionRange(start + 2, end + 2);
+                        }, 0);
                       }}
-                      className="p-2 border rounded text-xs hover:bg-blue-50 font-bold transition-colors"
-                      title="Bold"
+                      className="p-2 border rounded text-sm hover:bg-blue-50 font-bold transition-colors"
+                      title="Bold (**text**)"
                     >
                       B
                     </button>
@@ -572,22 +568,18 @@ const BlogEditor = () => {
                       onClick={(e) => {
                         e.preventDefault();
                         const editor = document.getElementById('contentEditor');
-                        editor.focus();
-                        const selection = window.getSelection();
-                        if (selection.rangeCount > 0) {
-                          const range = selection.getRangeAt(0);
-                          const italic = document.createElement('em');
-                          try {
-                            range.surroundContents(italic);
-                          } catch (err) {
-                            italic.textContent = range.toString();
-                            range.deleteContents();
-                            range.insertNode(italic);
-                          }
-                        }
+                        const start = editor.selectionStart;
+                        const end = editor.selectionEnd;
+                        const selectedText = editor.value.substring(start, end);
+                        const newText = editor.value.substring(0, start) + '*' + selectedText + '*' + editor.value.substring(end);
+                        setFormData(prev => ({ ...prev, content: newText }));
+                        setTimeout(() => {
+                          editor.focus();
+                          editor.setSelectionRange(start + 1, end + 1);
+                        }, 0);
                       }}
-                      className="p-2 border rounded text-xs hover:bg-blue-50 italic transition-colors"
-                      title="Italic"
+                      className="p-2 border rounded text-sm hover:bg-blue-50 italic transition-colors"
+                      title="Italic (*text*)"
                     >
                       I
                     </button>
@@ -599,23 +591,18 @@ const BlogEditor = () => {
                       onClick={(e) => {
                         e.preventDefault();
                         const editor = document.getElementById('contentEditor');
-                        editor.focus();
-                        const selection = window.getSelection();
-                        if (selection.rangeCount > 0) {
-                          const range = selection.getRangeAt(0);
-                          const h2 = document.createElement('h2');
-                          h2.className = 'text-xl font-bold mb-2';
-                          try {
-                            range.surroundContents(h2);
-                          } catch (err) {
-                            h2.textContent = range.toString();
-                            range.deleteContents();
-                            range.insertNode(h2);
-                          }
-                        }
+                        const start = editor.selectionStart;
+                        const end = editor.selectionEnd;
+                        const selectedText = editor.value.substring(start, end);
+                        const newText = editor.value.substring(0, start) + '## ' + selectedText + editor.value.substring(end);
+                        setFormData(prev => ({ ...prev, content: newText }));
+                        setTimeout(() => {
+                          editor.focus();
+                          editor.setSelectionRange(start + 3, end + 3);
+                        }, 0);
                       }}
-                      className="p-2 border rounded text-xs hover:bg-blue-50 font-bold transition-colors"
-                      title="Heading 2"
+                      className="p-2 border rounded text-sm hover:bg-blue-50 font-bold transition-colors"
+                      title="Heading 2 (## text)"
                     >
                       H2
                     </button>
@@ -625,23 +612,18 @@ const BlogEditor = () => {
                       onClick={(e) => {
                         e.preventDefault();
                         const editor = document.getElementById('contentEditor');
-                        editor.focus();
-                        const selection = window.getSelection();
-                        if (selection.rangeCount > 0) {
-                          const range = selection.getRangeAt(0);
-                          const h3 = document.createElement('h3');
-                          h3.className = 'text-lg font-semibold mb-2';
-                          try {
-                            range.surroundContents(h3);
-                          } catch (err) {
-                            h3.textContent = range.toString();
-                            range.deleteContents();
-                            range.insertNode(h3);
-                          }
-                        }
+                        const start = editor.selectionStart;
+                        const end = editor.selectionEnd;
+                        const selectedText = editor.value.substring(start, end);
+                        const newText = editor.value.substring(0, start) + '### ' + selectedText + editor.value.substring(end);
+                        setFormData(prev => ({ ...prev, content: newText }));
+                        setTimeout(() => {
+                          editor.focus();
+                          editor.setSelectionRange(start + 4, end + 4);
+                        }, 0);
                       }}
-                      className="p-2 border rounded text-xs hover:bg-blue-50 font-semibold transition-colors"
-                      title="Heading 3"
+                      className="p-2 border rounded text-sm hover:bg-blue-50 font-semibold transition-colors"
+                      title="Heading 3 (### text)"
                     >
                       H3
                     </button>
@@ -653,57 +635,54 @@ const BlogEditor = () => {
                       onClick={(e) => {
                         e.preventDefault();
                         const editor = document.getElementById('contentEditor');
-                        editor.focus();
-                        const p = document.createElement('p');
-                        p.innerHTML = '<br>';
-                        editor.appendChild(p);
+                        const start = editor.selectionStart;
+                        const newText = editor.value.substring(0, start) + '\n\n' + editor.value.substring(start);
+                        setFormData(prev => ({ ...prev, content: newText }));
+                        setTimeout(() => {
+                          editor.focus();
+                          editor.setSelectionRange(start + 2, start + 2);
+                        }, 0);
                       }}
-                      className="p-2 border rounded text-xs hover:bg-blue-50 transition-colors"
+                      className="p-2 border rounded text-sm hover:bg-blue-50 transition-colors"
                       title="New Paragraph"
                     >
                       ¶
                     </button>
-                    
-                    <button 
-                      type="button" 
-                      onClick={(e) => {
-                        e.preventDefault();
-                        const editor = document.getElementById('contentEditor');
-                        const selection = window.getSelection();
-                        if (selection.rangeCount > 0) {
-                          const range = selection.getRangeAt(0);
-                          range.deleteContents();
-                        }
-                        editor.focus();
-                      }}
-                      className="p-2 border rounded text-xs hover:bg-red-50 text-red-600 transition-colors"
-                      title="Clear Selected"
-                    >
-                      ×
-                    </button>
                   </div>
 
-                  {/* Simple Text Editor Area */}
+                  {/* Simple Text Editor - No HTML Issues */}
                   <textarea 
                     id="contentEditor"
                     value={formData.content}
                     onChange={(e) => setFormData(prev => ({ ...prev, content: e.target.value }))}
-                    className="w-full border border-blue-200 rounded-md p-4 min-h-[400px] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-slate-700 leading-relaxed resize-none pr-16"
+                    className="w-full border border-blue-200 rounded-md p-4 min-h-[400px] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-slate-700 leading-relaxed resize-y font-mono text-sm pr-20"
                     style={{ minHeight: '400px' }}
-                    placeholder="Write your blog content here. Use the floating toolbar on the right to add formatting when needed..."
+                    placeholder="Write your blog content here using simple formatting:
+
+**Bold text**
+*Italic text*  
+## Main Heading
+### Sub Heading
+
+Use the floating toolbar on the right for quick formatting..."
                   />
                 </div>
                 
-                <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
-                  <p className="text-sm text-blue-700">
-                    <strong>✍️ Writing Tips:</strong>
+                <div className="mt-4 p-4 bg-gradient-to-r from-blue-50 to-green-50 rounded-lg border border-blue-200">
+                  <h4 className="text-sm font-semibold text-blue-800 mb-2">✍️ Simple Formatting Guide:</h4>
+                  <div className="grid grid-cols-2 gap-4 text-xs text-blue-700">
+                    <div>
+                      <p><code>**Bold text**</code> → <strong>Bold text</strong></p>
+                      <p><code>*Italic text*</code> → <em>Italic text</em></p>
+                    </div>
+                    <div>
+                      <p><code>## Heading 2</code> → Large heading</p>
+                      <p><code>### Heading 3</code> → Medium heading</p>
+                    </div>
+                  </div>
+                  <p className="text-xs text-green-600 mt-2">
+                    💡 <strong>No HTML codes!</strong> Just type naturally and use the floating toolbar for quick formatting.
                   </p>
-                  <ul className="text-xs text-blue-600 mt-1 space-y-1">
-                    <li>• Select text and use the <strong>floating toolbar</strong> on the right for formatting</li>
-                    <li>• Use <strong>**bold**</strong> and <em>*italic*</em> markdown-style formatting</li>
-                    <li>• Add ## for headings and bullet points with -</li>
-                    <li>• The toolbar stays visible while you scroll</li>
-                  </ul>
                 </div>
               </div>
 
