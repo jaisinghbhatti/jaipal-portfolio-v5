@@ -99,6 +99,9 @@ const BlogEditor = () => {
           status: post.status || "published"
         });
         
+        // Set thumbnail preview
+        setThumbnailPreview(post.thumbnail || "");
+        
         setSelectedPostId(postId);
         setMode('edit');
       }
