@@ -222,6 +222,60 @@ const BlogEditor = () => {
       setIsDeleting(false);
     }
   };
+
+  // Upload thumbnail image to Sanity
+  const handleThumbnailUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      setSubmitStatus('error');
+      setSubmitMessage('Please upload an image file (JPG, PNG, GIF, etc.)');
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setSubmitStatus('error');
+      setSubmitMessage('Image size must be less than 5MB');
+      return;
+    }
+
+    setIsUploadingImage(true);
+    setSubmitStatus(null);
+
+    try {
+      // Upload image to Sanity
+      const imageAsset = await client.assets.upload('image', file, {
+        filename: file.name
+      });
+
+      // Get the image URL
+      const imageUrl = imageAsset.url;
+
+      // Update form data with the uploaded image URL
+      setFormData(prev => ({
+        ...prev,
+        thumbnail: imageUrl
+      }));
+
+      // Set preview
+      setThumbnailPreview(imageUrl);
+
+      setSubmitStatus('success');
+      setSubmitMessage(`Image "${file.name}" uploaded successfully!`);
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      setSubmitStatus('error');
+      setSubmitMessage('Failed to upload image. Please try again or use a URL instead.');
+    } finally {
+      setIsUploadingImage(false);
+      // Clear the file input
+      event.target.value = '';
+    }
+  };
+
   const handleDocumentUpload = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
