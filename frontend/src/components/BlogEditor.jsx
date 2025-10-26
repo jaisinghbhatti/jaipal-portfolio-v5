@@ -33,6 +33,8 @@ const BlogEditor = () => {
   const [submitMessage, setSubmitMessage] = useState("");
   const [isProcessingDoc, setIsProcessingDoc] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [thumbnailPreview, setThumbnailPreview] = useState("");
 
   // Check authentication on component mount
   useEffect(() => {
