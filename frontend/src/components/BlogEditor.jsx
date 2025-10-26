@@ -868,18 +868,75 @@ Use the floating toolbar on the right for quick formatting..."
               {/* Thumbnail URL */}
               <div className="space-y-2">
                 <Label htmlFor="thumbnail" className="text-slate-700 font-medium">
-                  Thumbnail Image URL
+                  Thumbnail Image
                 </Label>
+                
+                {/* Image Upload Section */}
+                <Card className="bg-gradient-to-r from-purple-50 to-blue-50 border-purple-200">
+                  <CardContent className="p-4">
+                    <div className="space-y-3">
+                      <div className="flex items-center space-x-2">
+                        <Upload className="h-5 w-5 text-purple-600" />
+                        <Label className="text-purple-800 font-medium">
+                          Upload Image
+                        </Label>
+                      </div>
+                      <Input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleThumbnailUpload}
+                        className="border-purple-300 focus:border-purple-500"
+                        disabled={isUploadingImage}
+                      />
+                      <div className="text-xs text-purple-700">
+                        {isUploadingImage ? (
+                          <span className="font-medium">Uploading image...</span>
+                        ) : (
+                          <span>Upload an image (JPG, PNG, GIF, max 5MB) or use a URL below</span>
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Thumbnail Preview */}
+                {(thumbnailPreview || formData.thumbnail) && (
+                  <div className="mt-3">
+                    <Label className="text-slate-700 font-medium text-sm mb-2 block">Preview:</Label>
+                    <img
+                      src={thumbnailPreview || formData.thumbnail}
+                      alt="Thumbnail preview"
+                      className="w-full h-48 object-cover rounded-lg border-2 border-blue-200"
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                      }}
+                    />
+                  </div>
+                )}
+
+                {/* Or use URL */}
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-gray-300"></div>
+                  </div>
+                  <div className="relative flex justify-center text-sm">
+                    <span className="px-2 bg-white text-gray-500">or use a URL</span>
+                  </div>
+                </div>
+
                 <Input
                   id="thumbnail"
                   name="thumbnail"
                   value={formData.thumbnail}
-                  onChange={handleInputChange}
+                  onChange={(e) => {
+                    handleInputChange(e);
+                    setThumbnailPreview(e.target.value);
+                  }}
                   placeholder="https://images.unsplash.com/..."
                   className="border-blue-200 focus:border-blue-500 focus:ring-blue-500"
                 />
                 <p className="text-xs text-slate-500">
-                  You can use Unsplash URLs or any public image URL
+                  You can upload an image above or paste an Unsplash URL here
                 </p>
               </div>
 
