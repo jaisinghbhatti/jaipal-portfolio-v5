@@ -168,6 +168,7 @@ const BlogEditor = () => {
       publishedDate: new Date().toISOString().split('T')[0],
       status: "published"
     });
+    setThumbnailPreview("");
     setSelectedPostId(null);
     setMode('create');
   };
