@@ -39,12 +39,12 @@ const Header = () => {
           
           {/* Desktop Navigation */}
           <nav className="hidden md:flex space-x-8">
-            <button
-              onClick={() => handleNavigate("about")}
+            <Link
+              to="/about-me"
               className="text-slate-600 hover:text-blue-600 transition-colors duration-200 font-medium"
             >
-              About
-            </button>
+              About Me
+            </Link>
             
             <Link
               to="/blog"
@@ -52,31 +52,6 @@ const Header = () => {
             >
               Blog
             </Link>
-            
-            <button
-              onClick={() => handleNavigate("expertise")}
-              className="text-slate-600 hover:text-blue-600 transition-colors duration-200 font-medium"
-            >
-              Expertise
-            </button>
-            <button
-              onClick={() => handleNavigate("experience")}
-              className="text-slate-600 hover:text-blue-600 transition-colors duration-200 font-medium"
-            >
-              Experience
-            </button>
-            <button
-              onClick={() => handleNavigate("achievements")}
-              className="text-slate-600 hover:text-blue-600 transition-colors duration-200 font-medium"
-            >
-              Achievements
-            </button>
-            <button
-              onClick={() => handleNavigate("contact")}
-              className="text-slate-600 hover:text-blue-600 transition-colors duration-200 font-medium"
-            >
-              Contact
-            </button>
           </nav>
           
           <div className="hidden md:flex">
