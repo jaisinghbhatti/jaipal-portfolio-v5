@@ -28,6 +28,7 @@ const BlogPreviewSection = () => {
   }, []);
 
   const formatDate = (dateString) => {
+    if (!dateString) return 'Recent';
     return new Date(dateString).toLocaleDateString('en-US', { 
       year: 'numeric', 
       month: 'long', 
