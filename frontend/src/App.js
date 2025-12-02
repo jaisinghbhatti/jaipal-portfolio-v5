@@ -6,7 +6,6 @@ import HomePage from "./components/HomePage";
 import AboutMePage from "./components/AboutMePage";
 import BlogIndex from "./components/BlogIndex";
 import BlogPage from "./components/BlogPage";
-import BlogEditor from "./components/BlogEditor";
 import { Toaster } from "./components/ui/toaster";
 import { Analytics } from '@vercel/analytics/react';
 
@@ -20,7 +19,6 @@ function App() {
             <Route path="/about-me" element={<AboutMePage />} />
             <Route path="/blog" element={<BlogIndex />} />
             <Route path="/blog/:slug" element={<BlogPage />} />
-            <Route path="/blog-editor" element={<BlogEditor />} />
           </Routes>
           <Toaster />
           <Analytics />
