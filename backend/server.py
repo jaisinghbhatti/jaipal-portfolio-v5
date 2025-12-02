@@ -224,6 +224,95 @@ async def delete_blog(blog_id: str):
         logger.error(f"Error deleting blog: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to delete blog post")
 
+
+# Sanity CMS Proxy Routes
+@api_router.get("/sanity/blogs")
+async def get_sanity_blogs():
+    """Proxy endpoint to fetch blogs from Sanity CMS"""
+    try:
+        sanity_project_id = os.environ.get('SANITY_PROJECT_ID')
+        sanity_dataset = os.environ.get('SANITY_DATASET')
+        sanity_api_version = os.environ.get('SANITY_API_VERSION')
+        sanity_token = os.environ.get('SANITY_TOKEN')
+        
+        sanity_url = f"https://{sanity_project_id}.api.sanity.io/v{sanity_api_version}/data/query/{sanity_dataset}"
+        
+        query = '''*[_type == "post" && status == "published"] | order(publishedDate desc) {
+            _id,
+            title,
+            slug,
+            author,
+            publishedDate,
+            readTime,
+            tags,
+            excerpt,
+            thumbnail,
+            content,
+            status
+        }'''
+        
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                sanity_url,
+                params={"query": query},
+                headers={"Authorization": f"Bearer {sanity_token}"}
+            )
+            response.raise_for_status()
+            data = response.json()
+            return data.get('result', [])
+            
+    except Exception as e:
+        logger.error(f"Error fetching blogs from Sanity: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch blogs from Sanity")
+
+
+@api_router.get("/sanity/blogs/{slug}")
+async def get_sanity_blog_by_slug(slug: str):
+    """Proxy endpoint to fetch a single blog from Sanity CMS by slug"""
+    try:
+        sanity_project_id = os.environ.get('SANITY_PROJECT_ID')
+        sanity_dataset = os.environ.get('SANITY_DATASET')
+        sanity_api_version = os.environ.get('SANITY_API_VERSION')
+        sanity_token = os.environ.get('SANITY_TOKEN')
+        
+        sanity_url = f"https://{sanity_project_id}.api.sanity.io/v{sanity_api_version}/data/query/{sanity_dataset}"
+        
+        query = f'''*[_type == "post" && slug.current == "{slug}" && status == "published"][0] {{
+            _id,
+            title,
+            slug,
+            author,
+            publishedDate,
+            readTime,
+            tags,
+            excerpt,
+            thumbnail,
+            content,
+            status
+        }}'''
+        
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                sanity_url,
+                params={"query": query},
+                headers={"Authorization": f"Bearer {sanity_token}"}
+            )
+            response.raise_for_status()
+            data = response.json()
+            result = data.get('result')
+            
+            if not result:
+                raise HTTPException(status_code=404, detail="Blog post not found")
+                
+            return result
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching blog from Sanity: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch blog from Sanity")
+
+
 # Include the router in the main app
 app.include_router(api_router)
 
