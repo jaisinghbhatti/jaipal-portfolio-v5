@@ -55,12 +55,13 @@ const Header = () => {
           </nav>
           
           <div className="hidden md:flex">
-            <Button
-              onClick={() => handleNavigate("contact")}
-              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-300"
-            >
-              Let's Connect
-            </Button>
+            <Link to="/about-me#contact">
+              <Button
+                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-300"
+              >
+                Let's Connect
+              </Button>
+            </Link>
           </div>
 
           {/* Mobile menu button */}
