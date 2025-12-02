@@ -7,7 +7,7 @@ import { Textarea } from "./ui/textarea";
 import { Label } from "./ui/label";
 import { Calendar, Clock, User, Share2, MessageCircle, Send, AlertCircle, ArrowLeft, ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { useToast } from "../hooks/use-toast";
-import { getPostBySlug, getPublishedPosts } from "../services/sanityService";
+import { getPostBySlug, getPublishedPosts } from "../services/sanityHttpService";
 import { PortableText } from '@portabletext/react';
 import { Link, useParams } from "react-router-dom";
 import axios from "axios";
