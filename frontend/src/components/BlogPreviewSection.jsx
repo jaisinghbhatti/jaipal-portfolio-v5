@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
 import { Calendar, Clock, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
-import { blogService } from "../services/blogService";
+import { getPublishedPosts } from "../services/sanityService";
 
 const BlogPreviewSection = () => {
   const [blogs, setBlogs] = useState([]);
@@ -13,11 +13,11 @@ const BlogPreviewSection = () => {
     const fetchBlogs = async () => {
       try {
         setLoading(true);
-        const posts = await blogService.getAllBlogs('published');
+        const posts = await getPublishedPosts();
         // Get only the last 3 blog posts
         setBlogs(posts.slice(0, 3));
       } catch (err) {
-        console.error('Error fetching blogs:', err);
+        console.error('Error fetching blogs from Sanity:', err);
         setBlogs([]); // Set empty array on error
       } finally {
         setLoading(false);
