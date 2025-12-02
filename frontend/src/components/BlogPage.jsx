@@ -272,6 +272,31 @@ const BlogPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <Helmet>
+        {/* Primary Meta Tags */}
+        <title>{selectedBlog.title} | Jaipal Singh - Digital Marketing Expert</title>
+        <meta name="title" content={selectedBlog.title} />
+        <meta name="description" content={selectedBlog.excerpt} />
+        
+        {/* Open Graph / Facebook */}
+        <meta property="og:type" content="article" />
+        <meta property="og:url" content={window.location.href} />
+        <meta property="og:title" content={selectedBlog.title} />
+        <meta property="og:description" content={selectedBlog.excerpt} />
+        <meta property="og:image" content={selectedBlog.thumbnail} />
+        <meta property="og:site_name" content="Jaipal Singh | Digital Marketing Expert" />
+        <meta property="article:author" content="Jaipal Singh" />
+        <meta property="article:published_time" content={selectedBlog.publishedDate} />
+        
+        {/* Twitter */}
+        <meta property="twitter:card" content="summary_large_image" />
+        <meta property="twitter:url" content={window.location.href} />
+        <meta property="twitter:title" content={selectedBlog.title} />
+        <meta property="twitter:description" content={selectedBlog.excerpt} />
+        <meta property="twitter:image" content={selectedBlog.thumbnail} />
+        <meta name="twitter:creator" content="@jaipalsingh" />
+      </Helmet>
+      
       <Header />
       
       {/* Hero Section for Blog Page */}
