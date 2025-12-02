@@ -87,11 +87,11 @@ const BlogPreviewSection = () => {
                     <div className="flex items-center space-x-4">
                       <div className="flex items-center space-x-1">
                         <Calendar className="h-4 w-4" />
-                        <span>{formatDate(blog.publishedDate)}</span>
+                        <span>{formatDate(blog.published_date || blog.publishedDate)}</span>
                       </div>
                       <div className="flex items-center space-x-1">
                         <Clock className="h-4 w-4" />
-                        <span>{blog.readTime || '5 min read'}</span>
+                        <span>{blog.read_time || blog.readTime || '5 min read'}</span>
                       </div>
                     </div>
                   </div>
