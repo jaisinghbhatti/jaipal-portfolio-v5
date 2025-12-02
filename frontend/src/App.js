@@ -2,6 +2,7 @@ import React from "react";
 import "./App.css";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import HomePage from "./components/HomePage";
+import AboutMePage from "./components/AboutMePage";
 import BlogIndex from "./components/BlogIndex";
 import BlogPage from "./components/BlogPage";
 import BlogEditor from "./components/BlogEditor";
@@ -14,6 +15,7 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<HomePage />} />
+          <Route path="/about-me" element={<AboutMePage />} />
           <Route path="/blog" element={<BlogIndex />} />
           <Route path="/blog/:slug" element={<BlogPage />} />
           <Route path="/blog-editor" element={<BlogEditor />} />
