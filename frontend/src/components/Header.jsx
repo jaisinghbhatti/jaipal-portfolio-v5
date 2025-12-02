@@ -5,25 +5,6 @@ import { Link, useLocation } from "react-router-dom";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const location = useLocation();
-  const isHomePage = location.pathname === '/';
-
-  const scrollToSection = (sectionId) => {
-    const element = document.getElementById(sectionId);
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth" });
-    }
-    setIsMenuOpen(false);
-  };
-
-  const handleNavigate = (sectionId) => {
-    if (isHomePage) {
-      scrollToSection(sectionId);
-    } else {
-      // If not on home page, navigate to home page with section
-      window.location.href = `/#${sectionId}`;
-    }
-  };
 
   return (
     <header className="fixed top-0 w-full bg-white/95 backdrop-blur-sm border-b border-blue-100 z-50 shadow-sm">
