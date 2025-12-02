@@ -81,12 +81,13 @@ const Header = () => {
         {isMenuOpen && (
           <div className="md:hidden">
             <div className="px-2 pt-2 pb-3 space-y-1 bg-white border-t border-blue-100">
-              <button
-                onClick={() => handleNavigate("about")}
+              <Link
+                to="/about-me"
                 className="block px-3 py-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 w-full text-left rounded-md font-medium"
+                onClick={() => setIsMenuOpen(false)}
               >
-                About
-              </button>
+                About Me
+              </Link>
               <Link
                 to="/blog"
                 className="block px-3 py-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 w-full text-left rounded-md font-medium"
@@ -94,37 +95,14 @@ const Header = () => {
               >
                 Blog
               </Link>
-              <button
-                onClick={() => handleNavigate("expertise")}
-                className="block px-3 py-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 w-full text-left rounded-md font-medium"
-              >
-                Expertise
-              </button>
-              <button
-                onClick={() => handleNavigate("experience")}
-                className="block px-3 py-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 w-full text-left rounded-md font-medium"
-              >
-                Experience
-              </button>
-              <button
-                onClick={() => handleNavigate("achievements")}
-                className="block px-3 py-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 w-full text-left rounded-md font-medium"
-              >
-                Achievements
-              </button>
-              <button
-                onClick={() => handleNavigate("contact")}
-                className="block px-3 py-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 w-full text-left rounded-md font-medium"
-              >
-                Contact
-              </button>
               <div className="px-3 py-2">
-                <Button
-                  onClick={() => handleNavigate("contact")}
-                  className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white w-full shadow-md"
-                >
-                  Let's Connect
-                </Button>
+                <Link to="/about-me#contact" onClick={() => setIsMenuOpen(false)}>
+                  <Button
+                    className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white w-full shadow-md"
+                  >
+                    Let's Connect
+                  </Button>
+                </Link>
               </div>
             </div>
           </div>
