@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
 import { Calendar, Clock, ArrowRight, ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
-import { getPublishedPosts } from "../services/sanityService";
+import { getPublishedPosts } from "../services/sanityHttpService";
 import Header from "./Header";
 import Footer from "./Footer";
 
