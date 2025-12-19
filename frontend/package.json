@@ -65,8 +65,21 @@
   },
   "scripts": {
     "start": "craco start",
-    "build": "craco build",
+    "build": "craco build && react-snap",
     "test": "craco test"
+  },
+  "reactSnap": {
+    "inlineCss": true,
+    "minifyHtml": {
+      "collapseWhitespace": false,
+      "removeComments": false
+    },
+    "crawl": true,
+    "include": [
+      "/",
+      "/about-me",
+      "/blog"
+    ]
   },
   "browserslist": {
     "production": [
