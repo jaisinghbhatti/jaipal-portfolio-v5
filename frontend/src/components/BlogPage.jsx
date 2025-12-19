@@ -267,9 +267,6 @@ const BlogPage = () => {
       });
   };
 
-  // Generate dynamic OG image URL with blog title and excerpt
-  const ogImageUrl = `https://jaisingh.in/api/og?title=${encodeURIComponent(selectedBlog.title)}&excerpt=${encodeURIComponent(selectedBlog.excerpt)}`;
-
   return (
     <div className="min-h-screen bg-gray-50">
       <Helmet>
@@ -283,7 +280,7 @@ const BlogPage = () => {
         <meta property="og:url" content={window.location.href} />
         <meta property="og:title" content={selectedBlog.title} />
         <meta property="og:description" content={selectedBlog.excerpt} />
-        <meta property="og:image" content={ogImageUrl} />
+        <meta property="og:image" content={selectedBlog.thumbnail} />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
         <meta property="og:site_name" content="Jaipal Singh | Digital Marketing Expert" />
@@ -295,7 +292,7 @@ const BlogPage = () => {
         <meta property="twitter:url" content={window.location.href} />
         <meta property="twitter:title" content={selectedBlog.title} />
         <meta property="twitter:description" content={selectedBlog.excerpt} />
-        <meta property="twitter:image" content={ogImageUrl} />
+        <meta property="twitter:image" content={selectedBlog.thumbnail} />
         <meta name="twitter:creator" content="@jaipalsingh" />
       </Helmet>
       
