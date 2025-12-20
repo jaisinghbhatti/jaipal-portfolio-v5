@@ -316,6 +316,7 @@ async def get_sanity_blog_by_slug(slug: str):
 
 # Include the router in the main app
 app.include_router(api_router)
+app.include_router(resume_builder_router)
 
 app.add_middleware(
     CORSMiddleware,
