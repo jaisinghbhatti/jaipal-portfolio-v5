@@ -4,8 +4,7 @@ import { Button } from "../ui/button";
 import { Textarea } from "../ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { useToast } from "../../hooks/use-toast";
-
-const API_URL = process.env.REACT_APP_BACKEND_URL;
+import { parseDocument } from "../../services/resumeBuilderService";
 
 const InputModule = ({ data, updateData, onNext, isLoading, setIsLoading }) => {
   const { toast } = useToast();
