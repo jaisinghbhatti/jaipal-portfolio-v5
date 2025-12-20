@@ -4,8 +4,7 @@ import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Progress } from "../ui/progress";
 import { useToast } from "../../hooks/use-toast";
-
-const API_URL = process.env.REACT_APP_BACKEND_URL;
+import { analyzeResume, optimizeResume } from "../../services/resumeBuilderService";
 
 const tones = [
   {
