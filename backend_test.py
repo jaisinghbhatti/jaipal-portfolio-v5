@@ -804,12 +804,297 @@ class ContactFormTester:
         
         return self.test_results
 
+class ResumeBuilderTester:
+    def __init__(self):
+        self.session = None
+        self.test_results = []
+        
+    async def setup(self):
+        """Setup test session"""
+        self.session = aiohttp.ClientSession()
+        
+    async def cleanup(self):
+        """Cleanup test session"""
+        if self.session:
+            await self.session.close()
+            
+    def log_result(self, test_name, success, message, details=None):
+        """Log test result"""
+        result = {
+            "test": test_name,
+            "success": success,
+            "message": message,
+            "details": details,
+            "timestamp": datetime.now().isoformat()
+        }
+        self.test_results.append(result)
+        status = "✅ PASS" if success else "❌ FAIL"
+        print(f"{status}: {test_name} - {message}")
+        if details:
+            print(f"   Details: {details}")
+            
+    async def test_analyze_endpoint(self):
+        """Test POST /api/resume-builder/analyze endpoint"""
+        test_data = {
+            "resumeText": "John Smith\nSoftware Engineer\njohn@email.com\n\nEXPERIENCE\nSoftware Engineer at ABC Corp (2020-Present)\n- Developed web applications using React and Python\n- Led team of 3 developers\n\nSKILLS\nPython, JavaScript, React, SQL",
+            "jobDescription": "Senior Software Engineer\nRequirements:\n- 5+ years experience\n- Python, JavaScript, React\n- AWS, Docker, Kubernetes\n- Team leadership experience"
+        }
+        
+        try:
+            async with self.session.post(
+                f"{BACKEND_URL}/resume-builder/analyze",
+                json=test_data,
+                headers={"Content-Type": "application/json"}
+            ) as response:
+                
+                if response.status == 200:
+                    data = await response.json()
+                    
+                    # Verify response structure
+                    required_fields = ["matchScore", "missingKeywords"]
+                    missing_fields = [field for field in required_fields if field not in data]
+                    
+                    if missing_fields:
+                        self.log_result("Resume Analysis - Response Structure", False, 
+                                      f"Missing fields in response: {missing_fields}")
+                    else:
+                        match_score = data.get("matchScore")
+                        missing_keywords = data.get("missingKeywords")
+                        
+                        # Validate match score
+                        if isinstance(match_score, int) and 0 <= match_score <= 100:
+                            self.log_result("Resume Analysis - Match Score", True, 
+                                          f"Valid match score: {match_score}")
+                        else:
+                            self.log_result("Resume Analysis - Match Score", False, 
+                                          f"Invalid match score: {match_score} (should be 0-100)")
+                        
+                        # Validate missing keywords
+                        if isinstance(missing_keywords, list):
+                            self.log_result("Resume Analysis - Missing Keywords", True, 
+                                          f"Found {len(missing_keywords)} missing keywords: {missing_keywords[:3]}...")
+                        else:
+                            self.log_result("Resume Analysis - Missing Keywords", False, 
+                                          f"Invalid missing keywords format: {type(missing_keywords)}")
+                        
+                        # Overall success if both validations pass
+                        if (isinstance(match_score, int) and 0 <= match_score <= 100 and 
+                            isinstance(missing_keywords, list)):
+                            self.log_result("Resume Analysis API", True, 
+                                          f"Successfully analyzed resume with {match_score}% match")
+                        else:
+                            self.log_result("Resume Analysis API", False, 
+                                          "Response validation failed")
+                else:
+                    error_text = await response.text()
+                    self.log_result("Resume Analysis API", False, 
+                                  f"HTTP {response.status}: {error_text}")
+        except Exception as e:
+            self.log_result("Resume Analysis API", False, f"Request error: {str(e)}")
+            
+    async def test_optimize_endpoint(self):
+        """Test POST /api/resume-builder/optimize endpoint"""
+        test_data = {
+            "resumeText": "John Smith\nSoftware Engineer\njohn@email.com\n\nEXPERIENCE\nSoftware Engineer at ABC Corp (2020-Present)\n- Developed web applications using React and Python\n- Led team of 3 developers\n\nSKILLS\nPython, JavaScript, React, SQL",
+            "jobDescription": "Senior Software Engineer\nRequirements:\n- 5+ years experience\n- Python, JavaScript, React\n- AWS, Docker, Kubernetes",
+            "tone": "executive"
+        }
+        
+        try:
+            async with self.session.post(
+                f"{BACKEND_URL}/resume-builder/optimize",
+                json=test_data,
+                headers={"Content-Type": "application/json"}
+            ) as response:
+                
+                if response.status == 200:
+                    data = await response.json()
+                    
+                    # Verify response structure
+                    required_fields = ["optimizedResume", "coverLetter"]
+                    missing_fields = [field for field in required_fields if field not in data]
+                    
+                    if missing_fields:
+                        self.log_result("Resume Optimization - Response Structure", False, 
+                                      f"Missing fields in response: {missing_fields}")
+                    else:
+                        optimized_resume = data.get("optimizedResume")
+                        cover_letter = data.get("coverLetter")
+                        new_match_score = data.get("newMatchScore")
+                        
+                        # Validate optimized resume
+                        if isinstance(optimized_resume, str) and len(optimized_resume) > 100:
+                            self.log_result("Resume Optimization - Optimized Resume", True, 
+                                          f"Generated optimized resume ({len(optimized_resume)} chars)")
+                        else:
+                            self.log_result("Resume Optimization - Optimized Resume", False, 
+                                          f"Invalid optimized resume: {len(optimized_resume) if optimized_resume else 0} chars")
+                        
+                        # Validate cover letter
+                        if isinstance(cover_letter, str) and len(cover_letter) > 50:
+                            self.log_result("Resume Optimization - Cover Letter", True, 
+                                          f"Generated cover letter ({len(cover_letter)} chars)")
+                        else:
+                            self.log_result("Resume Optimization - Cover Letter", False, 
+                                          f"Invalid cover letter: {len(cover_letter) if cover_letter else 0} chars")
+                        
+                        # Validate new match score (optional)
+                        if new_match_score is not None:
+                            if isinstance(new_match_score, int) and 0 <= new_match_score <= 100:
+                                self.log_result("Resume Optimization - New Match Score", True, 
+                                              f"Valid new match score: {new_match_score}")
+                            else:
+                                self.log_result("Resume Optimization - New Match Score", False, 
+                                              f"Invalid new match score: {new_match_score}")
+                        
+                        # Overall success
+                        if (isinstance(optimized_resume, str) and len(optimized_resume) > 100 and
+                            isinstance(cover_letter, str) and len(cover_letter) > 50):
+                            self.log_result("Resume Optimization API", True, 
+                                          "Successfully optimized resume and generated cover letter")
+                        else:
+                            self.log_result("Resume Optimization API", False, 
+                                          "Response validation failed")
+                else:
+                    error_text = await response.text()
+                    self.log_result("Resume Optimization API", False, 
+                                  f"HTTP {response.status}: {error_text}")
+        except Exception as e:
+            self.log_result("Resume Optimization API", False, f"Request error: {str(e)}")
+            
+    async def test_tone_variations(self):
+        """Test different tone options for optimization"""
+        tones = ["executive", "disruptor", "human"]
+        
+        base_data = {
+            "resumeText": "John Smith\nSoftware Engineer\njohn@email.com\n\nEXPERIENCE\nSoftware Engineer at ABC Corp (2020-Present)\n- Developed web applications using React and Python\n- Led team of 3 developers\n\nSKILLS\nPython, JavaScript, React, SQL",
+            "jobDescription": "Senior Software Engineer\nRequirements:\n- 5+ years experience\n- Python, JavaScript, React"
+        }
+        
+        for tone in tones:
+            test_data = {**base_data, "tone": tone}
+            
+            try:
+                async with self.session.post(
+                    f"{BACKEND_URL}/resume-builder/optimize",
+                    json=test_data,
+                    headers={"Content-Type": "application/json"}
+                ) as response:
+                    
+                    if response.status == 200:
+                        data = await response.json()
+                        
+                        if (data.get("optimizedResume") and data.get("coverLetter")):
+                            self.log_result(f"Tone Variation - {tone.title()}", True, 
+                                          f"Successfully generated content with {tone} tone")
+                        else:
+                            self.log_result(f"Tone Variation - {tone.title()}", False, 
+                                          "Missing optimized content in response")
+                    else:
+                        self.log_result(f"Tone Variation - {tone.title()}", False, 
+                                      f"HTTP {response.status}")
+            except Exception as e:
+                self.log_result(f"Tone Variation - {tone.title()}", False, f"Request error: {str(e)}")
+                
+    async def test_validation_errors(self):
+        """Test API validation with invalid data"""
+        test_cases = [
+            {
+                "name": "Missing Resume Text",
+                "data": {"jobDescription": "Test JD", "tone": "executive"},
+                "expected_status": 422
+            },
+            {
+                "name": "Missing Job Description",
+                "data": {"resumeText": "Test Resume", "tone": "executive"},
+                "expected_status": 422
+            },
+            {
+                "name": "Invalid Tone",
+                "data": {"resumeText": "Test Resume", "jobDescription": "Test JD", "tone": "invalid"},
+                "expected_status": [200, 422]  # May accept invalid tone or reject it
+            }
+        ]
+        
+        for test_case in test_cases:
+            try:
+                async with self.session.post(
+                    f"{BACKEND_URL}/resume-builder/optimize",
+                    json=test_case["data"],
+                    headers={"Content-Type": "application/json"}
+                ) as response:
+                    
+                    expected_statuses = test_case["expected_status"]
+                    if not isinstance(expected_statuses, list):
+                        expected_statuses = [expected_statuses]
+                    
+                    if response.status in expected_statuses:
+                        self.log_result(f"Validation - {test_case['name']}", True, 
+                                      f"Correctly handled with status {response.status}")
+                    else:
+                        response_text = await response.text()
+                        self.log_result(f"Validation - {test_case['name']}", False, 
+                                      f"Expected {expected_statuses} but got {response.status}",
+                                      f"Response: {response_text}")
+            except Exception as e:
+                self.log_result(f"Validation - {test_case['name']}", False, 
+                              f"Request error: {str(e)}")
+                
+    async def run_all_tests(self):
+        """Run all Resume Builder tests"""
+        print(f"🚀 Starting Resume Builder API Tests")
+        print(f"📍 Testing Backend URL: {BACKEND_URL}")
+        print("=" * 60)
+        
+        await self.setup()
+        
+        try:
+            # Run tests in order
+            await self.test_analyze_endpoint()
+            await self.test_optimize_endpoint()
+            await self.test_tone_variations()
+            await self.test_validation_errors()
+            
+        finally:
+            await self.cleanup()
+            
+        # Print summary
+        print("\n" + "=" * 60)
+        print("📊 RESUME BUILDER TEST SUMMARY")
+        print("=" * 60)
+        
+        passed = sum(1 for result in self.test_results if result["success"])
+        total = len(self.test_results)
+        
+        print(f"Total Tests: {total}")
+        print(f"Passed: {passed}")
+        print(f"Failed: {total - passed}")
+        print(f"Success Rate: {(passed/total)*100:.1f}%")
+        
+        # Show failed tests
+        failed_tests = [result for result in self.test_results if not result["success"]]
+        if failed_tests:
+            print("\n❌ FAILED TESTS:")
+            for test in failed_tests:
+                print(f"  • {test['test']}: {test['message']}")
+                if test['details']:
+                    print(f"    Details: {test['details']}")
+        
+        return self.test_results
+
+
 async def main():
     """Main test runner"""
     print("🎯 COMPREHENSIVE BACKEND API TESTING")
     print("=" * 80)
     
-    # Run Blog CMS tests first (as requested)
+    # Run Resume Builder tests (as requested)
+    resume_tester = ResumeBuilderTester()
+    resume_results = await resume_tester.run_all_tests()
+    
+    print("\n" + "=" * 80)
+    
+    # Run Blog CMS tests
     blog_tester = BlogCMSTester()
     blog_results = await blog_tester.run_all_tests()
     
@@ -820,13 +1105,14 @@ async def main():
     contact_results = await contact_tester.run_all_tests()
     
     # Combined summary
-    all_results = blog_results + contact_results
+    all_results = resume_results + blog_results + contact_results
     total_passed = sum(1 for result in all_results if result["success"])
     total_tests = len(all_results)
     
     print("\n" + "=" * 80)
     print("🎯 OVERALL TEST SUMMARY")
     print("=" * 80)
+    print(f"Resume Builder Tests: {sum(1 for r in resume_results if r['success'])}/{len(resume_results)} passed")
     print(f"Blog CMS Tests: {sum(1 for r in blog_results if r['success'])}/{len(blog_results)} passed")
     print(f"Contact Form Tests: {sum(1 for r in contact_results if r['success'])}/{len(contact_results)} passed")
     print(f"Total: {total_passed}/{total_tests} passed ({(total_passed/total_tests)*100:.1f}%)")
