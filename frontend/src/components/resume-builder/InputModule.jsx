@@ -69,20 +69,7 @@ const InputModule = ({ data, updateData, onNext, isLoading, setIsLoading }) => {
     setParseErrors(prev => ({ ...prev, jd: null }));
     
     try {
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('type', 'jd');
-
-      const response = await fetch(`${API_URL}/api/resume-builder/parse`, {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to parse file');
-      }
-
-      const result = await response.json();
+      const result = await parseDocument(file, 'jd');
       
       updateData({
         jdFile: file,
