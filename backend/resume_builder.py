@@ -67,11 +67,24 @@ def extract_text_from_docx(file_bytes: bytes) -> str:
     try:
         from docx import Document
         doc = Document(io.BytesIO(file_bytes))
-        text = "\n".join([para.text for para in doc.paragraphs])
+        
+        # Extract text from paragraphs
+        paragraphs = [para.text for para in doc.paragraphs if para.text.strip()]
+        
+        # Also extract text from tables
+        for table in doc.tables:
+            for row in table.rows:
+                for cell in row.cells:
+                    if cell.text.strip():
+                        paragraphs.append(cell.text.strip())
+        
+        text = "\n".join(paragraphs)
+        if not text:
+            logger.warning("DOCX extraction returned empty text")
         return text.strip()
     except Exception as e:
-        logger.error(f"DOCX extraction error: {e}")
-        raise HTTPException(status_code=400, detail="Failed to extract text from DOCX")
+        logger.error(f"DOCX extraction error: {e}", exc_info=True)
+        raise HTTPException(status_code=400, detail=f"Failed to extract text from DOCX: {str(e)}")
 
 
 def parse_resume_text(text: str) -> Dict[str, Any]:
