@@ -33,6 +33,13 @@ const Header = () => {
             >
               Blog
             </Link>
+            
+            <Link
+              to="/resume-builder"
+              className="text-slate-600 hover:text-blue-600 transition-colors duration-200 font-medium"
+            >
+              Resume Builder
+            </Link>
           </nav>
           
           <div className="hidden md:flex">
