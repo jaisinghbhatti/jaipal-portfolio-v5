@@ -83,6 +83,13 @@ const Header = () => {
               >
                 Blog
               </Link>
+              <Link
+                to="/resume-builder"
+                className="block px-3 py-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 w-full text-left rounded-md font-medium"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Resume Builder
+              </Link>
               <div className="px-3 py-2">
                 <Link to="/about-me#contact" onClick={() => setIsMenuOpen(false)}>
                   <Button
