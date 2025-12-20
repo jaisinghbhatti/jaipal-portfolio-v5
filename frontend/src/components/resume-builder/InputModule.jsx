@@ -41,10 +41,11 @@ const InputModule = ({ data, updateData, onNext, isLoading, setIsLoading }) => {
       });
     } catch (error) {
       console.error('Parse error:', error);
-      setParseErrors(prev => ({ ...prev, resume: 'Failed to parse file. Please try pasting your resume text instead.' }));
+      const errorMessage = error.message || 'Failed to parse file. Please try pasting your resume text instead.';
+      setParseErrors(prev => ({ ...prev, resume: errorMessage }));
       toast({
         title: "Parse Error",
-        description: "Could not parse the file. Try pasting your resume text instead.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
