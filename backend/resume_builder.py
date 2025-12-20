@@ -145,13 +145,26 @@ async def parse_document(
     """Parse uploaded PDF or DOCX file"""
     try:
         file_bytes = await file.read()
+        filename = file.filename.lower() if file.filename else ""
+        content_type = file.content_type or ""
         
-        if file.filename.lower().endswith('.pdf'):
+        logger.info(f"Parse request - filename: {filename}, content_type: {content_type}, size: {len(file_bytes)}")
+        
+        # Check by filename extension or content type
+        is_pdf = filename.endswith('.pdf') or 'pdf' in content_type
+        is_docx = filename.endswith('.docx') or 'wordprocessingml' in content_type or 'msword' in content_type
+        
+        if is_pdf:
             text = extract_text_from_pdf(file_bytes)
-        elif file.filename.lower().endswith('.docx'):
+        elif is_docx:
             text = extract_text_from_docx(file_bytes)
         else:
+            logger.warning(f"Unsupported file type - filename: {filename}, content_type: {content_type}")
             raise HTTPException(status_code=400, detail="Unsupported file type. Please upload PDF or DOCX.")
+        
+        if not text or len(text.strip()) < 10:
+            logger.warning(f"Extracted text is too short: {len(text) if text else 0} chars")
+            raise HTTPException(status_code=400, detail="Could not extract text from file. The file may be empty or image-based.")
         
         result = {"text": text}
         
@@ -159,13 +172,14 @@ async def parse_document(
         if type == "resume":
             result["parsed"] = parse_resume_text(text)
         
+        logger.info(f"Successfully parsed file, extracted {len(text)} characters")
         return result
         
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Parse error: {e}")
-        raise HTTPException(status_code=500, detail="Failed to parse file")
+        logger.error(f"Parse error: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Failed to parse file: {str(e)}")
 
 
 @router.post("/analyze", response_model=AnalyzeResponse)
