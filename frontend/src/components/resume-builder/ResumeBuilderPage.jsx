@@ -37,29 +37,28 @@ const defaultState = {
 
 const ResumeBuilderPage = () => {
   const [currentStep, setCurrentStep] = useState(1);
-  const [data, setData] = useState(defaultState);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-
-  // Load from localStorage on mount
-  useEffect(() => {
+  
+  // Initialize state with localStorage data
+  const [data, setData] = useState(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        // Don't restore file objects (they can't be serialized)
-        setData(prev => ({
-          ...prev,
+        return {
+          ...defaultState,
           ...parsed,
           resumeFile: null,
           jdFile: null,
           profilePhoto: null,
-        }));
+        };
       } catch (e) {
         console.error("Failed to load saved data", e);
       }
     }
-  }, []);
+    return defaultState;
+  });
 
   // Save to localStorage on data change
   useEffect(() => {
