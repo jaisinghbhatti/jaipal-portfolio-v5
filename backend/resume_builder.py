@@ -48,11 +48,18 @@ def extract_text_from_pdf(file_bytes: bytes) -> str:
         pdf_reader = PdfReader(io.BytesIO(file_bytes))
         text = ""
         for page in pdf_reader.pages:
-            text += page.extract_text() or ""
-        return text.strip()
+            page_text = page.extract_text()
+            if page_text:
+                text += page_text + "\n"
+        
+        # Clean up the text
+        text = text.strip()
+        if not text:
+            logger.warning("PDF extraction returned empty text - may be image-based PDF")
+        return text
     except Exception as e:
-        logger.error(f"PDF extraction error: {e}")
-        raise HTTPException(status_code=400, detail="Failed to extract text from PDF")
+        logger.error(f"PDF extraction error: {e}", exc_info=True)
+        raise HTTPException(status_code=400, detail=f"Failed to extract text from PDF: {str(e)}")
 
 
 def extract_text_from_docx(file_bytes: bytes) -> str:
