@@ -45,19 +45,12 @@ const CustomizeModule = ({ data, updateData, onNext, onBack, isLoading, setIsLoa
     setAnalyzed(true);
     
     try {
-      const response = await fetch(`${API_URL}/api/resume-builder/analyze`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          resumeText: data.resumeText,
-          resumeParsed: data.resumeParsed,
-          jobDescription: data.jobDescription,
-        }),
-      });
-
-      if (!response.ok) throw new Error('Analysis failed');
-
-      const result = await response.json();
+      const result = await analyzeResume(
+        data.resumeText,
+        data.resumeParsed,
+        data.jobDescription
+      );
+      
       updateData({
         matchScore: result.matchScore,
         missingKeywords: result.missingKeywords || [],
