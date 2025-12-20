@@ -84,20 +84,13 @@ const CustomizeModule = ({ data, updateData, onNext, onBack, isLoading, setIsLoa
     });
 
     try {
-      const response = await fetch(`${API_URL}/api/resume-builder/optimize`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          resumeText: data.resumeText,
-          resumeParsed: data.resumeParsed,
-          jobDescription: data.jobDescription,
-          tone: data.tone,
-        }),
-      });
-
-      if (!response.ok) throw new Error('Optimization failed');
-
-      const result = await response.json();
+      const result = await optimizeResume(
+        data.resumeText,
+        data.resumeParsed,
+        data.jobDescription,
+        data.tone
+      );
+      
       updateData({
         optimizedResume: result.optimizedResume,
         coverLetter: result.coverLetter,
