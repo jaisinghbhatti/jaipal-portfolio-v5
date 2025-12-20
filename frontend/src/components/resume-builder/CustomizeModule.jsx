@@ -38,7 +38,8 @@ const CustomizeModule = ({ data, updateData, onNext, onBack, isLoading, setIsLoa
     if (!data.matchScore && !analyzed && !isLoading) {
       handleAnalyze();
     }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    // Only run once on component mount
+  }, [analyzed, isLoading]); // eslint-disable-line
 
   const handleAnalyze = async () => {
     setIsLoading(true);
