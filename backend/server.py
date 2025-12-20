@@ -14,6 +14,7 @@ from models import (
 from email_service import send_contact_email, send_confirmation_email
 from typing import List
 import httpx
+from resume_builder import router as resume_builder_router
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
