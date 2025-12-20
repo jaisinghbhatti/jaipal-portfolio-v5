@@ -130,3 +130,4 @@ frontend/node_modules/puppeteer/.local-chromium/linux-686378/chrome-linux/chrome
 *.env
 *.env.*
 frontend/node_modules/.cache/default-development/4.pack
+frontend/node_modules/.cache/default-development/5.pack
