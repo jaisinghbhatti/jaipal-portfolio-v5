@@ -306,10 +306,10 @@ const PreviewExport = ({ data, updateData, onBack, goToStep }) => {
                     </DialogHeader>
                     <div className="text-sm text-slate-600 space-y-3 max-h-[60vh] overflow-y-auto">
                       <p>
-                        By using Jai's AI Resume Builder, you acknowledge and agree to the following:
+                        By using Jai&apos;s AI Resume Builder, you acknowledge and agree to the following:
                       </p>
                       <p>
-                        <strong>Accuracy of Information:</strong> This tool uses Artificial Intelligence to suggest content. It may occasionally generate inaccurate data or placeholders (e.g., [X%]). It is the user's sole responsibility to review, edit, and verify all information before submitting a resume to an employer.
+                        <strong>Accuracy of Information:</strong> This tool uses Artificial Intelligence to suggest content. It may occasionally generate inaccurate data or placeholders (e.g., [X%]). It is the user&apos;s sole responsibility to review, edit, and verify all information before submitting a resume to an employer.
                       </p>
                       <p>
                         <strong>No Guarantee of Employment:</strong> Use of this tool does not guarantee job interviews or employment. JaiSingh.in is not responsible for any career outcomes resulting from the use of these documents.
@@ -321,7 +321,7 @@ const PreviewExport = ({ data, updateData, onBack, goToStep }) => {
                         <strong>Limitation of Liability:</strong> JaiSingh.in shall not be liable for any direct or indirect damages arising from the use of this free tool.
                       </p>
                       <p className="italic text-slate-500">
-                        "As a Digital Marketing veteran, I know the power of data. This tool helps you frame your story, but the results are all yours. Please ensure your metrics are 100% accurate before hitting 'Send'." - Jaipal Singh
+                        &quot;As a Digital Marketing veteran, I know the power of data. This tool helps you frame your story, but the results are all yours. Please ensure your metrics are 100% accurate before hitting &apos;Send&apos;.&quot; - Jaipal Singh
                       </p>
                     </div>
                   </DialogContent>
