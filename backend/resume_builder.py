@@ -42,24 +42,42 @@ class OptimizeResponse(BaseModel):
 
 # Helper functions
 def extract_text_from_pdf(file_bytes: bytes) -> str:
-    """Extract text from PDF file"""
+    """Extract text from PDF file using multiple methods"""
+    text = ""
+    
+    # Try PyPDF2 first
     try:
         from PyPDF2 import PdfReader
         pdf_reader = PdfReader(io.BytesIO(file_bytes))
-        text = ""
         for page in pdf_reader.pages:
             page_text = page.extract_text()
             if page_text:
                 text += page_text + "\n"
-        
-        # Clean up the text
         text = text.strip()
-        if not text:
-            logger.warning("PDF extraction returned empty text - may be image-based PDF")
-        return text
+        if text and len(text) > 20:
+            logger.info(f"PyPDF2 extracted {len(text)} characters")
+            return text
     except Exception as e:
-        logger.error(f"PDF extraction error: {e}", exc_info=True)
-        raise HTTPException(status_code=400, detail=f"Failed to extract text from PDF: {str(e)}")
+        logger.warning(f"PyPDF2 extraction failed: {e}")
+    
+    # Fallback to pdfplumber
+    try:
+        import pdfplumber
+        with pdfplumber.open(io.BytesIO(file_bytes)) as pdf:
+            for page in pdf.pages:
+                page_text = page.extract_text()
+                if page_text:
+                    text += page_text + "\n"
+        text = text.strip()
+        if text:
+            logger.info(f"pdfplumber extracted {len(text)} characters")
+            return text
+    except Exception as e:
+        logger.warning(f"pdfplumber extraction failed: {e}")
+    
+    if not text:
+        logger.error("Could not extract text from PDF with any method")
+        raise HTTPException(status_code=400, detail="Could not extract text from PDF. The file may be image-based or corrupted. Please try pasting your resume text instead.")
 
 
 def extract_text_from_docx(file_bytes: bytes) -> str:
