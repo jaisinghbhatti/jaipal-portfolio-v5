@@ -151,16 +151,8 @@ metadata:
   run_ui: false
 
 test_plan:
-  current_focus:
-    - "Resume Builder UI Navigation"
-    - "Step 1 - Input Module"
-    - "Step 2 - Customize Module"
-    - "Step 3 - Template Selector"
-    - "Step 4 - Export Module"
-  stuck_tasks:
-    - "Resume Builder UI Navigation"
-    - "Step 1 - Input Module"
-    - "Step 2 - Customize Module"
+  current_focus: []
+  stuck_tasks: []
   test_all: false
   test_priority: "high_first"
 
