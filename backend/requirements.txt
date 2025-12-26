@@ -1,16 +1,11 @@
 --extra-index-url https://d33sy5i8bnduwe.cloudfront.net/simple/
 
 fastapi==0.115.4
-fastapi-mail==1.4.1
 uvicorn==0.32.0
-motor==3.6.0
-pydantic[email]==2.9.2
 python-multipart==0.0.12
 python-dotenv==1.0.1
-aiofiles==24.1.0
 httpx==0.28.1
 PyPDF2==3.0.1
 python-docx==1.1.2
 pdfplumber==0.11.4
-jinja2==3.1.4
 emergentintegrations
