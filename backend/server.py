@@ -19,10 +19,17 @@ from resume_builder import router as resume_builder_router
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
-# MongoDB connection
-mongo_url = os.environ['MONGO_URL']
-client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ['DB_NAME']]
+# MongoDB connection (optional - only needed for contact form, not resume builder)
+mongo_url = os.environ.get('MONGO_URL', '')
+db = None
+client = None
+
+if mongo_url:
+    try:
+        client = AsyncIOMotorClient(mongo_url)
+        db = client[os.environ.get('DB_NAME', 'resume_builder')]
+    except Exception as e:
+        logging.warning(f"MongoDB connection failed: {e}. Contact form will be disabled.")
 
 # Create the main app without a prefix
 app = FastAPI()
