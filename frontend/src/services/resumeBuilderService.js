@@ -11,13 +11,21 @@ const getApiUrl = () => {
     return process.env.REACT_APP_BACKEND_URL;
   }
   
-  // Fallback: detect if we're on Emergent preview and construct the URL
   const hostname = window.location.hostname;
+  
+  // For Emergent preview environment
   if (hostname.includes('preview.emergentagent.com')) {
-    // Extract the preview ID and construct backend URL
     const previewUrl = `https://${hostname}`;
-    console.log('Auto-detected preview URL:', previewUrl);
+    console.log('Auto-detected Emergent preview URL:', previewUrl);
     return previewUrl;
+  }
+  
+  // For deployed site (jaisingh.in) - use Emergent backend
+  // This is temporary until you deploy a dedicated backend
+  if (hostname.includes('jaisingh.in')) {
+    const emergentBackend = 'https://folio-preview-2.preview.emergentagent.com';
+    console.log('Using Emergent backend for jaisingh.in:', emergentBackend);
+    return emergentBackend;
   }
   
   // For local development
@@ -26,8 +34,8 @@ const getApiUrl = () => {
     return 'http://localhost:8001';
   }
   
-  // For same-origin deployment, use empty string for relative paths
-  console.log('No REACT_APP_BACKEND_URL set, using relative paths');
+  // Fallback: use empty string for relative paths
+  console.log('No backend URL configured, using relative paths');
   return '';
 };
 
