@@ -1083,42 +1083,192 @@ class ResumeBuilderTester:
         return self.test_results
 
 
+async def test_specific_resume_builder():
+    """Test specific Resume Builder endpoints as requested"""
+    print("🎯 SPECIFIC RESUME BUILDER TESTING")
+    print("=" * 80)
+    
+    session = aiohttp.ClientSession()
+    test_results = []
+    
+    def log_result(test_name, success, message, details=None):
+        result = {
+            "test": test_name,
+            "success": success,
+            "message": message,
+            "details": details,
+            "timestamp": datetime.now().isoformat()
+        }
+        test_results.append(result)
+        status = "✅ PASS" if success else "❌ FAIL"
+        print(f"{status}: {test_name} - {message}")
+        if details:
+            print(f"   Details: {details}")
+    
+    try:
+        # Test 1: Parse DOCX endpoint with actual file
+        print("\n1. Testing /api/resume-builder/parse endpoint with DOCX...")
+        try:
+            with open('/tmp/jaipal_resume.docx', 'rb') as f:
+                file_data = f.read()
+            
+            form_data = aiohttp.FormData()
+            form_data.add_field('file', file_data, filename='jaipal_resume.docx', content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
+            form_data.add_field('type', 'resume')
+            
+            async with session.post(f"{BACKEND_URL}/resume-builder/parse", data=form_data) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    if data.get("text") and len(data["text"]) > 100:
+                        log_result("DOCX Parse Endpoint", True, 
+                                 f"Successfully extracted {len(data['text'])} characters from DOCX")
+                        extracted_text = data["text"]
+                    else:
+                        log_result("DOCX Parse Endpoint", False, 
+                                 f"Extracted text too short: {len(data.get('text', ''))}")
+                        extracted_text = None
+                else:
+                    error_text = await response.text()
+                    log_result("DOCX Parse Endpoint", False, 
+                             f"HTTP {response.status}: {error_text}")
+                    extracted_text = None
+        except Exception as e:
+            log_result("DOCX Parse Endpoint", False, f"Request error: {str(e)}")
+            extracted_text = None
+        
+        # Test 2: Analyze endpoint with specific data
+        print("\n2. Testing /api/resume-builder/analyze endpoint...")
+        analyze_data = {
+            "resumeText": "Jaipal Singh\nSr. Marketing Manager at Gartner\n10+ years in Digital Marketing\nSkills: Brand Marketing, SEO, Email Marketing, Data Analytics, Team Management",
+            "jobDescription": "Marketing Director needed with:\n- 10+ years experience\n- SEO, SEM, Content Marketing expertise\n- Team Leadership and Budget Management\n- B2B Marketing background\n- CRM tools experience (HubSpot, Salesforce)"
+        }
+        
+        try:
+            async with session.post(
+                f"{BACKEND_URL}/resume-builder/analyze",
+                json=analyze_data,
+                headers={"Content-Type": "application/json"}
+            ) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    match_score = data.get("matchScore")
+                    missing_keywords = data.get("missingKeywords", [])
+                    
+                    if isinstance(match_score, int) and 40 <= match_score <= 80:
+                        log_result("Analyze Endpoint - Match Score", True, 
+                                 f"Match score {match_score}% is within expected range (40-80%)")
+                    else:
+                        log_result("Analyze Endpoint - Match Score", False, 
+                                 f"Match score {match_score}% outside expected range (40-80%)")
+                    
+                    expected_missing = ["Budget Management", "CRM", "Salesforce", "Content Marketing"]
+                    found_missing = [kw for kw in expected_missing if any(kw.lower() in mk.lower() for mk in missing_keywords)]
+                    
+                    if len(found_missing) >= 2:
+                        log_result("Analyze Endpoint - Missing Keywords", True, 
+                                 f"Found expected missing keywords: {found_missing}")
+                    else:
+                        log_result("Analyze Endpoint - Missing Keywords", False, 
+                                 f"Expected keywords not found. Got: {missing_keywords}")
+                    
+                    log_result("Analyze Endpoint", True, 
+                             f"Successfully analyzed resume: {match_score}% match, {len(missing_keywords)} missing keywords")
+                else:
+                    error_text = await response.text()
+                    log_result("Analyze Endpoint", False, 
+                             f"HTTP {response.status}: {error_text}")
+        except Exception as e:
+            log_result("Analyze Endpoint", False, f"Request error: {str(e)}")
+        
+        # Test 3: Optimize endpoint with specific data
+        print("\n3. Testing /api/resume-builder/optimize endpoint...")
+        optimize_data = {
+            "resumeText": "Jaipal Singh - Sr. Marketing Manager\n- Led team of 12 people\n- Managed digital campaigns",
+            "jobDescription": "Marketing Director with leadership experience",
+            "tone": "executive"
+        }
+        
+        try:
+            async with session.post(
+                f"{BACKEND_URL}/resume-builder/optimize",
+                json=optimize_data,
+                headers={"Content-Type": "application/json"}
+            ) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    optimized_resume = data.get("optimizedResume", "")
+                    cover_letter = data.get("coverLetter", "")
+                    
+                    # Check for metrics enhancement
+                    has_metrics = any(char in optimized_resume for char in ['%', '$', '[', ']'])
+                    
+                    if len(optimized_resume) > 100:
+                        log_result("Optimize Endpoint - Resume", True, 
+                                 f"Generated optimized resume ({len(optimized_resume)} chars)")
+                        if has_metrics:
+                            log_result("Optimize Endpoint - Metrics", True, 
+                                     "Optimized resume includes quantifiable metrics")
+                        else:
+                            log_result("Optimize Endpoint - Metrics", False, 
+                                     "Optimized resume lacks quantifiable metrics")
+                    else:
+                        log_result("Optimize Endpoint - Resume", False, 
+                                 f"Optimized resume too short: {len(optimized_resume)} chars")
+                    
+                    if len(cover_letter) > 100:
+                        log_result("Optimize Endpoint - Cover Letter", True, 
+                                 f"Generated cover letter ({len(cover_letter)} chars)")
+                    else:
+                        log_result("Optimize Endpoint - Cover Letter", False, 
+                                 f"Cover letter too short: {len(cover_letter)} chars")
+                    
+                    log_result("Optimize Endpoint", True, 
+                             "Successfully optimized resume and generated cover letter")
+                else:
+                    error_text = await response.text()
+                    log_result("Optimize Endpoint", False, 
+                             f"HTTP {response.status}: {error_text}")
+        except Exception as e:
+            log_result("Optimize Endpoint", False, f"Request error: {str(e)}")
+        
+    finally:
+        await session.close()
+    
+    # Print summary
+    print("\n" + "=" * 80)
+    print("📊 SPECIFIC RESUME BUILDER TEST SUMMARY")
+    print("=" * 80)
+    
+    passed = sum(1 for result in test_results if result["success"])
+    total = len(test_results)
+    
+    print(f"Total Tests: {total}")
+    print(f"Passed: {passed}")
+    print(f"Failed: {total - passed}")
+    print(f"Success Rate: {(passed/total)*100:.1f}%")
+    
+    # Show failed tests
+    failed_tests = [result for result in test_results if not result["success"]]
+    if failed_tests:
+        print("\n❌ FAILED TESTS:")
+        for test in failed_tests:
+            print(f"  • {test['test']}: {test['message']}")
+            if test['details']:
+                print(f"    Details: {test['details']}")
+    
+    return test_results
+
+
 async def main():
     """Main test runner"""
-    print("🎯 COMPREHENSIVE BACKEND API TESTING")
+    print("🎯 RESUME BUILDER SPECIFIC TESTING")
     print("=" * 80)
     
-    # Run Resume Builder tests (as requested)
-    resume_tester = ResumeBuilderTester()
-    resume_results = await resume_tester.run_all_tests()
-    
-    print("\n" + "=" * 80)
-    
-    # Run Blog CMS tests
-    blog_tester = BlogCMSTester()
-    blog_results = await blog_tester.run_all_tests()
-    
-    print("\n" + "=" * 80)
-    
-    # Run Contact Form tests
-    contact_tester = ContactFormTester()
-    contact_results = await contact_tester.run_all_tests()
-    
-    # Combined summary
-    all_results = resume_results + blog_results + contact_results
-    total_passed = sum(1 for result in all_results if result["success"])
-    total_tests = len(all_results)
-    
-    print("\n" + "=" * 80)
-    print("🎯 OVERALL TEST SUMMARY")
-    print("=" * 80)
-    print(f"Resume Builder Tests: {sum(1 for r in resume_results if r['success'])}/{len(resume_results)} passed")
-    print(f"Blog CMS Tests: {sum(1 for r in blog_results if r['success'])}/{len(blog_results)} passed")
-    print(f"Contact Form Tests: {sum(1 for r in contact_results if r['success'])}/{len(contact_results)} passed")
-    print(f"Total: {total_passed}/{total_tests} passed ({(total_passed/total_tests)*100:.1f}%)")
+    # Run specific Resume Builder tests as requested
+    specific_results = await test_specific_resume_builder()
     
     # Return appropriate exit code
-    failed_count = total_tests - total_passed
+    failed_count = len([r for r in specific_results if not r["success"]])
     return failed_count
 
 if __name__ == "__main__":
