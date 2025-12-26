@@ -21,43 +21,67 @@ const API_URL = getApiUrl();
  * Parse uploaded document (PDF/DOCX)
  */
 export const parseDocument = async (file, type) => {
+  console.log('parseDocument called:', { fileName: file.name, fileType: file.type, fileSize: file.size, type });
+  
   const formData = new FormData();
   formData.append('file', file);
   formData.append('type', type);
 
-  const response = await fetch(`${API_URL}/api/resume-builder/parse`, {
-    method: 'POST',
-    body: formData,
-  });
+  try {
+    const response = await fetch(`${API_URL}/api/resume-builder/parse`, {
+      method: 'POST',
+      body: formData,
+    });
 
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ detail: 'Failed to parse file' }));
-    throw new Error(error.detail || 'Failed to parse file');
+    console.log('Parse response status:', response.status);
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ detail: 'Failed to parse file' }));
+      console.error('Parse error response:', error);
+      throw new Error(error.detail || 'Failed to parse file');
+    }
+
+    const result = await response.json();
+    console.log('Parse success, extracted characters:', result.text?.length);
+    return result;
+  } catch (error) {
+    console.error('Parse fetch error:', error);
+    throw error;
   }
-
-  return response.json();
 };
 
 /**
  * Analyze resume against job description
  */
 export const analyzeResume = async (resumeText, resumeParsed, jobDescription) => {
-  const response = await fetch(`${API_URL}/api/resume-builder/analyze`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      resumeText,
-      resumeParsed,
-      jobDescription,
-    }),
-  });
+  console.log('analyzeResume called:', { resumeLength: resumeText?.length, jdLength: jobDescription?.length });
+  
+  try {
+    const response = await fetch(`${API_URL}/api/resume-builder/analyze`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        resumeText,
+        resumeParsed,
+        jobDescription,
+      }),
+    });
 
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ detail: 'Analysis failed' }));
-    throw new Error(error.detail || 'Analysis failed');
+    console.log('Analyze response status:', response.status);
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ detail: 'Analysis failed' }));
+      console.error('Analyze error response:', error);
+      throw new Error(error.detail || 'Analysis failed');
+    }
+
+    const result = await response.json();
+    console.log('Analyze success:', result);
+    return result;
+  } catch (error) {
+    console.error('Analyze fetch error:', error);
+    throw error;
   }
-
-  return response.json();
 };
 
 /**
