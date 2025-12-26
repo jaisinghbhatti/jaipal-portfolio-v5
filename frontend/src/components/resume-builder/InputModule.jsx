@@ -72,11 +72,27 @@ const InputModule = ({ data, updateData, onNext, isLoading, setIsLoading }) => {
   const handleJDFileUpload = useCallback(async (file) => {
     if (!file) return;
     
-    const validTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
-    if (!validTypes.includes(file.type)) {
+    // Check by file extension AND mime type for better compatibility
+    const filename = file.name?.toLowerCase() || '';
+    const mimeType = file.type?.toLowerCase() || '';
+    
+    const isValidPdf = filename.endsWith('.pdf') || mimeType.includes('pdf');
+    const isValidDocx = filename.endsWith('.docx') || mimeType.includes('wordprocessingml') || mimeType.includes('msword');
+    const isValidDoc = filename.endsWith('.doc');
+    
+    if (!isValidPdf && !isValidDocx && !isValidDoc) {
       toast({
         title: "Invalid File Type",
         description: "Please upload a PDF or DOCX file.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (isValidDoc && !isValidDocx) {
+      toast({
+        title: "Old Word Format",
+        description: "Please save your document as .docx (not .doc) and try again.",
         variant: "destructive",
       });
       return;
