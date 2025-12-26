@@ -6,7 +6,7 @@ from datetime import datetime
 import sys
 
 # Get the backend URL from frontend .env file
-BACKEND_URL = "https://folio-preview-2.preview.emergentagent.com/api"
+BACKEND_URL = "https://cv-builder-130.preview.emergentagent.com/api"
 
 class BlogCMSTester:
     def __init__(self):

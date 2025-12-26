@@ -23,7 +23,7 @@ const getApiUrl = () => {
   // For deployed site (jaisingh.in) - use Emergent backend
   // This is temporary until you deploy a dedicated backend
   if (hostname.includes('jaisingh.in')) {
-    const emergentBackend = 'https://folio-preview-2.preview.emergentagent.com';
+    const emergentBackend = 'https://cv-builder-130.preview.emergentagent.com';
     console.log('Using Emergent backend for jaisingh.in:', emergentBackend);
     return emergentBackend;
   }
