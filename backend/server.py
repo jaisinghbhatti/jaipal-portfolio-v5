@@ -31,7 +31,11 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Health check endpoint
+# Health check endpoints (Railway checks /api/)
+@app.get("/api/")
+async def api_root():
+    return {"status": "healthy", "service": "resume-builder"}
+
 @app.get("/api/health")
 async def health_check():
     return {"status": "healthy", "service": "resume-builder"}
