@@ -1,40 +1,42 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Download, Edit3, Eye, FileText, Check, Info, Loader2 } from "lucide-react";
+import { Download, Edit3, Eye, FileText, Check, Info, Loader2, FileDown } from "lucide-react";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Checkbox } from "../ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { useToast } from "../../hooks/use-toast";
-import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 
 // Template styles
 const templateStyles = {
   harvard: {
-    fontFamily: "Georgia, serif",
-    fontSize: "12pt",
+    fontFamily: "times",
+    fontSize: 11,
     headerAlign: "center",
-    color: "#000000",
-    margins: "1in",
+    color: [0, 0, 0],
+    lineHeight: 1.4,
   },
   modern: {
-    fontFamily: "Inter, Arial, sans-serif",
-    fontSize: "10pt",
-    layout: "split",
-    sidebarBg: "#F4F7F9",
-    accentColor: "#2A5C82",
+    fontFamily: "helvetica",
+    fontSize: 10,
+    headerAlign: "left",
+    color: [42, 92, 130],
+    lineHeight: 1.3,
   },
   impact: {
-    fontFamily: "Inter, Arial, sans-serif",
-    fontSize: "11pt",
-    headerColor: "#2A5C82",
-    hasKeyWins: true,
+    fontFamily: "helvetica",
+    fontSize: 11,
+    headerAlign: "left",
+    color: [42, 92, 130],
+    lineHeight: 1.4,
   },
   minimal: {
-    fontFamily: "Arial, Helvetica, sans-serif",
-    fontSize: "11pt",
-    color: "#333333",
+    fontFamily: "helvetica",
+    fontSize: 11,
+    headerAlign: "left",
+    color: [51, 51, 51],
+    lineHeight: 1.4,
   },
 };
 
@@ -64,6 +66,7 @@ const PreviewExport = ({ data, updateData, onBack, goToStep }) => {
     }
   };
 
+  // Generate professional PDF with proper text formatting
   const exportToPDF = async (type = "resume") => {
     if (!data.agreedToTerms) {
       toast({
@@ -75,54 +78,107 @@ const PreviewExport = ({ data, updateData, onBack, goToStep }) => {
     }
 
     setIsExporting(true);
-    const ref = type === "resume" ? resumeRef : coverLetterRef;
 
     try {
-      const element = ref.current;
-      if (!element) throw new Error("Element not found");
-
-      // Create canvas from element
-      const canvas = await html2canvas(element, {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-        backgroundColor: "#ffffff",
-      });
-
-      // Create PDF
-      const imgData = canvas.toDataURL("image/png");
+      const content = type === "resume" ? editedResume : editedCoverLetter;
+      const style = templateStyles[data.selectedTemplate] || templateStyles.harvard;
+      
       const pdf = new jsPDF({
         orientation: "portrait",
         unit: "mm",
         format: "a4",
       });
 
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
-      const imgWidth = canvas.width;
-      const imgHeight = canvas.height;
-      const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
-      const imgX = (pdfWidth - imgWidth * ratio) / 2;
-      const imgY = 0;
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const margin = 20;
+      const maxWidth = pageWidth - (margin * 2);
+      let yPosition = margin;
 
-      pdf.addImage(imgData, "PNG", imgX, imgY, imgWidth * ratio, imgHeight * ratio);
+      // Set font
+      pdf.setFont(style.fontFamily, "normal");
+      pdf.setFontSize(style.fontSize);
+      pdf.setTextColor(...style.color);
+
+      // Parse and render content
+      const lines = content.split('\n');
+      
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        
+        // Check if we need a new page
+        if (yPosition > pageHeight - margin - 10) {
+          pdf.addPage();
+          yPosition = margin;
+        }
+
+        // Detect section headers (ALL CAPS or lines ending with :)
+        const isHeader = /^[A-Z\s&]+$/.test(line) || 
+                        /^(SUMMARY|EXPERIENCE|EDUCATION|SKILLS|CERTIFICATIONS|ACHIEVEMENTS|WORK EXPERIENCE|PROFESSIONAL EXPERIENCE|CONTACT|OBJECTIVE)/.test(line.toUpperCase());
+        
+        // Detect name (usually first non-empty line, larger text)
+        const isName = i === 0 || (i < 3 && line.length > 0 && line.length < 50 && !line.includes('@') && !line.includes('|'));
+
+        if (isName && i < 3) {
+          // Name styling
+          pdf.setFontSize(style.fontSize + 6);
+          pdf.setFont(style.fontFamily, "bold");
+          if (style.headerAlign === "center") {
+            pdf.text(line, pageWidth / 2, yPosition, { align: "center" });
+          } else {
+            pdf.text(line, margin, yPosition);
+          }
+          yPosition += 8;
+          pdf.setFontSize(style.fontSize);
+          pdf.setFont(style.fontFamily, "normal");
+        } else if (isHeader) {
+          // Section header styling
+          yPosition += 4; // Add space before header
+          pdf.setFontSize(style.fontSize + 2);
+          pdf.setFont(style.fontFamily, "bold");
+          pdf.setTextColor(...style.color);
+          pdf.text(line, margin, yPosition);
+          yPosition += 2;
+          // Add underline for headers
+          pdf.setDrawColor(...style.color);
+          pdf.setLineWidth(0.5);
+          pdf.line(margin, yPosition, margin + pdf.getTextWidth(line), yPosition);
+          yPosition += 6;
+          pdf.setFontSize(style.fontSize);
+          pdf.setFont(style.fontFamily, "normal");
+          pdf.setTextColor(60, 60, 60);
+        } else if (line.startsWith('•') || line.startsWith('-') || line.startsWith('*')) {
+          // Bullet points
+          const bulletText = line.replace(/^[•\-*]\s*/, '');
+          const wrappedLines = pdf.splitTextToSize(bulletText, maxWidth - 10);
+          pdf.text('•', margin, yPosition);
+          pdf.text(wrappedLines, margin + 5, yPosition);
+          yPosition += wrappedLines.length * style.fontSize * style.lineHeight * 0.35 + 2;
+        } else if (line.length > 0) {
+          // Regular text with word wrap
+          const wrappedLines = pdf.splitTextToSize(line, maxWidth);
+          pdf.text(wrappedLines, margin, yPosition);
+          yPosition += wrappedLines.length * style.fontSize * style.lineHeight * 0.35 + 1;
+        } else {
+          // Empty line - add small spacing
+          yPosition += 3;
+        }
+      }
 
       // Add footer
       pdf.setFontSize(8);
-      pdf.setTextColor(150);
-      pdf.text("Generated via JaiSingh.in", pdfWidth - 45, pdfHeight - 5);
+      pdf.setTextColor(150, 150, 150);
+      pdf.text("Generated via JaiSingh.in/resume-builder", pageWidth / 2, pageHeight - 10, { align: "center" });
 
       // Generate filename
-      const parsed = data.resumeParsed || {};
-      const name = parsed.fullName || "Resume";
       const date = new Date().toISOString().split("T")[0];
-      const filename = `${name.replace(/\s+/g, "_")}_${type === "resume" ? "Resume" : "CoverLetter"}_${date}.pdf`;
+      const filename = `Resume_${type === "resume" ? "Optimized" : "CoverLetter"}_${date}.pdf`;
 
       pdf.save(filename);
 
       toast({
-        title: "Download Started",
-        description: `Your ${type === "resume" ? "resume" : "cover letter"} is being downloaded.`,
+        title: "Download Complete",
+        description: `Your ${type === "resume" ? "resume" : "cover letter"} has been downloaded.`,
       });
     } catch (error) {
       console.error("Export error:", error);
@@ -136,66 +192,85 @@ const PreviewExport = ({ data, updateData, onBack, goToStep }) => {
     }
   };
 
-  const style = templateStyles[data.selectedTemplate] || templateStyles.harvard;
-
-  const renderResume = () => {
-    const content = typeof editedResume === "string" ? editedResume : JSON.stringify(editedResume, null, 2);
-
-    if (data.selectedTemplate === "modern") {
-      return (
-        <div className="flex" style={{ fontFamily: style.fontFamily }}>
-          {/* Sidebar */}
-          <div className="w-1/3 p-6" style={{ backgroundColor: style.sidebarBg }}>
-            {data.profilePhotoPreview && (
-              <img
-                src={data.profilePhotoPreview}
-                alt="Profile"
-                className="w-24 h-24 rounded-full mx-auto mb-4 object-cover"
-              />
-            )}
-            <h3 className="text-sm font-semibold mb-2" style={{ color: style.accentColor }}>
-              SKILLS
-            </h3>
-            <div className="text-xs text-slate-600 space-y-1">
-              {/* Skills would be extracted from parsed data */}
-              <p>• Leadership</p>
-              <p>• Strategic Planning</p>
-              <p>• Project Management</p>
-            </div>
-          </div>
-          {/* Main Content */}
-          <div className="flex-1 p-6">
-            <div
-              contentEditable={editMode}
-              suppressContentEditableWarning
-              onBlur={(e) => handleContentEdit(e, "resume")}
-              className={`whitespace-pre-wrap text-sm outline-none ${editMode ? "bg-blue-50 p-2 rounded" : ""}`}
-            >
-              {content}
-            </div>
-          </div>
-        </div>
-      );
+  // Export as DOCX (text file that can be opened in Word)
+  const exportToDocx = (type = "resume") => {
+    if (!data.agreedToTerms) {
+      toast({
+        title: "Agreement Required",
+        description: "Please agree to the Terms of Use before downloading.",
+        variant: "destructive",
+      });
+      return;
     }
 
-    // Default single-column layout
+    try {
+      const content = type === "resume" ? editedResume : editedCoverLetter;
+      
+      // Create a simple RTF format that Word can open
+      const rtfContent = `{\\rtf1\\ansi\\deff0
+{\\fonttbl{\\f0 Arial;}}
+{\\colortbl;\\red0\\green0\\blue0;}
+\\f0\\fs22
+${content.replace(/\n/g, '\\par\n').replace(/[•]/g, '\\bullet ')}
+\\par
+\\par
+{\\i\\fs16 Generated via JaiSingh.in/resume-builder}
+}`;
+
+      const blob = new Blob([rtfContent], { type: 'application/rtf' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      const date = new Date().toISOString().split("T")[0];
+      a.download = `Resume_${type === "resume" ? "Optimized" : "CoverLetter"}_${date}.rtf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      toast({
+        title: "Download Complete",
+        description: `Your ${type === "resume" ? "resume" : "cover letter"} has been downloaded as RTF (opens in Word).`,
+      });
+    } catch (error) {
+      console.error("Export error:", error);
+      toast({
+        title: "Export Failed",
+        description: "Could not generate file. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Copy to clipboard
+  const copyToClipboard = (type = "resume") => {
+    const content = type === "resume" ? editedResume : editedCoverLetter;
+    navigator.clipboard.writeText(content).then(() => {
+      toast({
+        title: "Copied!",
+        description: "Content copied to clipboard. You can paste it into Word or Google Docs.",
+      });
+    }).catch(() => {
+      toast({
+        title: "Copy Failed",
+        description: "Could not copy to clipboard.",
+        variant: "destructive",
+      });
+    });
+  };
+
+  const style = templateStyles[data.selectedTemplate] || templateStyles.harvard;
+
+  const renderResumePreview = () => {
+    const content = typeof editedResume === "string" ? editedResume : JSON.stringify(editedResume, null, 2);
+
     return (
-      <div className="p-8" style={{ fontFamily: style.fontFamily }}>
-        {data.profilePhotoPreview && data.selectedTemplate === "impact" && (
-          <img
-            src={data.profilePhotoPreview}
-            alt="Profile"
-            className="w-20 h-20 rounded-full float-right ml-4 mb-4 object-cover"
-          />
-        )}
+      <div className="p-8 bg-white" style={{ fontFamily: style.fontFamily === "times" ? "Georgia, serif" : "Arial, sans-serif" }}>
         <div
           contentEditable={editMode}
           suppressContentEditableWarning
           onBlur={(e) => handleContentEdit(e, "resume")}
-          className={`whitespace-pre-wrap text-sm outline-none ${
-            style.headerAlign === "center" ? "text-center" : ""
-          } ${editMode ? "bg-blue-50 p-2 rounded" : ""}`}
-          style={{ color: style.color }}
+          className={`whitespace-pre-wrap text-sm leading-relaxed outline-none ${editMode ? "bg-blue-50 p-2 rounded border-2 border-blue-300" : ""}`}
         >
           {content}
         </div>
@@ -208,19 +283,28 @@ const PreviewExport = ({ data, updateData, onBack, goToStep }) => {
       {/* Preview Tabs */}
       <Card className="border-slate-200 shadow-sm">
         <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between flex-wrap gap-2">
             <CardTitle className="text-lg flex items-center gap-2">
               <Eye className="w-5 h-5 text-[#2A5C82]" />
               Live Preview
             </CardTitle>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setEditMode(!editMode)}
-            >
-              <Edit3 className="w-4 h-4 mr-1" />
-              {editMode ? "Done Editing" : "Edit Content"}
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => copyToClipboard(activeTab)}
+              >
+                Copy Text
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setEditMode(!editMode)}
+              >
+                <Edit3 className="w-4 h-4 mr-1" />
+                {editMode ? "Done Editing" : "Edit Content"}
+              </Button>
+            </div>
           </div>
           {editMode && (
             <p className="text-sm text-amber-600 mt-2">
@@ -238,23 +322,23 @@ const PreviewExport = ({ data, updateData, onBack, goToStep }) => {
             <TabsContent value="resume">
               <div
                 ref={resumeRef}
-                className="bg-white border border-slate-200 rounded-lg min-h-[600px] max-h-[800px] overflow-y-auto shadow-inner"
+                className="bg-white border border-slate-200 rounded-lg min-h-[500px] max-h-[600px] overflow-y-auto shadow-inner"
               >
-                {renderResume()}
+                {renderResumePreview()}
               </div>
             </TabsContent>
 
             <TabsContent value="coverLetter">
               <div
                 ref={coverLetterRef}
-                className="bg-white border border-slate-200 rounded-lg p-8 min-h-[600px] max-h-[800px] overflow-y-auto shadow-inner"
-                style={{ fontFamily: style.fontFamily }}
+                className="bg-white border border-slate-200 rounded-lg p-8 min-h-[500px] max-h-[600px] overflow-y-auto shadow-inner"
+                style={{ fontFamily: style.fontFamily === "times" ? "Georgia, serif" : "Arial, sans-serif" }}
               >
                 <div
                   contentEditable={editMode}
                   suppressContentEditableWarning
                   onBlur={(e) => handleContentEdit(e, "coverLetter")}
-                  className={`whitespace-pre-wrap text-sm outline-none ${editMode ? "bg-blue-50 p-2 rounded" : ""}`}
+                  className={`whitespace-pre-wrap text-sm leading-relaxed outline-none ${editMode ? "bg-blue-50 p-2 rounded border-2 border-blue-300" : ""}`}
                 >
                   {editedCoverLetter || "No cover letter generated yet."}
                 </div>
@@ -333,30 +417,61 @@ const PreviewExport = ({ data, updateData, onBack, goToStep }) => {
       </Card>
 
       {/* Export Buttons */}
-      <div className="flex flex-col sm:flex-row gap-4 justify-center">
-        <Button
-          onClick={() => exportToPDF("resume")}
-          disabled={!data.agreedToTerms || isExporting}
-          className="bg-[#2A5C82] hover:bg-[#1e4460] text-white px-8 py-6 text-lg"
-        >
-          {isExporting ? (
-            <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-          ) : (
-            <Download className="w-5 h-5 mr-2" />
-          )}
-          Download Resume PDF
-        </Button>
+      <div className="bg-slate-50 rounded-lg p-6">
+        <h3 className="font-medium text-slate-700 mb-4 text-center">Download Your Documents</h3>
         
+        {/* Resume Downloads */}
+        <div className="mb-6">
+          <p className="text-sm text-slate-500 mb-3 text-center">Resume</p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Button
+              onClick={() => exportToPDF("resume")}
+              disabled={!data.agreedToTerms || isExporting}
+              className="bg-[#2A5C82] hover:bg-[#1e4460] text-white"
+            >
+              {isExporting ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <Download className="w-4 h-4 mr-2" />
+              )}
+              Download PDF
+            </Button>
+            
+            <Button
+              variant="outline"
+              onClick={() => exportToDocx("resume")}
+              disabled={!data.agreedToTerms}
+            >
+              <FileDown className="w-4 h-4 mr-2" />
+              Download RTF (Word)
+            </Button>
+          </div>
+        </div>
+
+        {/* Cover Letter Downloads */}
         {data.coverLetter && (
-          <Button
-            variant="outline"
-            onClick={() => exportToPDF("coverLetter")}
-            disabled={!data.agreedToTerms || isExporting}
-            className="px-8 py-6 text-lg"
-          >
-            <FileText className="w-5 h-5 mr-2" />
-            Download Cover Letter
-          </Button>
+          <div>
+            <p className="text-sm text-slate-500 mb-3 text-center">Cover Letter</p>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <Button
+                variant="outline"
+                onClick={() => exportToPDF("coverLetter")}
+                disabled={!data.agreedToTerms || isExporting}
+              >
+                <FileText className="w-4 h-4 mr-2" />
+                Download PDF
+              </Button>
+              
+              <Button
+                variant="outline"
+                onClick={() => exportToDocx("coverLetter")}
+                disabled={!data.agreedToTerms}
+              >
+                <FileDown className="w-4 h-4 mr-2" />
+                Download RTF (Word)
+              </Button>
+            </div>
+          </div>
         )}
       </div>
 
@@ -368,7 +483,7 @@ const PreviewExport = ({ data, updateData, onBack, goToStep }) => {
           <ul className="mt-1 space-y-1 list-disc list-inside text-amber-600">
             <li>Replace any [X%] or [Y Amount] placeholders with your actual achievements</li>
             <li>Verify all dates and company names are correct</li>
-            <li>Test the PDF by opening it and highlighting text (ATS-friendly check)</li>
+            <li>Use &quot;Copy Text&quot; to paste into Google Docs or Word for more formatting control</li>
           </ul>
         </div>
       </div>
