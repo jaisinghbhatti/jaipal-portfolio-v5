@@ -7,15 +7,17 @@
 const getApiUrl = () => {
   // If REACT_APP_BACKEND_URL is set, use it
   if (process.env.REACT_APP_BACKEND_URL) {
+    console.log('Using REACT_APP_BACKEND_URL:', process.env.REACT_APP_BACKEND_URL);
     return process.env.REACT_APP_BACKEND_URL;
   }
   
-  // For same-origin deployment (e.g., Vercel), use relative path
-  // The API routes will be proxied to the backend
+  // For same-origin deployment, use empty string for relative paths
+  console.log('No REACT_APP_BACKEND_URL set, using relative paths');
   return '';
 };
 
 const API_URL = getApiUrl();
+console.log('Resume Builder API_URL initialized:', API_URL);
 
 /**
  * Parse uploaded document (PDF/DOCX)
