@@ -21,31 +21,52 @@ const API_URL = getApiUrl();
  * Parse uploaded document (PDF/DOCX)
  */
 export const parseDocument = async (file, type) => {
-  console.log('parseDocument called:', { fileName: file.name, fileType: file.type, fileSize: file.size, type });
+  console.log('parseDocument called:', { 
+    fileName: file.name, 
+    fileType: file.type, 
+    fileSize: file.size, 
+    type,
+    apiUrl: API_URL 
+  });
   
   const formData = new FormData();
   formData.append('file', file);
   formData.append('type', type);
 
+  const url = `${API_URL}/api/resume-builder/parse`;
+  console.log('Fetching URL:', url);
+
   try {
-    const response = await fetch(`${API_URL}/api/resume-builder/parse`, {
+    const response = await fetch(url, {
       method: 'POST',
       body: formData,
     });
 
-    console.log('Parse response status:', response.status);
+    console.log('Parse response:', { 
+      status: response.status, 
+      statusText: response.statusText,
+      ok: response.ok 
+    });
 
     if (!response.ok) {
-      const error = await response.json().catch(() => ({ detail: 'Failed to parse file' }));
-      console.error('Parse error response:', error);
-      throw new Error(error.detail || 'Failed to parse file');
+      let errorDetail = 'Failed to parse file';
+      try {
+        const errorJson = await response.json();
+        errorDetail = errorJson.detail || errorDetail;
+        console.error('Parse error JSON:', errorJson);
+      } catch (e) {
+        const errorText = await response.text();
+        console.error('Parse error text:', errorText);
+        errorDetail = errorText || errorDetail;
+      }
+      throw new Error(errorDetail);
     }
 
     const result = await response.json();
     console.log('Parse success, extracted characters:', result.text?.length);
     return result;
   } catch (error) {
-    console.error('Parse fetch error:', error);
+    console.error('Parse fetch error:', error.message, error);
     throw error;
   }
 };
