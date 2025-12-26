@@ -7,7 +7,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { useToast } from "../../hooks/use-toast";
 import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
+import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, BorderStyle } from "docx";
+import { saveAs } from "file-saver";
 
 // Parse resume text into structured sections
 const parseResumeText = (text) => {
@@ -35,7 +36,7 @@ const parseResumeText = (text) => {
     const upperLine = line.toUpperCase();
     
     // Detect section headers
-    if (upperLine.includes('SUMMARY') || upperLine.includes('OBJECTIVE') || upperLine.includes('PROFILE')) {
+    if (upperLine.includes('SUMMARY') || upperLine.includes('OBJECTIVE') || upperLine.includes('PROFILE') || upperLine.includes('ABOUT')) {
       currentSection = 'summary';
       continue;
     } else if (upperLine.includes('EXPERIENCE') || upperLine.includes('EMPLOYMENT') || upperLine.includes('WORK HISTORY')) {
@@ -67,9 +68,9 @@ const parseResumeText = (text) => {
     } else if (currentSection === 'summary') {
       sections.summary += (sections.summary ? ' ' : '') + line;
     } else if (currentSection === 'experience') {
-      if (line.startsWith('•') || line.startsWith('-') || line.startsWith('*')) {
+      if (line.startsWith('•') || line.startsWith('-') || line.startsWith('*') || line.startsWith('►')) {
         if (currentExperience) {
-          currentExperience.bullets.push(line.replace(/^[•\-*]\s*/, ''));
+          currentExperience.bullets.push(line.replace(/^[•\-*►]\s*/, ''));
         }
       } else if (line.length > 0) {
         if (currentExperience && currentExperience.company && !currentExperience.dates && /\d{4}/.test(line)) {
@@ -114,7 +115,6 @@ const parseResumeText = (text) => {
 // Harvard Executive Template - Classic single column
 const HarvardTemplate = ({ data, parsed, profilePhoto }) => (
   <div className="bg-white p-8 font-serif min-h-[800px]" style={{ fontFamily: 'Georgia, serif' }}>
-    {/* Header */}
     <div className="text-center border-b-2 border-gray-800 pb-6 mb-6">
       {profilePhoto && (
         <img src={profilePhoto} alt="Profile" className="w-24 h-24 rounded-full mx-auto mb-4 object-cover border-2 border-gray-300" />
@@ -126,7 +126,6 @@ const HarvardTemplate = ({ data, parsed, profilePhoto }) => (
       </div>
     </div>
     
-    {/* Summary */}
     {parsed?.summary && (
       <div className="mb-6">
         <h2 className="text-lg font-bold text-gray-800 uppercase tracking-widest border-b border-gray-300 pb-1 mb-3">Professional Summary</h2>
@@ -134,7 +133,6 @@ const HarvardTemplate = ({ data, parsed, profilePhoto }) => (
       </div>
     )}
     
-    {/* Experience */}
     {parsed?.experience?.length > 0 && (
       <div className="mb-6">
         <h2 className="text-lg font-bold text-gray-800 uppercase tracking-widest border-b border-gray-300 pb-1 mb-3">Professional Experience</h2>
@@ -155,7 +153,6 @@ const HarvardTemplate = ({ data, parsed, profilePhoto }) => (
       </div>
     )}
     
-    {/* Education */}
     {parsed?.education?.length > 0 && (
       <div className="mb-6">
         <h2 className="text-lg font-bold text-gray-800 uppercase tracking-widest border-b border-gray-300 pb-1 mb-3">Education</h2>
@@ -165,13 +162,11 @@ const HarvardTemplate = ({ data, parsed, profilePhoto }) => (
               <span className="font-semibold text-gray-900">{edu.school}</span>
               <span className="text-sm text-gray-500">{edu.year}</span>
             </div>
-            {edu.degree && <p className="text-gray-700 italic text-sm">{edu.degree}</p>}
           </div>
         ))}
       </div>
     )}
     
-    {/* Skills */}
     {parsed?.skills?.length > 0 && (
       <div className="mb-6">
         <h2 className="text-lg font-bold text-gray-800 uppercase tracking-widest border-b border-gray-300 pb-1 mb-3">Skills</h2>
@@ -184,7 +179,6 @@ const HarvardTemplate = ({ data, parsed, profilePhoto }) => (
 // Modern Tech Template - 70/30 split with sidebar
 const ModernTemplate = ({ data, parsed, profilePhoto }) => (
   <div className="bg-white min-h-[800px] flex" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
-    {/* Sidebar */}
     <div className="w-[30%] bg-gradient-to-b from-slate-800 to-slate-900 text-white p-6">
       {profilePhoto ? (
         <img src={profilePhoto} alt="Profile" className="w-28 h-28 rounded-full mx-auto mb-4 object-cover border-4 border-white/20" />
@@ -197,7 +191,6 @@ const ModernTemplate = ({ data, parsed, profilePhoto }) => (
       <h1 className="text-xl font-bold text-center mb-1">{parsed?.name || 'Your Name'}</h1>
       {parsed?.title && <p className="text-sm text-slate-300 text-center mb-6">{parsed.title}</p>}
       
-      {/* Contact */}
       <div className="mb-6">
         <h3 className="text-xs uppercase tracking-widest text-slate-400 mb-2 border-b border-slate-700 pb-1">Contact</h3>
         <div className="space-y-2 text-sm text-slate-300">
@@ -205,7 +198,6 @@ const ModernTemplate = ({ data, parsed, profilePhoto }) => (
         </div>
       </div>
       
-      {/* Skills */}
       {parsed?.skills?.length > 0 && (
         <div className="mb-6">
           <h3 className="text-xs uppercase tracking-widest text-slate-400 mb-2 border-b border-slate-700 pb-1">Skills</h3>
@@ -216,37 +208,22 @@ const ModernTemplate = ({ data, parsed, profilePhoto }) => (
           </div>
         </div>
       )}
-      
-      {/* Certifications */}
-      {parsed?.certifications?.length > 0 && (
-        <div>
-          <h3 className="text-xs uppercase tracking-widest text-slate-400 mb-2 border-b border-slate-700 pb-1">Certifications</h3>
-          <ul className="space-y-1 text-sm text-slate-300">
-            {parsed.certifications.map((cert, i) => <li key={i}>• {cert}</li>)}
-          </ul>
-        </div>
-      )}
     </div>
     
-    {/* Main Content */}
     <div className="w-[70%] p-8">
-      {/* Summary */}
       {parsed?.summary && (
         <div className="mb-6">
           <h2 className="text-lg font-bold text-[#2A5C82] uppercase tracking-wider mb-3 flex items-center gap-2">
-            <span className="w-8 h-0.5 bg-[#2A5C82]"></span>
-            About Me
+            <span className="w-8 h-0.5 bg-[#2A5C82]"></span>About Me
           </h2>
           <p className="text-gray-600 leading-relaxed">{parsed.summary}</p>
         </div>
       )}
       
-      {/* Experience */}
       {parsed?.experience?.length > 0 && (
         <div className="mb-6">
           <h2 className="text-lg font-bold text-[#2A5C82] uppercase tracking-wider mb-4 flex items-center gap-2">
-            <span className="w-8 h-0.5 bg-[#2A5C82]"></span>
-            Experience
+            <span className="w-8 h-0.5 bg-[#2A5C82]"></span>Experience
           </h2>
           {parsed.experience.map((exp, i) => (
             <div key={i} className="mb-5 relative pl-4 border-l-2 border-slate-200">
@@ -258,10 +235,7 @@ const ModernTemplate = ({ data, parsed, profilePhoto }) => (
               {exp.company && <p className="text-[#2A5C82] text-sm font-medium">{exp.company}</p>}
               <ul className="mt-2 space-y-1">
                 {exp.bullets?.map((bullet, j) => (
-                  <li key={j} className="text-gray-600 text-sm flex gap-2">
-                    <span className="text-[#2A5C82]">▸</span>
-                    {bullet}
-                  </li>
+                  <li key={j} className="text-gray-600 text-sm flex gap-2"><span className="text-[#2A5C82]">▸</span>{bullet}</li>
                 ))}
               </ul>
             </div>
@@ -269,19 +243,14 @@ const ModernTemplate = ({ data, parsed, profilePhoto }) => (
         </div>
       )}
       
-      {/* Education */}
       {parsed?.education?.length > 0 && (
         <div>
           <h2 className="text-lg font-bold text-[#2A5C82] uppercase tracking-wider mb-3 flex items-center gap-2">
-            <span className="w-8 h-0.5 bg-[#2A5C82]"></span>
-            Education
+            <span className="w-8 h-0.5 bg-[#2A5C82]"></span>Education
           </h2>
           {parsed.education.map((edu, i) => (
             <div key={i} className="mb-2 flex justify-between">
-              <div>
-                <span className="font-semibold text-gray-900">{edu.school}</span>
-                {edu.degree && <span className="text-gray-600 text-sm ml-2">— {edu.degree}</span>}
-              </div>
+              <span className="font-semibold text-gray-900">{edu.school}</span>
               <span className="text-sm text-gray-500">{edu.year}</span>
             </div>
           ))}
@@ -291,10 +260,9 @@ const ModernTemplate = ({ data, parsed, profilePhoto }) => (
   </div>
 );
 
-// Impact-First Template - Bold with Key Wins box
+// Impact-First Template
 const ImpactTemplate = ({ data, parsed, profilePhoto }) => (
   <div className="bg-white p-8 min-h-[800px]" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
-    {/* Header with accent bar */}
     <div className="flex items-center gap-6 mb-6 pb-6 border-b-4 border-[#2A5C82]">
       {profilePhoto && (
         <img src={profilePhoto} alt="Profile" className="w-24 h-24 rounded-lg object-cover shadow-lg" />
@@ -308,7 +276,6 @@ const ImpactTemplate = ({ data, parsed, profilePhoto }) => (
       </div>
     </div>
     
-    {/* Key Wins Box */}
     {parsed?.achievements?.length > 0 && (
       <div className="bg-gradient-to-r from-[#2A5C82] to-[#1e4460] text-white p-5 rounded-lg mb-6 shadow-lg">
         <h2 className="text-sm font-bold uppercase tracking-widest mb-3 flex items-center gap-2">
@@ -325,7 +292,6 @@ const ImpactTemplate = ({ data, parsed, profilePhoto }) => (
       </div>
     )}
     
-    {/* Summary */}
     {parsed?.summary && (
       <div className="mb-6">
         <h2 className="text-lg font-bold text-[#2A5C82] uppercase mb-2">Executive Summary</h2>
@@ -333,11 +299,8 @@ const ImpactTemplate = ({ data, parsed, profilePhoto }) => (
       </div>
     )}
     
-    {/* Two Column Layout */}
     <div className="grid grid-cols-3 gap-6">
-      {/* Main Content */}
       <div className="col-span-2">
-        {/* Experience */}
         {parsed?.experience?.length > 0 && (
           <div className="mb-6">
             <h2 className="text-lg font-bold text-[#2A5C82] uppercase mb-4 border-b-2 border-gray-200 pb-2">Career History</h2>
@@ -352,10 +315,7 @@ const ImpactTemplate = ({ data, parsed, profilePhoto }) => (
                 </div>
                 <ul className="mt-3 space-y-2 pl-3">
                   {exp.bullets?.map((bullet, j) => (
-                    <li key={j} className="text-gray-700 text-sm flex gap-2">
-                      <span className="text-[#2A5C82] font-bold">→</span>
-                      {bullet}
-                    </li>
+                    <li key={j} className="text-gray-700 text-sm flex gap-2"><span className="text-[#2A5C82] font-bold">→</span>{bullet}</li>
                   ))}
                 </ul>
               </div>
@@ -364,9 +324,7 @@ const ImpactTemplate = ({ data, parsed, profilePhoto }) => (
         )}
       </div>
       
-      {/* Sidebar */}
       <div className="space-y-6">
-        {/* Skills */}
         {parsed?.skills?.length > 0 && (
           <div className="bg-gray-50 p-4 rounded-lg">
             <h2 className="text-sm font-bold text-[#2A5C82] uppercase mb-3">Core Skills</h2>
@@ -381,7 +339,6 @@ const ImpactTemplate = ({ data, parsed, profilePhoto }) => (
           </div>
         )}
         
-        {/* Education */}
         {parsed?.education?.length > 0 && (
           <div className="bg-gray-50 p-4 rounded-lg">
             <h2 className="text-sm font-bold text-[#2A5C82] uppercase mb-3">Education</h2>
@@ -398,10 +355,9 @@ const ImpactTemplate = ({ data, parsed, profilePhoto }) => (
   </div>
 );
 
-// Minimalist ATS Template - Clean and simple
+// Minimalist ATS Template
 const MinimalTemplate = ({ data, parsed, profilePhoto }) => (
   <div className="bg-white p-8 min-h-[800px]" style={{ fontFamily: 'Arial, sans-serif' }}>
-    {/* Header */}
     <div className="flex items-center gap-6 mb-6">
       {profilePhoto && (
         <img src={profilePhoto} alt="Profile" className="w-20 h-20 rounded-full object-cover grayscale" />
@@ -417,7 +373,6 @@ const MinimalTemplate = ({ data, parsed, profilePhoto }) => (
     
     <hr className="border-gray-300 mb-6" />
     
-    {/* Summary */}
     {parsed?.summary && (
       <div className="mb-6">
         <h2 className="text-sm font-bold text-gray-700 uppercase tracking-wider mb-2">Summary</h2>
@@ -425,7 +380,6 @@ const MinimalTemplate = ({ data, parsed, profilePhoto }) => (
       </div>
     )}
     
-    {/* Experience */}
     {parsed?.experience?.length > 0 && (
       <div className="mb-6">
         <h2 className="text-sm font-bold text-gray-700 uppercase tracking-wider mb-3">Experience</h2>
@@ -446,7 +400,6 @@ const MinimalTemplate = ({ data, parsed, profilePhoto }) => (
       </div>
     )}
     
-    {/* Education */}
     {parsed?.education?.length > 0 && (
       <div className="mb-6">
         <h2 className="text-sm font-bold text-gray-700 uppercase tracking-wider mb-2">Education</h2>
@@ -459,7 +412,6 @@ const MinimalTemplate = ({ data, parsed, profilePhoto }) => (
       </div>
     )}
     
-    {/* Skills */}
     {parsed?.skills?.length > 0 && (
       <div>
         <h2 className="text-sm font-bold text-gray-700 uppercase tracking-wider mb-2">Skills</h2>
@@ -489,112 +441,184 @@ const PreviewExport = ({ data, updateData, onBack, goToStep }) => {
     setParsedResume(parsed);
   }, [editedResume]);
 
-  const handleContentEdit = (e, type) => {
-    const content = e.target.innerText;
-    if (type === "resume") {
-      setEditedResume(content);
-      updateData({ optimizedResume: content });
-    } else {
-      setEditedCoverLetter(content);
-      updateData({ coverLetter: content });
-    }
-  };
-
-  // Export using html2canvas for beautiful output
+  // Generate proper text-based PDF
   const exportToPDF = async (type = "resume") => {
     if (!data.agreedToTerms) {
-      toast({
-        title: "Agreement Required",
-        description: "Please agree to the Terms of Use before downloading.",
-        variant: "destructive",
-      });
+      toast({ title: "Agreement Required", description: "Please agree to the Terms of Use before downloading.", variant: "destructive" });
       return;
     }
 
     setIsExporting(true);
 
     try {
-      const element = resumeRef.current;
-      if (!element) throw new Error("Resume element not found");
+      const content = type === "resume" ? editedResume : editedCoverLetter;
+      const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+      
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const margin = 20;
+      const maxWidth = pageWidth - (margin * 2);
+      let yPosition = margin;
 
-      const canvas = await html2canvas(element, {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-        backgroundColor: '#ffffff'
-      });
+      const lines = content.split('\n');
+      
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        
+        if (yPosition > pageHeight - margin - 10) {
+          pdf.addPage();
+          yPosition = margin;
+        }
 
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF({
-        orientation: 'portrait',
-        unit: 'mm',
-        format: 'a4'
-      });
+        const isHeader = /^[A-Z][A-Z\s&]+$/.test(line) && line.length < 40;
+        const isName = i === 0 || (i < 3 && line.length > 0 && line.length < 50 && !line.includes('@') && !line.includes('|'));
+        const isBullet = line.startsWith('•') || line.startsWith('-') || line.startsWith('*') || line.startsWith('►');
 
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
-      const imgWidth = canvas.width;
-      const imgHeight = canvas.height;
-      const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
-      const imgX = (pdfWidth - imgWidth * ratio) / 2;
-      const imgY = 0;
-
-      pdf.addImage(imgData, 'PNG', imgX, imgY, imgWidth * ratio, imgHeight * ratio);
+        if (isName && i < 3 && !line.includes('@')) {
+          pdf.setFontSize(18);
+          pdf.setFont("helvetica", "bold");
+          pdf.setTextColor(0, 0, 0);
+          pdf.text(line, pageWidth / 2, yPosition, { align: "center" });
+          yPosition += 10;
+        } else if (isHeader) {
+          yPosition += 4;
+          pdf.setFontSize(12);
+          pdf.setFont("helvetica", "bold");
+          pdf.setTextColor(42, 92, 130);
+          pdf.text(line, margin, yPosition);
+          yPosition += 2;
+          pdf.setDrawColor(42, 92, 130);
+          pdf.setLineWidth(0.5);
+          pdf.line(margin, yPosition, margin + pdf.getTextWidth(line), yPosition);
+          yPosition += 6;
+        } else if (isBullet) {
+          pdf.setFontSize(10);
+          pdf.setFont("helvetica", "normal");
+          pdf.setTextColor(60, 60, 60);
+          const bulletText = line.replace(/^[•\-*►]\s*/, '');
+          const wrappedLines = pdf.splitTextToSize(bulletText, maxWidth - 8);
+          pdf.text('•', margin, yPosition);
+          pdf.text(wrappedLines, margin + 5, yPosition);
+          yPosition += wrappedLines.length * 5 + 2;
+        } else if (line.length > 0) {
+          pdf.setFontSize(10);
+          pdf.setFont("helvetica", "normal");
+          pdf.setTextColor(60, 60, 60);
+          const wrappedLines = pdf.splitTextToSize(line, maxWidth);
+          pdf.text(wrappedLines, margin, yPosition);
+          yPosition += wrappedLines.length * 5 + 1;
+        } else {
+          yPosition += 3;
+        }
+      }
 
       const date = new Date().toISOString().split("T")[0];
       pdf.save(`Resume_${date}.pdf`);
 
-      toast({
-        title: "Download Complete",
-        description: "Your resume has been downloaded.",
-      });
+      toast({ title: "Download Complete", description: "Your PDF has been downloaded." });
     } catch (error) {
-      console.error("Export error:", error);
-      toast({
-        title: "Export Failed",
-        description: "Could not generate PDF. Please try again.",
-        variant: "destructive",
-      });
+      console.error("PDF Export error:", error);
+      toast({ title: "Export Failed", description: "Could not generate PDF.", variant: "destructive" });
     } finally {
       setIsExporting(false);
     }
   };
 
-  // Copy to clipboard
+  // Generate DOCX file
+  const exportToDOCX = async (type = "resume") => {
+    if (!data.agreedToTerms) {
+      toast({ title: "Agreement Required", description: "Please agree to the Terms of Use before downloading.", variant: "destructive" });
+      return;
+    }
+
+    setIsExporting(true);
+
+    try {
+      const content = type === "resume" ? editedResume : editedCoverLetter;
+      const lines = content.split('\n');
+      const children = [];
+
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        
+        const isHeader = /^[A-Z][A-Z\s&]+$/.test(line) && line.length < 40;
+        const isName = i === 0 || (i < 3 && line.length > 0 && line.length < 50 && !line.includes('@') && !line.includes('|'));
+        const isBullet = line.startsWith('•') || line.startsWith('-') || line.startsWith('*') || line.startsWith('►');
+
+        if (isName && i < 3 && !line.includes('@')) {
+          children.push(
+            new Paragraph({
+              children: [new TextRun({ text: line, bold: true, size: 36 })],
+              alignment: AlignmentType.CENTER,
+              spacing: { after: 200 },
+            })
+          );
+        } else if (isHeader) {
+          children.push(
+            new Paragraph({
+              children: [new TextRun({ text: line, bold: true, size: 24, color: "2A5C82" })],
+              heading: HeadingLevel.HEADING_2,
+              spacing: { before: 300, after: 100 },
+              border: { bottom: { color: "2A5C82", space: 1, size: 6, style: BorderStyle.SINGLE } },
+            })
+          );
+        } else if (isBullet) {
+          const bulletText = line.replace(/^[•\-*►]\s*/, '');
+          children.push(
+            new Paragraph({
+              children: [new TextRun({ text: bulletText, size: 22 })],
+              bullet: { level: 0 },
+              spacing: { after: 80 },
+            })
+          );
+        } else if (line.length > 0) {
+          children.push(
+            new Paragraph({
+              children: [new TextRun({ text: line, size: 22 })],
+              spacing: { after: 100 },
+            })
+          );
+        } else {
+          children.push(new Paragraph({ text: "", spacing: { after: 100 } }));
+        }
+      }
+
+      const doc = new Document({
+        sections: [{ properties: {}, children }],
+      });
+
+      const blob = await Packer.toBlob(doc);
+      const date = new Date().toISOString().split("T")[0];
+      saveAs(blob, `Resume_${date}.docx`);
+
+      toast({ title: "Download Complete", description: "Your DOCX has been downloaded." });
+    } catch (error) {
+      console.error("DOCX Export error:", error);
+      toast({ title: "Export Failed", description: "Could not generate DOCX.", variant: "destructive" });
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   const copyToClipboard = (type = "resume") => {
     const content = type === "resume" ? editedResume : editedCoverLetter;
     navigator.clipboard.writeText(content).then(() => {
-      toast({
-        title: "Copied!",
-        description: "Content copied to clipboard.",
-      });
+      toast({ title: "Copied!", description: "Content copied to clipboard." });
     });
   };
 
-  // Render template based on selection
   const renderTemplate = () => {
-    const templateProps = {
-      data,
-      parsed: parsedResume,
-      profilePhoto: data.profilePhotoPreview
-    };
-
+    const templateProps = { data, parsed: parsedResume, profilePhoto: data.profilePhotoPreview };
     switch (data.selectedTemplate) {
-      case 'modern':
-        return <ModernTemplate {...templateProps} />;
-      case 'impact':
-        return <ImpactTemplate {...templateProps} />;
-      case 'minimal':
-        return <MinimalTemplate {...templateProps} />;
-      case 'harvard':
-      default:
-        return <HarvardTemplate {...templateProps} />;
+      case 'modern': return <ModernTemplate {...templateProps} />;
+      case 'impact': return <ImpactTemplate {...templateProps} />;
+      case 'minimal': return <MinimalTemplate {...templateProps} />;
+      case 'harvard': default: return <HarvardTemplate {...templateProps} />;
     }
   };
 
   return (
     <div className="space-y-6">
-      {/* Preview Card */}
       <Card className="border-slate-200 shadow-sm">
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between flex-wrap gap-2">
@@ -604,11 +628,10 @@ const PreviewExport = ({ data, updateData, onBack, goToStep }) => {
             </CardTitle>
             <div className="flex gap-2">
               <Button variant="outline" size="sm" onClick={() => copyToClipboard(activeTab)}>
-                <Copy className="w-4 h-4 mr-1" /> Copy Text
+                <Copy className="w-4 h-4 mr-1" /> Copy
               </Button>
               <Button variant="outline" size="sm" onClick={() => setEditMode(!editMode)}>
-                <Edit3 className="w-4 h-4 mr-1" />
-                {editMode ? "Done" : "Edit Text"}
+                <Edit3 className="w-4 h-4 mr-1" />{editMode ? "Done" : "Edit"}
               </Button>
             </div>
           </div>
@@ -626,10 +649,7 @@ const PreviewExport = ({ data, updateData, onBack, goToStep }) => {
                   <p className="text-sm text-yellow-700 mb-2">Edit mode: Modify the text below</p>
                   <textarea
                     value={editedResume}
-                    onChange={(e) => {
-                      setEditedResume(e.target.value);
-                      updateData({ optimizedResume: e.target.value });
-                    }}
+                    onChange={(e) => { setEditedResume(e.target.value); updateData({ optimizedResume: e.target.value }); }}
                     className="w-full min-h-[500px] p-4 font-mono text-sm border rounded"
                   />
                 </div>
@@ -645,7 +665,7 @@ const PreviewExport = ({ data, updateData, onBack, goToStep }) => {
                 <div
                   contentEditable={editMode}
                   suppressContentEditableWarning
-                  onBlur={(e) => handleContentEdit(e, "coverLetter")}
+                  onBlur={(e) => { setEditedCoverLetter(e.target.innerText); updateData({ coverLetter: e.target.innerText }); }}
                   className={`whitespace-pre-wrap text-sm leading-relaxed outline-none ${editMode ? "bg-blue-50 p-2 rounded border-2 border-blue-300" : ""}`}
                 >
                   {editedCoverLetter || "No cover letter generated yet."}
@@ -656,47 +676,32 @@ const PreviewExport = ({ data, updateData, onBack, goToStep }) => {
         </CardContent>
       </Card>
 
-      {/* Match Score */}
       {data.matchScore && (
         <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-bold ${
-              data.matchScore >= 70 ? "bg-green-500" : data.matchScore >= 40 ? "bg-amber-500" : "bg-red-500"
-            }`}>
+            <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-bold ${data.matchScore >= 70 ? "bg-green-500" : data.matchScore >= 40 ? "bg-amber-500" : "bg-red-500"}`}>
               {data.matchScore}%
             </div>
             <div>
               <p className="font-medium text-slate-700">ATS Match Score</p>
-              <p className="text-sm text-slate-500">
-                {data.matchScore >= 70 ? "Excellent match!" : "Consider adding more keywords"}
-              </p>
+              <p className="text-sm text-slate-500">{data.matchScore >= 70 ? "Excellent!" : "Consider adding more keywords"}</p>
             </div>
           </div>
-          <Button variant="outline" size="sm" onClick={() => goToStep(2)}>
-            Improve Score
-          </Button>
+          <Button variant="outline" size="sm" onClick={() => goToStep(2)}>Improve</Button>
         </div>
       )}
 
-      {/* Terms */}
       <Card className="border-slate-200 shadow-sm">
         <CardContent className="pt-6">
           <div className="flex items-start gap-3">
-            <Checkbox
-              id="terms"
-              checked={data.agreedToTerms}
-              onCheckedChange={(checked) => updateData({ agreedToTerms: checked })}
-            />
+            <Checkbox id="terms" checked={data.agreedToTerms} onCheckedChange={(checked) => updateData({ agreedToTerms: checked })} />
             <label htmlFor="terms" className="text-sm text-slate-700 cursor-pointer">
-              I have reviewed my resume for accuracy and agree to the{" "}
+              I have reviewed my resume and agree to the{" "}
               <Dialog>
                 <DialogTrigger className="text-[#2A5C82] underline">Terms of Use</DialogTrigger>
                 <DialogContent>
-                  <DialogHeader><DialogTitle>Terms of Service</DialogTitle></DialogHeader>
-                  <div className="text-sm text-slate-600 space-y-2">
-                    <p><strong>Accuracy:</strong> Please verify all information before submitting.</p>
-                    <p><strong>AI Generated:</strong> Content may need manual review.</p>
-                  </div>
+                  <DialogHeader><DialogTitle>Terms</DialogTitle></DialogHeader>
+                  <p className="text-sm text-slate-600">Please verify all information before submitting.</p>
                 </DialogContent>
               </Dialog>
             </label>
@@ -704,41 +709,38 @@ const PreviewExport = ({ data, updateData, onBack, goToStep }) => {
         </CardContent>
       </Card>
 
-      {/* Download Buttons */}
       <div className="bg-slate-50 rounded-lg p-6">
         <h3 className="font-medium text-slate-700 mb-4 text-center">Download Your Resume</h3>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
-          <Button
-            onClick={() => exportToPDF("resume")}
-            disabled={!data.agreedToTerms || isExporting}
-            className="bg-[#2A5C82] hover:bg-[#1e4460] text-white"
-          >
+          <Button onClick={() => exportToPDF("resume")} disabled={!data.agreedToTerms || isExporting} className="bg-[#2A5C82] hover:bg-[#1e4460] text-white">
             {isExporting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Download className="w-4 h-4 mr-2" />}
             Download PDF
           </Button>
+          <Button variant="outline" onClick={() => exportToDOCX("resume")} disabled={!data.agreedToTerms || isExporting}>
+            <FileText className="w-4 h-4 mr-2" />
+            Download DOCX
+          </Button>
           <Button variant="outline" onClick={() => copyToClipboard("resume")} disabled={!data.agreedToTerms}>
             <FileDown className="w-4 h-4 mr-2" />
-            Copy to Clipboard
+            Copy Text
           </Button>
         </div>
       </div>
 
-      {/* Notice */}
       <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-start gap-3">
         <Info className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
         <div className="text-sm text-amber-700">
           <p className="font-medium">Before you download:</p>
           <ul className="mt-1 space-y-1 list-disc list-inside text-amber-600">
-            <li>Replace any [X%] placeholders with actual achievements</li>
-            <li>Verify all dates and company names are correct</li>
+            <li>Replace any [X%] placeholders with actual numbers</li>
+            <li>Verify all dates and company names</li>
           </ul>
         </div>
       </div>
 
-      {/* Navigation */}
       <div className="flex justify-between">
-        <Button variant="outline" onClick={onBack}>Back to Templates</Button>
-        <Button variant="ghost" onClick={() => goToStep(1)} className="text-slate-500">Start New Resume</Button>
+        <Button variant="outline" onClick={onBack}>Back</Button>
+        <Button variant="ghost" onClick={() => goToStep(1)} className="text-slate-500">New Resume</Button>
       </div>
     </div>
   );
