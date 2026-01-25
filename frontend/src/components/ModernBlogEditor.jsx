@@ -589,6 +589,13 @@ const ModernBlogEditor = () => {
     const doc = parser.parseFromString(html, "text/html");
     const blocks = [];
 
+    // Debug log - remove in production
+    console.log("Converting HTML to Portable Text:", html);
+
+    // First, find all images at any level and create a map
+    const allImages = doc.querySelectorAll("img");
+    console.log("Found images:", allImages.length);
+
     const processNode = (node) => {
       if (node.nodeType === Node.TEXT_NODE) {
         return node.textContent;
@@ -596,15 +603,13 @@ const ModernBlogEditor = () => {
 
       if (node.nodeType === Node.ELEMENT_NODE) {
         const tagName = node.tagName.toLowerCase();
-        const children = Array.from(node.childNodes)
-          .map(processNode)
-          .filter((t) => t);
 
         switch (tagName) {
           case "p":
-            // Check if paragraph contains only an image
+            // Check if paragraph contains an image
             const imgInP = node.querySelector("img");
             if (imgInP) {
+              console.log("Found image in paragraph:", imgInP.src);
               blocks.push({
                 _type: "image",
                 _key: Math.random().toString(36).substr(2, 9),
@@ -612,16 +617,28 @@ const ModernBlogEditor = () => {
                   url: imgInP.src,
                 },
                 alt: imgInP.alt || "",
+                src: imgInP.src, // Also include src directly for fallback
               });
+              // Also add any text content after/before the image
+              const textContent = node.textContent.replace(/\s+/g, ' ').trim();
+              if (textContent) {
+                blocks.push({
+                  _type: "block",
+                  style: "normal",
+                  children: [{ _type: "span", _key: Math.random().toString(36).substr(2, 9), text: textContent }],
+                });
+              }
             } else if (node.textContent.trim()) {
               blocks.push({
                 _type: "block",
+                _key: Math.random().toString(36).substr(2, 9),
                 style: "normal",
                 children: parseInlineElements(node),
               });
             }
             break;
           case "img":
+            console.log("Found standalone image:", node.src);
             blocks.push({
               _type: "image",
               _key: Math.random().toString(36).substr(2, 9),
@@ -629,40 +646,67 @@ const ModernBlogEditor = () => {
                 url: node.src,
               },
               alt: node.alt || "",
+              src: node.src,
             });
             break;
           case "h1":
-            blocks.push({
-              _type: "block",
-              style: "h1",
-              children: parseInlineElements(node),
-            });
+            if (node.textContent.trim()) {
+              blocks.push({
+                _type: "block",
+                _key: Math.random().toString(36).substr(2, 9),
+                style: "h1",
+                children: parseInlineElements(node),
+              });
+            }
             break;
           case "h2":
-            blocks.push({
-              _type: "block",
-              style: "h2",
-              children: parseInlineElements(node),
-            });
+            if (node.textContent.trim()) {
+              blocks.push({
+                _type: "block",
+                _key: Math.random().toString(36).substr(2, 9),
+                style: "h2",
+                children: parseInlineElements(node),
+              });
+            }
             break;
           case "h3":
-            blocks.push({
-              _type: "block",
-              style: "h3",
-              children: parseInlineElements(node),
-            });
+            if (node.textContent.trim()) {
+              blocks.push({
+                _type: "block",
+                _key: Math.random().toString(36).substr(2, 9),
+                style: "h3",
+                children: parseInlineElements(node),
+              });
+            }
             break;
           case "blockquote":
-            blocks.push({
-              _type: "block",
-              style: "blockquote",
-              children: parseInlineElements(node),
-            });
+            // Get all paragraphs inside blockquote
+            const bqParas = node.querySelectorAll("p");
+            if (bqParas.length > 0) {
+              bqParas.forEach(p => {
+                if (p.textContent.trim()) {
+                  blocks.push({
+                    _type: "block",
+                    _key: Math.random().toString(36).substr(2, 9),
+                    style: "blockquote",
+                    children: parseInlineElements(p),
+                  });
+                }
+              });
+            } else if (node.textContent.trim()) {
+              blocks.push({
+                _type: "block",
+                _key: Math.random().toString(36).substr(2, 9),
+                style: "blockquote",
+                children: parseInlineElements(node),
+              });
+            }
             break;
           case "ul":
             node.querySelectorAll(":scope > li").forEach((li) => {
               blocks.push({
                 _type: "block",
+                _key: Math.random().toString(36).substr(2, 9),
                 style: "normal",
                 listItem: "bullet",
                 children: parseInlineElements(li),
@@ -673,6 +717,7 @@ const ModernBlogEditor = () => {
             node.querySelectorAll(":scope > li").forEach((li) => {
               blocks.push({
                 _type: "block",
+                _key: Math.random().toString(36).substr(2, 9),
                 style: "normal",
                 listItem: "number",
                 level: 1,
@@ -684,6 +729,7 @@ const ModernBlogEditor = () => {
             // Handle figure elements that might contain images
             const figImg = node.querySelector("img");
             if (figImg) {
+              console.log("Found image in figure:", figImg.src);
               blocks.push({
                 _type: "image",
                 _key: Math.random().toString(36).substr(2, 9),
@@ -691,8 +737,28 @@ const ModernBlogEditor = () => {
                   url: figImg.src,
                 },
                 alt: figImg.alt || "",
+                src: figImg.src,
               });
             }
+            break;
+          case "div":
+            // TipTap sometimes wraps content in divs
+            // Check for images first
+            const divImg = node.querySelector("img");
+            if (divImg) {
+              console.log("Found image in div:", divImg.src);
+              blocks.push({
+                _type: "image",
+                _key: Math.random().toString(36).substr(2, 9),
+                asset: {
+                  url: divImg.src,
+                },
+                alt: divImg.alt || "",
+                src: divImg.src,
+              });
+            }
+            // Process other children
+            node.childNodes.forEach(processNode);
             break;
           case "iframe":
             // Handle YouTube embeds
@@ -714,19 +780,34 @@ const ModernBlogEditor = () => {
             });
             break;
           case "hr":
-            // Handle horizontal rules
             blocks.push({
               _type: "block",
+              _key: Math.random().toString(36).substr(2, 9),
               style: "normal",
               children: [{ _type: "span", text: "---" }],
             });
             break;
-          default:
-            // Process children for divs and other containers
-            if (tagName === "div" || tagName === "section" || tagName === "article") {
-              node.childNodes.forEach(processNode);
+          case "a":
+            // Handle standalone links (rare but possible)
+            if (node.textContent.trim()) {
+              blocks.push({
+                _type: "block",
+                _key: Math.random().toString(36).substr(2, 9),
+                style: "normal",
+                children: [{
+                  _type: "span",
+                  _key: Math.random().toString(36).substr(2, 9),
+                  text: node.textContent,
+                  marks: ["link"],
+                  // Note: Sanity needs link marks defined differently
+                }],
+              });
             }
-            return children.join("");
+            break;
+          default:
+            // For any unhandled element, process its children
+            node.childNodes.forEach(processNode);
+            break;
         }
       }
       return "";
