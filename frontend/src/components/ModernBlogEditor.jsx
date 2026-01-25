@@ -639,6 +639,40 @@ const ModernBlogEditor = () => {
       console.log(`Image ${i + 1}: src=${img.src}`);
     });
 
+    // Helper to parse inline elements (bold, italic, etc.)
+    const parseInlineElements = (parentNode) => {
+      const spans = [];
+      const processInline = (node, marks = []) => {
+        if (node.nodeType === Node.TEXT_NODE) {
+          if (node.textContent.trim() || node.textContent === " ") {
+            spans.push({
+              _type: "span",
+              _key: Math.random().toString(36).substr(2, 9),
+              text: node.textContent,
+              marks: marks.length > 0 ? [...marks] : undefined,
+            });
+          }
+          return;
+        }
+        if (node.nodeType === Node.ELEMENT_NODE) {
+          const tagName = node.tagName.toLowerCase();
+          let newMarks = [...marks];
+          if (tagName === "strong" || tagName === "b") newMarks.push("strong");
+          else if (tagName === "em" || tagName === "i") newMarks.push("em");
+          else if (tagName === "u") newMarks.push("underline");
+          else if (tagName === "s" || tagName === "strike" || tagName === "del") newMarks.push("strike-through");
+          else if (tagName === "code") newMarks.push("code");
+          else if (tagName === "mark") newMarks.push("highlight");
+          node.childNodes.forEach(child => processInline(child, newMarks));
+        }
+      };
+      parentNode.childNodes.forEach(child => processInline(child));
+      if (spans.length === 0) {
+        spans.push({ _type: "span", text: parentNode.textContent || "" });
+      }
+      return spans;
+    };
+
     // Helper to create image block
     const createImageBlock = (imgElement) => {
       const src = imgElement.src || imgElement.getAttribute("src");
