@@ -4,6 +4,7 @@
   "private": true,
   "description": "Professional portfolio for Jaipal Singh - Digital Marketing Expert",
   "dependencies": {
+    "@floating-ui/dom": "^1.7.4",
     "@hookform/resolvers": "^5.0.1",
     "@portabletext/react": "^4.0.3",
     "@radix-ui/react-accordion": "^1.2.8",
@@ -37,7 +38,9 @@
     "@sanity/image-url": "^1.2.0",
     "@tinymce/tinymce-react": "^6.3.0",
     "@tiptap/core": "^3.17.1",
+    "@tiptap/extension-bubble-menu": "^3.17.1",
     "@tiptap/extension-code-block-lowlight": "^3.17.1",
+    "@tiptap/extension-floating-menu": "^3.17.1",
     "@tiptap/extension-highlight": "^3.17.1",
     "@tiptap/extension-image": "^3.17.1",
     "@tiptap/extension-link": "^3.17.1",
