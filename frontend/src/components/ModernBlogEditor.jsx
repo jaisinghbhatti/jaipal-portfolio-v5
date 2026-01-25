@@ -567,6 +567,27 @@ const ModernBlogEditor = () => {
     }
   };
 
+  // Add image by URL
+  const addImageByUrl = () => {
+    if (imageUrlInput && editor) {
+      console.log("Inserting image by URL:", imageUrlInput);
+      editor.chain().focus().setImage({ src: imageUrlInput }).run();
+      
+      // Verify the image was inserted
+      setTimeout(() => {
+        const html = editor.getHTML();
+        console.log("Editor HTML after image insert:", html);
+        const hasImage = html.includes('<img');
+        console.log("Image tag found in HTML:", hasImage);
+      }, 100);
+      
+      setImageUrlInput("");
+      setShowImageUrlInput(false);
+      setSubmitStatus("success");
+      setSubmitMessage("Image inserted successfully!");
+    }
+  };
+
   // Delete post
   const handleDeletePost = async (postId, postTitle) => {
     if (!window.confirm(`Are you sure you want to delete "${postTitle}"?`)) {
