@@ -626,47 +626,75 @@ const ModernBlogEditor = () => {
     const parser = new DOMParser();
     const doc = parser.parseFromString(html, "text/html");
     const blocks = [];
+    const processedImages = new Set();
 
-    // Debug log - remove in production
-    console.log("Converting HTML to Portable Text:", html);
+    // Debug log
+    console.log("=== HTML TO PORTABLE TEXT CONVERSION ===");
+    console.log("Input HTML:", html);
 
-    // First, find all images at any level and create a map
+    // FIRST: Find ALL images in the document and store their positions
     const allImages = doc.querySelectorAll("img");
-    console.log("Found images:", allImages.length);
+    console.log("Total images found in document:", allImages.length);
+    allImages.forEach((img, i) => {
+      console.log(`Image ${i + 1}: src=${img.src}`);
+    });
 
-    const processNode = (node) => {
-      if (node.nodeType === Node.TEXT_NODE) {
-        return node.textContent;
-      }
+    // Helper to create image block
+    const createImageBlock = (imgElement) => {
+      const src = imgElement.src || imgElement.getAttribute("src");
+      if (!src || processedImages.has(src)) return null;
+      processedImages.add(src);
+      console.log("Creating image block for:", src);
+      return {
+        _type: "image",
+        _key: Math.random().toString(36).substr(2, 9),
+        asset: { url: src },
+        src: src,
+        alt: imgElement.alt || "",
+      };
+    };
 
-      if (node.nodeType === Node.ELEMENT_NODE) {
+    // Process all child nodes of body
+    const processChildren = (parent) => {
+      const children = Array.from(parent.childNodes);
+      
+      for (const node of children) {
+        if (node.nodeType === Node.TEXT_NODE) {
+          const text = node.textContent.trim();
+          if (text) {
+            blocks.push({
+              _type: "block",
+              _key: Math.random().toString(36).substr(2, 9),
+              style: "normal",
+              children: [{ _type: "span", _key: Math.random().toString(36).substr(2, 9), text }],
+            });
+          }
+          continue;
+        }
+
+        if (node.nodeType !== Node.ELEMENT_NODE) continue;
+
         const tagName = node.tagName.toLowerCase();
 
-        switch (tagName) {
-          case "p":
-            // Check if paragraph contains an image
-            const imgInP = node.querySelector("img");
-            if (imgInP) {
-              console.log("Found image in paragraph:", imgInP.src);
-              blocks.push({
-                _type: "image",
-                _key: Math.random().toString(36).substr(2, 9),
-                asset: {
-                  url: imgInP.src,
-                },
-                alt: imgInP.alt || "",
-                src: imgInP.src, // Also include src directly for fallback
-              });
-              // Also add any text content after/before the image
-              const textContent = node.textContent.replace(/\s+/g, ' ').trim();
-              if (textContent) {
-                blocks.push({
-                  _type: "block",
-                  style: "normal",
-                  children: [{ _type: "span", _key: Math.random().toString(36).substr(2, 9), text: textContent }],
-                });
-              }
-            } else if (node.textContent.trim()) {
+        // Handle images directly
+        if (tagName === "img") {
+          const imgBlock = createImageBlock(node);
+          if (imgBlock) blocks.push(imgBlock);
+          continue;
+        }
+
+        // Check if this element contains images
+        const imagesInside = node.querySelectorAll("img");
+        
+        if (tagName === "p") {
+          if (imagesInside.length > 0) {
+            // Extract text before/after images
+            const textContent = node.textContent.trim();
+            imagesInside.forEach(img => {
+              const imgBlock = createImageBlock(img);
+              if (imgBlock) blocks.push(imgBlock);
+            });
+            if (textContent) {
               blocks.push({
                 _type: "block",
                 _key: Math.random().toString(36).substr(2, 9),
@@ -674,10 +702,118 @@ const ModernBlogEditor = () => {
                 children: parseInlineElements(node),
               });
             }
-            break;
-          case "img":
-            console.log("Found standalone image:", node.src);
+          } else if (node.textContent.trim()) {
             blocks.push({
+              _type: "block",
+              _key: Math.random().toString(36).substr(2, 9),
+              style: "normal",
+              children: parseInlineElements(node),
+            });
+          }
+        } else if (tagName === "h1" || tagName === "h2" || tagName === "h3") {
+          if (node.textContent.trim()) {
+            blocks.push({
+              _type: "block",
+              _key: Math.random().toString(36).substr(2, 9),
+              style: tagName,
+              children: parseInlineElements(node),
+            });
+          }
+        } else if (tagName === "blockquote") {
+          const paras = node.querySelectorAll("p");
+          if (paras.length > 0) {
+            paras.forEach(p => {
+              if (p.textContent.trim()) {
+                blocks.push({
+                  _type: "block",
+                  _key: Math.random().toString(36).substr(2, 9),
+                  style: "blockquote",
+                  children: parseInlineElements(p),
+                });
+              }
+            });
+          } else if (node.textContent.trim()) {
+            blocks.push({
+              _type: "block",
+              _key: Math.random().toString(36).substr(2, 9),
+              style: "blockquote",
+              children: parseInlineElements(node),
+            });
+          }
+        } else if (tagName === "ul") {
+          node.querySelectorAll(":scope > li").forEach(li => {
+            blocks.push({
+              _type: "block",
+              _key: Math.random().toString(36).substr(2, 9),
+              style: "normal",
+              listItem: "bullet",
+              children: parseInlineElements(li),
+            });
+          });
+        } else if (tagName === "ol") {
+          node.querySelectorAll(":scope > li").forEach(li => {
+            blocks.push({
+              _type: "block",
+              _key: Math.random().toString(36).substr(2, 9),
+              style: "normal",
+              listItem: "number",
+              level: 1,
+              children: parseInlineElements(li),
+            });
+          });
+        } else if (tagName === "figure" || tagName === "div") {
+          // Check for images first
+          imagesInside.forEach(img => {
+            const imgBlock = createImageBlock(img);
+            if (imgBlock) blocks.push(imgBlock);
+          });
+          // Process other children
+          if (imagesInside.length === 0) {
+            processChildren(node);
+          }
+        } else if (tagName === "pre") {
+          const codeEl = node.querySelector("code");
+          blocks.push({
+            _type: "code",
+            _key: Math.random().toString(36).substr(2, 9),
+            code: codeEl ? codeEl.textContent : node.textContent,
+          });
+        } else if (tagName === "iframe") {
+          if (node.src && node.src.includes("youtube")) {
+            blocks.push({
+              _type: "youtube",
+              _key: Math.random().toString(36).substr(2, 9),
+              url: node.src,
+            });
+          }
+        } else if (tagName === "hr") {
+          blocks.push({
+            _type: "block",
+            _key: Math.random().toString(36).substr(2, 9),
+            style: "normal",
+            children: [{ _type: "span", text: "---" }],
+          });
+        } else {
+          // For other elements, recursively process children
+          processChildren(node);
+        }
+      }
+    };
+
+    processChildren(doc.body);
+
+    console.log("=== CONVERSION RESULT ===");
+    console.log("Total blocks created:", blocks.length);
+    const imageBlocks = blocks.filter(b => b._type === "image");
+    console.log("Image blocks:", imageBlocks.length);
+    imageBlocks.forEach((img, i) => {
+      console.log(`  Image ${i + 1}: ${img.src || img.asset?.url}`);
+    });
+
+    return blocks.length > 0
+      ? blocks
+      : [{ _type: "block", style: "normal", children: [{ _type: "span", text: "" }] }];
+  };
               _type: "image",
               _key: Math.random().toString(36).substr(2, 9),
               asset: {
