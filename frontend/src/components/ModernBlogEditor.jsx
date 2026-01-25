@@ -907,9 +907,9 @@ const ModernBlogEditor = () => {
                 />
               </div>
 
-              {/* Editor Toolbar */}
+              {/* Editor Toolbar - Sticky */}
               {!isPreviewMode && (
-                <Card className={`mb-4 ${isDarkMode ? "bg-gray-800 border-gray-700" : ""}`}>
+                <Card className={`mb-4 sticky top-0 z-50 shadow-lg ${isDarkMode ? "bg-gray-800 border-gray-700" : "bg-white/95 backdrop-blur-sm"}`}>
                   <CardContent className="p-3">
                     <div className="flex flex-wrap gap-1 items-center">
                       {/* Undo/Redo */}
