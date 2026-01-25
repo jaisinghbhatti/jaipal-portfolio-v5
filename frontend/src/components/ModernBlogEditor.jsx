@@ -913,7 +913,18 @@ const ModernBlogEditor = () => {
 
     try {
       const htmlContent = editor.getHTML();
+      console.log("=== SAVING BLOG POST ===");
+      console.log("HTML Content:", htmlContent);
+      
       const portableTextContent = convertHtmlToPortableText(htmlContent);
+      console.log("Portable Text Content:", JSON.stringify(portableTextContent, null, 2));
+      
+      // Check for images in the converted content
+      const imageBlocks = portableTextContent.filter(b => b._type === "image");
+      console.log("Image blocks found:", imageBlocks.length);
+      if (imageBlocks.length > 0) {
+        console.log("Image blocks:", JSON.stringify(imageBlocks, null, 2));
+      }
 
       const blogPost = {
         _type: "post",
