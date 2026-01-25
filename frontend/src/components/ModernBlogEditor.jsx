@@ -220,6 +220,8 @@ const ModernBlogEditor = () => {
   const [linkUrl, setLinkUrl] = useState("");
   const [showYoutubeInput, setShowYoutubeInput] = useState(false);
   const [youtubeUrl, setYoutubeUrl] = useState("");
+  const [showImageUrlInput, setShowImageUrlInput] = useState(false);
+  const [imageUrlInput, setImageUrlInput] = useState("");
   const [autoSaveStatus, setAutoSaveStatus] = useState(null);
 
   const [formData, setFormData] = useState({
