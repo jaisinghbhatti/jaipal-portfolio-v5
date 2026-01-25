@@ -6,7 +6,7 @@ import HomePage from "./components/HomePage";
 import AboutMePage from "./components/AboutMePage";
 import BlogIndex from "./components/BlogIndex";
 import BlogPage from "./components/BlogPage";
-import BlogEditor from "./components/BlogEditor";
+import ModernBlogEditor from "./components/ModernBlogEditor";
 import { ResumeBuilderPage } from "./components/resume-builder";
 import { Toaster } from "./components/ui/toaster";
 import { Analytics } from '@vercel/analytics/react';
