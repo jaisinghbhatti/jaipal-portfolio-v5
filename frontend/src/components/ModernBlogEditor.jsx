@@ -602,31 +602,54 @@ const ModernBlogEditor = () => {
 
         switch (tagName) {
           case "p":
+            // Check if paragraph contains only an image
+            const imgInP = node.querySelector("img");
+            if (imgInP) {
+              blocks.push({
+                _type: "image",
+                _key: Math.random().toString(36).substr(2, 9),
+                asset: {
+                  url: imgInP.src,
+                },
+                alt: imgInP.alt || "",
+              });
+            } else if (node.textContent.trim()) {
+              blocks.push({
+                _type: "block",
+                style: "normal",
+                children: parseInlineElements(node),
+              });
+            }
+            break;
+          case "img":
             blocks.push({
-              _type: "block",
-              style: "normal",
-              children: [{ _type: "span", text: node.textContent }],
+              _type: "image",
+              _key: Math.random().toString(36).substr(2, 9),
+              asset: {
+                url: node.src,
+              },
+              alt: node.alt || "",
             });
             break;
           case "h1":
             blocks.push({
               _type: "block",
               style: "h1",
-              children: [{ _type: "span", text: node.textContent }],
+              children: parseInlineElements(node),
             });
             break;
           case "h2":
             blocks.push({
               _type: "block",
               style: "h2",
-              children: [{ _type: "span", text: node.textContent }],
+              children: parseInlineElements(node),
             });
             break;
           case "h3":
             blocks.push({
               _type: "block",
               style: "h3",
-              children: [{ _type: "span", text: node.textContent }],
+              children: parseInlineElements(node),
             });
             break;
           case "blockquote":
