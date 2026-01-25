@@ -415,14 +415,23 @@ const BlogPage = () => {
                   types: {
                     image: ({value}) => {
                       // Handle different image URL formats from Sanity
-                      const imageUrl = value?.asset?.url || value?.url || value?.src;
-                      if (!imageUrl) return null;
+                      // Check multiple possible locations for the URL
+                      const imageUrl = value?.asset?.url || value?.url || value?.src || value?.asset?._ref;
+                      console.log("Rendering image block:", value, "URL:", imageUrl);
+                      if (!imageUrl) {
+                        console.warn("No image URL found in:", value);
+                        return null;
+                      }
                       return (
                         <figure className="my-8">
                           <img 
                             src={imageUrl} 
                             alt={value?.alt || 'Blog image'} 
                             className="w-full rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300"
+                            onError={(e) => {
+                              console.error("Image failed to load:", imageUrl);
+                              e.target.style.display = 'none';
+                            }}
                           />
                           {value?.caption && (
                             <figcaption className="text-center text-sm text-slate-500 mt-3 italic">
