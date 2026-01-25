@@ -21,7 +21,7 @@ function App() {
             <Route path="/about-me" element={<AboutMePage />} />
             <Route path="/blog" element={<BlogIndex />} />
             <Route path="/blog/:slug" element={<BlogPage />} />
-            <Route path="/blog-editor" element={<BlogEditor />} />
+            <Route path="/blog-editor" element={<ModernBlogEditor />} />
             <Route path="/resume-builder" element={<ResumeBuilderPage />} />
           </Routes>
           <Toaster />
