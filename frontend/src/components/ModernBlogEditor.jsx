@@ -431,8 +431,23 @@ const ModernBlogEditor = () => {
               return `<p>${text}</p>`;
           }
         }
-        if (block._type === "image" && block.asset) {
-          return `<img src="${block.asset.url}" alt="${block.alt || ""}" />`;
+        // Handle image blocks - check multiple possible URL locations
+        if (block._type === "image") {
+          const imageUrl = block.asset?.url || block.src || block.url;
+          if (imageUrl) {
+            return `<img src="${imageUrl}" alt="${block.alt || ""}" class="editor-image" />`;
+          }
+        }
+        // Handle YouTube embeds
+        if (block._type === "youtube") {
+          const videoUrl = block.url || block.src;
+          if (videoUrl) {
+            return `<div data-youtube-video><iframe src="${videoUrl}" frameborder="0" allowfullscreen></iframe></div>`;
+          }
+        }
+        // Handle code blocks
+        if (block._type === "code") {
+          return `<pre><code>${block.code || ""}</code></pre>`;
         }
         return "";
       })
