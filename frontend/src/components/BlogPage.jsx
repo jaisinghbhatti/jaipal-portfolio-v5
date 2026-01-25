@@ -378,24 +378,82 @@ const BlogPage = () => {
                 components={{
                   block: {
                     h1: ({children}) => <h1 className="text-3xl font-bold mb-4 text-slate-900">{children}</h1>,
-                    h2: ({children}) => <h2 className="text-2xl font-bold mb-3 mt-6 text-slate-800">{children}</h2>,
-                    h3: ({children}) => <h3 className="text-xl font-semibold mb-2 mt-4 text-slate-700">{children}</h3>,
-                    normal: ({children}) => <p className="mb-4 text-slate-600 leading-relaxed">{children}</p>,
-                    blockquote: ({children}) => <blockquote className="border-l-4 border-blue-500 pl-4 italic text-slate-700 my-4">{children}</blockquote>,
+                    h2: ({children}) => <h2 className="text-2xl font-bold mb-3 mt-8 text-slate-800 border-b pb-2">{children}</h2>,
+                    h3: ({children}) => <h3 className="text-xl font-semibold mb-2 mt-6 text-slate-700">{children}</h3>,
+                    normal: ({children}) => <p className="mb-4 text-slate-600 leading-relaxed text-lg">{children}</p>,
+                    blockquote: ({children}) => (
+                      <blockquote className="border-l-4 border-indigo-500 pl-6 py-2 my-6 bg-indigo-50 rounded-r-lg italic text-slate-700">
+                        {children}
+                      </blockquote>
+                    ),
                   },
                   list: {
-                    bullet: ({children}) => <ul className="list-disc pl-6 mb-4 space-y-2 text-slate-600">{children}</ul>,
-                    number: ({children}) => <ol className="list-decimal pl-6 mb-4 space-y-2 text-slate-600">{children}</ol>,
+                    bullet: ({children}) => <ul className="list-disc pl-6 mb-6 space-y-3 text-slate-600">{children}</ul>,
+                    number: ({children}) => <ol className="list-decimal pl-6 mb-6 space-y-3 text-slate-600">{children}</ol>,
                   },
                   listItem: {
-                    bullet: ({children}) => <li className="mb-2 text-slate-600 leading-relaxed">{children}</li>,
-                    number: ({children}) => <li className="mb-2 text-slate-600 leading-relaxed">{children}</li>,
+                    bullet: ({children}) => <li className="mb-2 text-slate-600 leading-relaxed text-lg">{children}</li>,
+                    number: ({children}) => <li className="mb-2 text-slate-600 leading-relaxed text-lg">{children}</li>,
                   },
                   marks: {
                     strong: ({children}) => <strong className="font-bold text-slate-800">{children}</strong>,
                     em: ({children}) => <em className="italic">{children}</em>,
-                    code: ({children}) => <code className="bg-gray-100 px-1 py-0.5 rounded text-sm font-mono">{children}</code>,
-                    link: ({children, value}) => <a href={value.href} className="text-blue-600 hover:text-blue-800 underline" target="_blank" rel="noopener noreferrer">{children}</a>,
+                    underline: ({children}) => <span className="underline">{children}</span>,
+                    code: ({children}) => <code className="bg-slate-800 text-slate-100 px-2 py-1 rounded text-sm font-mono">{children}</code>,
+                    link: ({children, value}) => (
+                      <a 
+                        href={value?.href} 
+                        className="text-indigo-600 hover:text-indigo-800 underline decoration-2 underline-offset-2" 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                      >
+                        {children}
+                      </a>
+                    ),
+                    highlight: ({children}) => <mark className="bg-yellow-200 px-1 rounded">{children}</mark>,
+                  },
+                  types: {
+                    image: ({value}) => {
+                      // Handle different image URL formats from Sanity
+                      const imageUrl = value?.asset?.url || value?.url || value?.src;
+                      if (!imageUrl) return null;
+                      return (
+                        <figure className="my-8">
+                          <img 
+                            src={imageUrl} 
+                            alt={value?.alt || 'Blog image'} 
+                            className="w-full rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300"
+                          />
+                          {value?.caption && (
+                            <figcaption className="text-center text-sm text-slate-500 mt-3 italic">
+                              {value.caption}
+                            </figcaption>
+                          )}
+                        </figure>
+                      );
+                    },
+                    // Handle YouTube embeds
+                    youtube: ({value}) => {
+                      const videoId = value?.url?.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/)?.[1];
+                      if (!videoId) return null;
+                      return (
+                        <div className="my-8 aspect-video">
+                          <iframe
+                            className="w-full h-full rounded-xl shadow-lg"
+                            src={`https://www.youtube-nocookie.com/embed/${videoId}`}
+                            title="YouTube video"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                          />
+                        </div>
+                      );
+                    },
+                    // Handle code blocks
+                    code: ({value}) => (
+                      <pre className="bg-slate-900 text-slate-100 p-4 rounded-xl my-6 overflow-x-auto">
+                        <code className="text-sm font-mono">{value?.code}</code>
+                      </pre>
+                    ),
                   },
                 }}
               />
