@@ -656,35 +656,144 @@ const ModernBlogEditor = () => {
             blocks.push({
               _type: "block",
               style: "blockquote",
-              children: [{ _type: "span", text: node.textContent }],
+              children: parseInlineElements(node),
             });
             break;
           case "ul":
-            node.querySelectorAll("li").forEach((li) => {
+            node.querySelectorAll(":scope > li").forEach((li) => {
               blocks.push({
                 _type: "block",
                 style: "normal",
                 listItem: "bullet",
-                children: [{ _type: "span", text: li.textContent }],
+                children: parseInlineElements(li),
               });
             });
             break;
           case "ol":
-            node.querySelectorAll("li").forEach((li, index) => {
+            node.querySelectorAll(":scope > li").forEach((li) => {
               blocks.push({
                 _type: "block",
                 style: "normal",
                 listItem: "number",
                 level: 1,
-                children: [{ _type: "span", text: li.textContent }],
+                children: parseInlineElements(li),
               });
             });
             break;
+          case "figure":
+            // Handle figure elements that might contain images
+            const figImg = node.querySelector("img");
+            if (figImg) {
+              blocks.push({
+                _type: "image",
+                _key: Math.random().toString(36).substr(2, 9),
+                asset: {
+                  url: figImg.src,
+                },
+                alt: figImg.alt || "",
+              });
+            }
+            break;
+          case "iframe":
+            // Handle YouTube embeds
+            if (node.src && node.src.includes("youtube")) {
+              blocks.push({
+                _type: "youtube",
+                _key: Math.random().toString(36).substr(2, 9),
+                url: node.src,
+              });
+            }
+            break;
+          case "pre":
+            // Handle code blocks
+            const codeEl = node.querySelector("code");
+            blocks.push({
+              _type: "code",
+              _key: Math.random().toString(36).substr(2, 9),
+              code: codeEl ? codeEl.textContent : node.textContent,
+            });
+            break;
+          case "hr":
+            // Handle horizontal rules
+            blocks.push({
+              _type: "block",
+              style: "normal",
+              children: [{ _type: "span", text: "---" }],
+            });
+            break;
           default:
+            // Process children for divs and other containers
+            if (tagName === "div" || tagName === "section" || tagName === "article") {
+              node.childNodes.forEach(processNode);
+            }
             return children.join("");
         }
       }
       return "";
+    };
+
+    // Helper function to parse inline elements (bold, italic, links, etc.)
+    const parseInlineElements = (parentNode) => {
+      const spans = [];
+      
+      const processInline = (node, marks = []) => {
+        if (node.nodeType === Node.TEXT_NODE) {
+          if (node.textContent.trim() || node.textContent === " ") {
+            spans.push({
+              _type: "span",
+              _key: Math.random().toString(36).substr(2, 9),
+              text: node.textContent,
+              marks: marks.length > 0 ? [...marks] : undefined,
+            });
+          }
+          return;
+        }
+        
+        if (node.nodeType === Node.ELEMENT_NODE) {
+          const tagName = node.tagName.toLowerCase();
+          let newMarks = [...marks];
+          
+          switch (tagName) {
+            case "strong":
+            case "b":
+              newMarks.push("strong");
+              break;
+            case "em":
+            case "i":
+              newMarks.push("em");
+              break;
+            case "u":
+              newMarks.push("underline");
+              break;
+            case "s":
+            case "strike":
+            case "del":
+              newMarks.push("strike-through");
+              break;
+            case "code":
+              newMarks.push("code");
+              break;
+            case "mark":
+              newMarks.push("highlight");
+              break;
+            case "a":
+              // For links, we'd need to handle them differently in Sanity
+              // For now, just extract text
+              break;
+          }
+          
+          node.childNodes.forEach(child => processInline(child, newMarks));
+        }
+      };
+      
+      parentNode.childNodes.forEach(child => processInline(child));
+      
+      // If no spans were created, create a default empty span
+      if (spans.length === 0) {
+        spans.push({ _type: "span", text: parentNode.textContent || "" });
+      }
+      
+      return spans;
     };
 
     doc.body.childNodes.forEach(processNode);
