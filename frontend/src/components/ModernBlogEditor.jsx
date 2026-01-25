@@ -1341,6 +1341,18 @@ const ModernBlogEditor = () => {
                       >
                         <YoutubeIcon className="w-4 h-4" />
                       </ToolbarButton>
+
+                      <Separator orientation="vertical" className="h-6 mx-2" />
+
+                      {/* Insert Image by URL button */}
+                      <ToolbarButton
+                        onClick={() => setShowImageUrlInput(!showImageUrlInput)}
+                        title="Insert Image by URL"
+                        active={showImageUrlInput}
+                      >
+                        <span className="text-xs font-medium">URL</span>
+                        <ImageIcon className="w-4 h-4 ml-1" />
+                      </ToolbarButton>
                     </div>
 
                     {/* Link Input */}
@@ -1363,6 +1375,33 @@ const ModernBlogEditor = () => {
                           onClick={() => {
                             setShowLinkInput(false);
                             setLinkUrl("");
+                          }}
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    )}
+
+                    {/* Image URL Input */}
+                    {showImageUrlInput && (
+                      <div className="flex gap-2 mt-3 pt-3 border-t border-indigo-200 bg-indigo-50/50 -mx-3 px-3 pb-3 rounded-b-lg">
+                        <Input
+                          type="url"
+                          value={imageUrlInput}
+                          onChange={(e) => setImageUrlInput(e.target.value)}
+                          placeholder="Paste image URL here (e.g., https://example.com/image.png)"
+                          className="flex-1"
+                        />
+                        <Button type="button" onClick={addImageByUrl} size="sm" className="bg-indigo-600 hover:bg-indigo-700">
+                          Insert Image
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            setShowImageUrlInput(false);
+                            setImageUrlInput("");
                           }}
                         >
                           Cancel
