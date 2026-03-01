@@ -178,7 +178,7 @@ export const createImpactDOCX = async (parsed, photoSrc) => {
           width: { size: 100, type: WidthType.PERCENTAGE },
           shading: { fill: DARK, type: ShadingType.CLEAR },
           children: winsContent,
-          margins: { top: 150, bottom: 150, left: 200, right: 200 },
+          margins: { top: 150, bottom: 150, left: 400, right: 400 },
         })],
       })],
       width: { size: 100, type: WidthType.PERCENTAGE },
