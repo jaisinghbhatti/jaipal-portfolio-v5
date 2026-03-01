@@ -16,7 +16,7 @@ export const HarvardPreview = ({ parsed, profilePhoto }) => (
     {/* Header - centered, classic */}
     <div className="text-center border-b-2 border-gray-800 pb-4 mb-5">
       {profilePhoto && <img src={profilePhoto} alt="" className="w-16 h-16 rounded-full mx-auto mb-2 object-cover" />}
-      <h1 className="text-2xl font-bold text-gray-900 tracking-wide" style={{ fontFamily: 'Georgia, serif' }}>
+      <h1 className="text-2xl font-bold text-gray-900 tracking-wide" style={{ fontFamily: "'Times New Roman', Times, serif" }}>
         {parsed?.name || "YOUR NAME"}
       </h1>
       {parsed?.contact && (
@@ -26,7 +26,7 @@ export const HarvardPreview = ({ parsed, profilePhoto }) => (
 
     {parsed?.summary && (
       <div className="mb-5">
-        <h2 className="text-sm font-bold text-gray-800 uppercase tracking-wider border-b border-gray-300 pb-1 mb-2" style={{ fontFamily: 'Georgia, serif' }}>
+        <h2 className="text-sm font-bold text-gray-800 uppercase tracking-wider border-b border-gray-300 pb-1 mb-2" style={{ fontFamily: "'Times New Roman', Times, serif" }}>
           Professional Summary
         </h2>
         <p className="text-xs text-gray-700 leading-relaxed">{parsed.summary}</p>
@@ -35,13 +35,13 @@ export const HarvardPreview = ({ parsed, profilePhoto }) => (
 
     {parsed?.experience?.length > 0 && (
       <div className="mb-5">
-        <h2 className="text-sm font-bold text-gray-800 uppercase tracking-wider border-b border-gray-300 pb-1 mb-2" style={{ fontFamily: 'Georgia, serif' }}>
+        <h2 className="text-sm font-bold text-gray-800 uppercase tracking-wider border-b border-gray-300 pb-1 mb-2" style={{ fontFamily: "'Times New Roman', Times, serif" }}>
           Professional Experience
         </h2>
         {parsed.experience.map((job, i) => (
           <div key={i} className="mb-3">
             <div className="flex justify-between items-baseline">
-              <h3 className="font-bold text-gray-900 text-sm" style={{ fontFamily: 'Georgia, serif' }}>{job.title}</h3>
+              <h3 className="font-bold text-gray-900 text-sm" style={{ fontFamily: "'Times New Roman', Times, serif" }}>{job.title}</h3>
               {job.dates && <span className="text-xs text-gray-500 italic">{job.dates}</span>}
             </div>
             {job.company && <p className="text-xs text-gray-600 italic">{job.company}{job.location ? `, ${job.location}` : ''}</p>}
@@ -55,7 +55,7 @@ export const HarvardPreview = ({ parsed, profilePhoto }) => (
 
     {parsed?.education?.length > 0 && (
       <div className="mb-5">
-        <h2 className="text-sm font-bold text-gray-800 uppercase tracking-wider border-b border-gray-300 pb-1 mb-2" style={{ fontFamily: 'Georgia, serif' }}>
+        <h2 className="text-sm font-bold text-gray-800 uppercase tracking-wider border-b border-gray-300 pb-1 mb-2" style={{ fontFamily: "'Times New Roman', Times, serif" }}>
           Education
         </h2>
         {parsed.education.map((e, i) => <p key={i} className="text-xs text-gray-700 mb-1">{e}</p>)}
@@ -64,7 +64,7 @@ export const HarvardPreview = ({ parsed, profilePhoto }) => (
 
     {parsed?.skills?.length > 0 && (
       <div className="mb-5">
-        <h2 className="text-sm font-bold text-gray-800 uppercase tracking-wider border-b border-gray-300 pb-1 mb-2" style={{ fontFamily: 'Georgia, serif' }}>
+        <h2 className="text-sm font-bold text-gray-800 uppercase tracking-wider border-b border-gray-300 pb-1 mb-2" style={{ fontFamily: "'Times New Roman', Times, serif" }}>
           Skills
         </h2>
         <p className="text-xs text-gray-700">{parsed.skills.join(" | ")}</p>
@@ -73,7 +73,7 @@ export const HarvardPreview = ({ parsed, profilePhoto }) => (
 
     {parsed?.certifications?.length > 0 && (
       <div>
-        <h2 className="text-sm font-bold text-gray-800 uppercase tracking-wider border-b border-gray-300 pb-1 mb-2" style={{ fontFamily: 'Georgia, serif' }}>
+        <h2 className="text-sm font-bold text-gray-800 uppercase tracking-wider border-b border-gray-300 pb-1 mb-2" style={{ fontFamily: "'Times New Roman', Times, serif" }}>
           Certifications
         </h2>
         {parsed.certifications.map((c, i) => <p key={i} className="text-xs text-gray-700 mb-1">{c}</p>)}
