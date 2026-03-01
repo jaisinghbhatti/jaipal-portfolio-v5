@@ -256,7 +256,6 @@ Respond in this exact JSON format ONLY, no other text or explanation:
         response = await call_gemini_ai(prompt, system_message)
         
         # Parse the response
-        import json
         # Clean the response - remove markdown code blocks if present
         clean_response = response.strip()
         if clean_response.startswith("```"):
