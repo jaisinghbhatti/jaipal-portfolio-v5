@@ -259,24 +259,47 @@ Respond in this exact JSON format ONLY, no other text or explanation:
         # Clean the response - remove markdown code blocks if present
         clean_response = response.strip()
         if clean_response.startswith("```"):
-            clean_response = clean_response.split("```")[1]
-            if clean_response.startswith("json"):
-                clean_response = clean_response[4:]
+            # Handle ```json ... ``` blocks
+            parts = clean_response.split("```")
+            for part in parts:
+                part = part.strip()
+                if part.startswith("json"):
+                    part = part[4:].strip()
+                if part.startswith("{"):
+                    clean_response = part
+                    break
         clean_response = clean_response.strip()
+        
+        # Remove any trailing text after the JSON object
+        brace_count = 0
+        end_idx = 0
+        for i, ch in enumerate(clean_response):
+            if ch == '{':
+                brace_count += 1
+            elif ch == '}':
+                brace_count -= 1
+                if brace_count == 0:
+                    end_idx = i + 1
+                    break
+        if end_idx > 0:
+            clean_response = clean_response[:end_idx]
         
         try:
             result = json.loads(clean_response)
         except json.JSONDecodeError:
-            # Fallback: try to extract values manually
-            logger.warning(f"Failed to parse AI response as JSON: {response}")
+            logger.warning(f"Failed to parse AI response as JSON: {response[:500]}")
             result = {
                 "matchScore": 50,
                 "missingKeywords": ["Unable to analyze - please try again"]
             }
         
+        keywords = result.get("missingKeywords", [])
+        if not keywords or (len(keywords) == 0):
+            keywords = ["Review job description for specific requirements"]
+        
         return AnalyzeResponse(
             matchScore=min(100, max(0, int(result.get("matchScore", 50)))),
-            missingKeywords=result.get("missingKeywords", [])[:10]
+            missingKeywords=keywords[:10]
         )
         
     except HTTPException:
