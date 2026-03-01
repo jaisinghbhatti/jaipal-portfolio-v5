@@ -391,7 +391,7 @@ Respond with ONLY a single number between 0 and 100, nothing else."""
             new_score_response = await call_gemini_ai(new_match_prompt)
             new_match_score = int(re.search(r'\d+', new_score_response).group())
             new_match_score = min(100, max(0, new_match_score))
-        except:
+        except Exception:
             new_match_score = None
         
         return OptimizeResponse(
