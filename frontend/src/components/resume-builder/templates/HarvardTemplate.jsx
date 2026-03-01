@@ -101,7 +101,7 @@ export const createHarvardDOCX = async (parsed, photoSrc) => {
 
   // Name
   children.push(new Paragraph({
-    children: [new TextRun({ text: parsed.name || "YOUR NAME", bold: true, size: 32, color: DARK, font: "Georgia" })],
+    children: [new TextRun({ text: parsed.name || "YOUR NAME", bold: true, size: 32, color: DARK, font: "Times New Roman" })],
     alignment: AlignmentType.CENTER,
     spacing: { after: 60 },
   }));
@@ -109,7 +109,7 @@ export const createHarvardDOCX = async (parsed, photoSrc) => {
   // Contact
   if (parsed.contact) {
     children.push(new Paragraph({
-      children: [new TextRun({ text: parsed.contact, size: 18, color: GRAY, font: "Georgia" })],
+      children: [new TextRun({ text: parsed.contact, size: 18, color: GRAY, font: "Times New Roman" })],
       alignment: AlignmentType.CENTER,
       spacing: { after: 100 },
     }));
@@ -124,7 +124,7 @@ export const createHarvardDOCX = async (parsed, photoSrc) => {
 
   const addSection = (title, content) => {
     children.push(new Paragraph({
-      children: [new TextRun({ text: title, bold: true, size: 22, color: DARK, font: "Georgia", allCaps: true })],
+      children: [new TextRun({ text: title, bold: true, size: 22, color: DARK, font: "Times New Roman", allCaps: true })],
       spacing: { before: 200, after: 60 },
       border: { bottom: { color: "CCCCCC", size: 4, style: BorderStyle.SINGLE } },
     }));
@@ -135,7 +135,7 @@ export const createHarvardDOCX = async (parsed, photoSrc) => {
   if (parsed.summary) {
     addSection("PROFESSIONAL SUMMARY", () => {
       children.push(new Paragraph({
-        children: [new TextRun({ text: parsed.summary, size: 20, font: "Georgia", color: "333333" })],
+        children: [new TextRun({ text: parsed.summary, size: 20, font: "Times New Roman", color: "333333" })],
         spacing: { after: 150 },
       }));
     });
@@ -147,20 +147,20 @@ export const createHarvardDOCX = async (parsed, photoSrc) => {
       parsed.experience.forEach(job => {
         children.push(new Paragraph({
           children: [
-            new TextRun({ text: job.title, bold: true, size: 21, font: "Georgia" }),
-            ...(job.dates ? [new TextRun({ text: "  |  " + job.dates, italics: true, size: 18, color: GRAY, font: "Georgia" })] : []),
+            new TextRun({ text: job.title, bold: true, size: 21, font: "Times New Roman" }),
+            ...(job.dates ? [new TextRun({ text: "  |  " + job.dates, italics: true, size: 18, color: GRAY, font: "Times New Roman" })] : []),
           ],
           spacing: { before: 150, after: 30 },
         }));
         if (job.company) {
           children.push(new Paragraph({
-            children: [new TextRun({ text: job.company + (job.location ? ", " + job.location : ""), italics: true, size: 19, color: GRAY, font: "Georgia" })],
+            children: [new TextRun({ text: job.company + (job.location ? ", " + job.location : ""), italics: true, size: 19, color: GRAY, font: "Times New Roman" })],
             spacing: { after: 50 },
           }));
         }
         job.bullets.forEach(bullet => {
           children.push(new Paragraph({
-            children: [new TextRun({ text: bullet, size: 19, font: "Georgia" })],
+            children: [new TextRun({ text: bullet, size: 19, font: "Times New Roman" })],
             bullet: { level: 0 },
             spacing: { after: 40 },
           }));
@@ -174,7 +174,7 @@ export const createHarvardDOCX = async (parsed, photoSrc) => {
     addSection("EDUCATION", () => {
       parsed.education.forEach(edu => {
         children.push(new Paragraph({
-          children: [new TextRun({ text: edu, size: 19, font: "Georgia" })],
+          children: [new TextRun({ text: edu, size: 19, font: "Times New Roman" })],
           spacing: { after: 50 },
         }));
       });
@@ -185,7 +185,7 @@ export const createHarvardDOCX = async (parsed, photoSrc) => {
   if (parsed.skills.length > 0) {
     addSection("SKILLS", () => {
       children.push(new Paragraph({
-        children: [new TextRun({ text: parsed.skills.join("  |  "), size: 19, font: "Georgia" })],
+        children: [new TextRun({ text: parsed.skills.join("  |  "), size: 19, font: "Times New Roman" })],
         spacing: { after: 100 },
       }));
     });
@@ -196,7 +196,7 @@ export const createHarvardDOCX = async (parsed, photoSrc) => {
     addSection("CERTIFICATIONS", () => {
       parsed.certifications.forEach(cert => {
         children.push(new Paragraph({
-          children: [new TextRun({ text: cert, size: 19, font: "Georgia" })],
+          children: [new TextRun({ text: cert, size: 19, font: "Times New Roman" })],
           bullet: { level: 0 },
           spacing: { after: 40 },
         }));

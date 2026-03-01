@@ -85,13 +85,13 @@ export const createModernDOCX = async (parsed, photoSrc) => {
   }
 
   leftContent.push(new Paragraph({
-    children: [new TextRun({ text: parsed.name || "YOUR NAME", bold: true, size: 26, color: WHITE, font: "Calibri" })],
+    children: [new TextRun({ text: parsed.name || "YOUR NAME", bold: true, size: 26, color: WHITE, font: "Times New Roman" })],
     alignment: AlignmentType.CENTER,
     spacing: { after: 250 },
   }));
 
   leftContent.push(new Paragraph({
-    children: [new TextRun({ text: "CONTACT", bold: true, size: 20, color: WHITE, font: "Calibri" })],
+    children: [new TextRun({ text: "CONTACT", bold: true, size: 20, color: WHITE, font: "Times New Roman" })],
     spacing: { before: 150, after: 80 },
     border: { bottom: { color: WHITE, size: 6, style: BorderStyle.SINGLE } },
   }));
@@ -101,7 +101,7 @@ export const createModernDOCX = async (parsed, photoSrc) => {
       const p = cleanText(part).trim();
       if (p && p.length > 2) {
         leftContent.push(new Paragraph({
-          children: [new TextRun({ text: p, size: 17, color: WHITE, font: "Calibri" })],
+          children: [new TextRun({ text: p, size: 17, color: WHITE, font: "Times New Roman" })],
           spacing: { after: 50 },
         }));
       }
@@ -110,13 +110,13 @@ export const createModernDOCX = async (parsed, photoSrc) => {
 
   if (parsed.skills.length > 0) {
     leftContent.push(new Paragraph({
-      children: [new TextRun({ text: "SKILLS", bold: true, size: 20, color: WHITE, font: "Calibri" })],
+      children: [new TextRun({ text: "SKILLS", bold: true, size: 20, color: WHITE, font: "Times New Roman" })],
       spacing: { before: 250, after: 80 },
       border: { bottom: { color: WHITE, size: 6, style: BorderStyle.SINGLE } },
     }));
     parsed.skills.slice(0, 14).forEach(skill => {
       leftContent.push(new Paragraph({
-        children: [new TextRun({ text: skill, size: 17, color: WHITE, font: "Calibri" })],
+        children: [new TextRun({ text: skill, size: 17, color: WHITE, font: "Times New Roman" })],
         bullet: { level: 0 },
         spacing: { after: 35 },
       }));
@@ -125,13 +125,13 @@ export const createModernDOCX = async (parsed, photoSrc) => {
 
   if (parsed.education.length > 0) {
     leftContent.push(new Paragraph({
-      children: [new TextRun({ text: "EDUCATION", bold: true, size: 20, color: WHITE, font: "Calibri" })],
+      children: [new TextRun({ text: "EDUCATION", bold: true, size: 20, color: WHITE, font: "Times New Roman" })],
       spacing: { before: 250, after: 80 },
       border: { bottom: { color: WHITE, size: 6, style: BorderStyle.SINGLE } },
     }));
     parsed.education.forEach(edu => {
       leftContent.push(new Paragraph({
-        children: [new TextRun({ text: edu, size: 17, color: WHITE, font: "Calibri" })],
+        children: [new TextRun({ text: edu, size: 17, color: WHITE, font: "Times New Roman" })],
         spacing: { after: 60 },
       }));
     });
@@ -139,13 +139,13 @@ export const createModernDOCX = async (parsed, photoSrc) => {
 
   if (parsed.certifications?.length > 0) {
     leftContent.push(new Paragraph({
-      children: [new TextRun({ text: "CERTIFICATIONS", bold: true, size: 20, color: WHITE, font: "Calibri" })],
+      children: [new TextRun({ text: "CERTIFICATIONS", bold: true, size: 20, color: WHITE, font: "Times New Roman" })],
       spacing: { before: 250, after: 80 },
       border: { bottom: { color: WHITE, size: 6, style: BorderStyle.SINGLE } },
     }));
     parsed.certifications.forEach(cert => {
       leftContent.push(new Paragraph({
-        children: [new TextRun({ text: cert, size: 17, color: WHITE, font: "Calibri" })],
+        children: [new TextRun({ text: cert, size: 17, color: WHITE, font: "Times New Roman" })],
         bullet: { level: 0 },
         spacing: { after: 40 },
       }));
@@ -155,42 +155,42 @@ export const createModernDOCX = async (parsed, photoSrc) => {
   const rightContent = [];
   if (parsed.summary) {
     rightContent.push(new Paragraph({
-      children: [new TextRun({ text: "PROFESSIONAL SUMMARY", bold: true, size: 24, color: BLUE, font: "Calibri" })],
+      children: [new TextRun({ text: "PROFESSIONAL SUMMARY", bold: true, size: 24, color: BLUE, font: "Times New Roman" })],
       spacing: { after: 80 },
       border: { bottom: { color: BLUE, size: 8, style: BorderStyle.SINGLE } },
     }));
     rightContent.push(new Paragraph({
-      children: [new TextRun({ text: parsed.summary, size: 20, font: "Calibri" })],
+      children: [new TextRun({ text: parsed.summary, size: 20, font: "Times New Roman" })],
       spacing: { after: 250 },
     }));
   }
 
   if (parsed.experience.length > 0) {
     rightContent.push(new Paragraph({
-      children: [new TextRun({ text: "PROFESSIONAL EXPERIENCE", bold: true, size: 24, color: BLUE, font: "Calibri" })],
+      children: [new TextRun({ text: "PROFESSIONAL EXPERIENCE", bold: true, size: 24, color: BLUE, font: "Times New Roman" })],
       spacing: { before: 100, after: 80 },
       border: { bottom: { color: BLUE, size: 8, style: BorderStyle.SINGLE } },
     }));
     parsed.experience.forEach(job => {
       rightContent.push(new Paragraph({
-        children: [new TextRun({ text: job.title, bold: true, size: 22, font: "Calibri" })],
+        children: [new TextRun({ text: job.title, bold: true, size: 22, font: "Times New Roman" })],
         spacing: { before: 180, after: 30 },
       }));
       if (job.company) {
         rightContent.push(new Paragraph({
-          children: [new TextRun({ text: job.company + (job.location ? " | " + job.location : ""), size: 20, color: BLUE, font: "Calibri" })],
+          children: [new TextRun({ text: job.company + (job.location ? " | " + job.location : ""), size: 20, color: BLUE, font: "Times New Roman" })],
           spacing: { after: 30 },
         }));
       }
       if (job.dates) {
         rightContent.push(new Paragraph({
-          children: [new TextRun({ text: job.dates, italics: true, size: 18, color: "666666", font: "Calibri" })],
+          children: [new TextRun({ text: job.dates, italics: true, size: 18, color: "666666", font: "Times New Roman" })],
           spacing: { after: 60 },
         }));
       }
       job.bullets.forEach(bullet => {
         rightContent.push(new Paragraph({
-          children: [new TextRun({ text: bullet, size: 19, font: "Calibri" })],
+          children: [new TextRun({ text: bullet, size: 19, font: "Times New Roman" })],
           bullet: { level: 0 },
           spacing: { after: 50 },
         }));

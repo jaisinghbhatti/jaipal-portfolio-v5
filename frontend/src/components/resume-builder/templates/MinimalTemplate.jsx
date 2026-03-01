@@ -84,7 +84,7 @@ export const createMinimalDOCX = async (parsed, photoSrc) => {
       headerChildren.push(new TextRun({ text: "  " }));
     } catch (e) { /* skip */ }
   }
-  headerChildren.push(new TextRun({ text: parsed.name || "YOUR NAME", bold: true, size: 28, color: DARK, font: "Calibri" }));
+  headerChildren.push(new TextRun({ text: parsed.name || "YOUR NAME", bold: true, size: 28, color: DARK, font: "Times New Roman" }));
 
   children.push(new Paragraph({
     children: headerChildren,
@@ -93,7 +93,7 @@ export const createMinimalDOCX = async (parsed, photoSrc) => {
 
   if (parsed.contact) {
     children.push(new Paragraph({
-      children: [new TextRun({ text: parsed.contact, size: 17, color: "888888", font: "Calibri" })],
+      children: [new TextRun({ text: parsed.contact, size: 17, color: "888888", font: "Times New Roman" })],
       spacing: { after: 60 },
     }));
   }
@@ -107,7 +107,7 @@ export const createMinimalDOCX = async (parsed, photoSrc) => {
 
   const addSection = (title, content) => {
     children.push(new Paragraph({
-      children: [new TextRun({ text: title, bold: false, size: 18, color: "888888", font: "Calibri", allCaps: true })],
+      children: [new TextRun({ text: title, bold: false, size: 18, color: "888888", font: "Times New Roman", allCaps: true })],
       spacing: { before: 200, after: 80 },
     }));
     content();
@@ -116,7 +116,7 @@ export const createMinimalDOCX = async (parsed, photoSrc) => {
   if (parsed.summary) {
     addSection("SUMMARY", () => {
       children.push(new Paragraph({
-        children: [new TextRun({ text: parsed.summary, size: 20, font: "Calibri", color: GRAY })],
+        children: [new TextRun({ text: parsed.summary, size: 20, font: "Times New Roman", color: GRAY })],
         spacing: { after: 150 },
       }));
     });
@@ -127,20 +127,20 @@ export const createMinimalDOCX = async (parsed, photoSrc) => {
       parsed.experience.forEach(job => {
         children.push(new Paragraph({
           children: [
-            new TextRun({ text: job.title, bold: true, size: 21, font: "Calibri", color: DARK }),
-            ...(job.dates ? [new TextRun({ text: "    " + job.dates, size: 17, color: "999999", font: "Calibri" })] : []),
+            new TextRun({ text: job.title, bold: true, size: 21, font: "Times New Roman", color: DARK }),
+            ...(job.dates ? [new TextRun({ text: "    " + job.dates, size: 17, color: "999999", font: "Times New Roman" })] : []),
           ],
           spacing: { before: 140, after: 20 },
         }));
         if (job.company) {
           children.push(new Paragraph({
-            children: [new TextRun({ text: job.company + (job.location ? " — " + job.location : ""), size: 18, color: "777777", font: "Calibri" })],
+            children: [new TextRun({ text: job.company + (job.location ? " — " + job.location : ""), size: 18, color: "777777", font: "Times New Roman" })],
             spacing: { after: 50 },
           }));
         }
         job.bullets.forEach(bullet => {
           children.push(new Paragraph({
-            children: [new TextRun({ text: "– " + bullet, size: 19, font: "Calibri", color: GRAY })],
+            children: [new TextRun({ text: "– " + bullet, size: 19, font: "Times New Roman", color: GRAY })],
             spacing: { after: 30 },
             indent: { left: 200 },
           }));
@@ -153,7 +153,7 @@ export const createMinimalDOCX = async (parsed, photoSrc) => {
     addSection("EDUCATION", () => {
       parsed.education.forEach(edu => {
         children.push(new Paragraph({
-          children: [new TextRun({ text: edu, size: 19, font: "Calibri", color: GRAY })],
+          children: [new TextRun({ text: edu, size: 19, font: "Times New Roman", color: GRAY })],
           spacing: { after: 50 },
         }));
       });
@@ -163,7 +163,7 @@ export const createMinimalDOCX = async (parsed, photoSrc) => {
   if (parsed.skills.length > 0) {
     addSection("SKILLS", () => {
       children.push(new Paragraph({
-        children: [new TextRun({ text: parsed.skills.join(", "), size: 19, font: "Calibri", color: GRAY })],
+        children: [new TextRun({ text: parsed.skills.join(", "), size: 19, font: "Times New Roman", color: GRAY })],
         spacing: { after: 100 },
       }));
     });
@@ -173,7 +173,7 @@ export const createMinimalDOCX = async (parsed, photoSrc) => {
     addSection("CERTIFICATIONS", () => {
       parsed.certifications.forEach(cert => {
         children.push(new Paragraph({
-          children: [new TextRun({ text: "– " + cert, size: 19, font: "Calibri", color: GRAY })],
+          children: [new TextRun({ text: "– " + cert, size: 19, font: "Times New Roman", color: GRAY })],
           spacing: { after: 30 },
           indent: { left: 200 },
         }));
