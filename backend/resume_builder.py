@@ -9,6 +9,7 @@ import os
 import logging
 import io
 import re
+import json
 from dotenv import load_dotenv
 
 # Load environment variables
