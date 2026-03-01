@@ -10,11 +10,47 @@ import jsPDF from "jspdf";
 import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, BorderStyle } from "docx";
 import { saveAs } from "file-saver";
 
+// Clean markdown from text - remove **, *, etc. and return clean text
+const cleanMarkdown = (text) => {
+  if (!text) return '';
+  return text
+    // Fix broken markdown patterns like *text** or **text*
+    .replace(/\*([^*]+)\*\*/g, '$1')
+    .replace(/\*\*([^*]+)\*/g, '$1')
+    // Remove bold markdown **text**
+    .replace(/\*\*([^*]+)\*\*/g, '$1')
+    // Remove italic markdown *text*
+    .replace(/\*([^*]+)\*/g, '$1')
+    // Remove headers ## or ###
+    .replace(/^#{1,6}\s*/gm, '')
+    // Remove code blocks ```
+    .replace(/```[^`]*```/g, '')
+    // Remove inline code `text`
+    .replace(/`([^`]+)`/g, '$1')
+    // Remove extra whitespace
+    .replace(/\s+/g, ' ')
+    .trim();
+};
+
+// Clean entire resume text while preserving structure
+const cleanResumeText = (text) => {
+  if (!text) return '';
+  return text.split('\n').map(line => {
+    // Preserve empty lines
+    if (!line.trim()) return '';
+    // Clean each line
+    return cleanMarkdown(line);
+  }).join('\n');
+};
+
 // Parse resume text into structured sections
 const parseResumeText = (text) => {
   if (!text) return null;
   
-  const lines = text.split('\n').filter(line => line.trim());
+  // Clean the text first
+  const cleanedText = cleanResumeText(text);
+  const lines = cleanedText.split('\n').filter(line => line.trim());
+  
   const sections = {
     name: '',
     title: '',
@@ -39,13 +75,13 @@ const parseResumeText = (text) => {
     if (upperLine.includes('SUMMARY') || upperLine.includes('OBJECTIVE') || upperLine.includes('PROFILE') || upperLine.includes('ABOUT')) {
       currentSection = 'summary';
       continue;
-    } else if (upperLine.includes('EXPERIENCE') || upperLine.includes('EMPLOYMENT') || upperLine.includes('WORK HISTORY')) {
+    } else if (upperLine.includes('EXPERIENCE') || upperLine.includes('EMPLOYMENT') || upperLine.includes('WORK HISTORY') || upperLine.includes('CAREER')) {
       currentSection = 'experience';
       continue;
     } else if (upperLine.includes('EDUCATION') || upperLine.includes('ACADEMIC')) {
       currentSection = 'education';
       continue;
-    } else if (upperLine.includes('SKILL') || upperLine.includes('COMPETENC') || upperLine.includes('TECHNICAL')) {
+    } else if (upperLine.includes('SKILL') || upperLine.includes('COMPETENC') || upperLine.includes('TECHNICAL') || upperLine.includes('CORE COMPETENCIES') || upperLine.includes('KEY SKILLS')) {
       currentSection = 'skills';
       continue;
     } else if (upperLine.includes('CERTIF') || upperLine.includes('LICENSE')) {
@@ -54,31 +90,45 @@ const parseResumeText = (text) => {
     } else if (upperLine.includes('ACHIEVEMENT') || upperLine.includes('AWARD') || upperLine.includes('KEY WINS')) {
       currentSection = 'achievements';
       continue;
+    } else if (upperLine.includes('TOOL STACK') || upperLine.includes('TOOLS')) {
+      currentSection = 'skills';
+      continue;
     }
     
     // Parse content based on section
     if (currentSection === 'header') {
-      if (!sections.name && line.length > 0 && line.length < 50 && !line.includes('@') && !line.includes('|')) {
+      if (!sections.name && line.length > 0 && line.length < 50 && !line.includes('@') && !line.includes('|') && !line.includes('Ph:')) {
         sections.name = line;
-      } else if (line.includes('@') || line.includes('|') || line.includes('•') || /\d{3}[-.\s]?\d{3}[-.\s]?\d{4}/.test(line)) {
+      } else if (line.includes('@') || line.includes('|') || line.includes('•') || /\d{3}[-.\s]?\d{3}[-.\s]?\d{4}/.test(line) || line.includes('Ph:') || line.includes('LinkedIn')) {
         sections.contact.push(line);
-      } else if (line.length < 60 && !sections.title) {
+      } else if (line.length < 80 && !sections.title && !line.includes('@')) {
         sections.title = line;
       }
     } else if (currentSection === 'summary') {
-      sections.summary += (sections.summary ? ' ' : '') + line;
+      // Skip AIDA markers like **A**ttention, **I**nterest, etc.
+      const cleanLine = line.replace(/^\*?\*?[AIDA]\*?\*?[a-z]*:\s*/i, '');
+      if (cleanLine.length > 0) {
+        sections.summary += (sections.summary ? ' ' : '') + cleanLine;
+      }
     } else if (currentSection === 'experience') {
-      if (line.startsWith('•') || line.startsWith('-') || line.startsWith('*') || line.startsWith('►')) {
+      if (line.startsWith('•') || line.startsWith('-') || line.startsWith('*') || line.startsWith('►') || line.startsWith('→')) {
         if (currentExperience) {
-          currentExperience.bullets.push(line.replace(/^[•\-*►]\s*/, ''));
+          const bulletText = line.replace(/^[•\-*►→]\s*/, '');
+          currentExperience.bullets.push(bulletText);
         }
       } else if (line.length > 0) {
-        if (currentExperience && currentExperience.company && !currentExperience.dates && /\d{4}/.test(line)) {
-          currentExperience.dates = line;
-        } else if (!line.startsWith(' ') && line.length < 100) {
-          if (currentExperience) sections.experience.push(currentExperience);
+        // Check for date patterns
+        const datePattern = /\b(JANUARY|FEBRUARY|MARCH|APRIL|MAY|JUNE|JULY|AUGUST|SEPTEMBER|OCTOBER|NOVEMBER|DECEMBER|\d{4})\b/i;
+        if (datePattern.test(line) && line.length < 60) {
+          if (currentExperience && !currentExperience.dates) {
+            currentExperience.dates = line;
+          }
+        } else if (!line.startsWith(' ') && line.length < 120 && !line.includes('•')) {
+          if (currentExperience && currentExperience.title) {
+            sections.experience.push(currentExperience);
+          }
           currentExperience = { title: line, company: '', dates: '', bullets: [] };
-        } else if (currentExperience && !currentExperience.company) {
+        } else if (currentExperience && !currentExperience.company && line.length < 80) {
           currentExperience.company = line;
         }
       }
@@ -90,23 +140,21 @@ const parseResumeText = (text) => {
       } else if (line.length > 0) {
         if (currentEducation) sections.education.push(currentEducation);
         currentEducation = { school: line, degree: '', year: '', details: [] };
-        if (/\d{4}/.test(line)) {
-          const yearMatch = line.match(/\d{4}/);
-          if (yearMatch) currentEducation.year = yearMatch[0];
-        }
+        const yearMatch = line.match(/\d{4}/);
+        if (yearMatch) currentEducation.year = yearMatch[0];
       }
     } else if (currentSection === 'skills') {
-      const skillItems = line.split(/[,•|]/).map(s => s.trim()).filter(s => s);
+      const skillItems = line.split(/[,•|]/).map(s => s.trim()).filter(s => s && s.length > 1 && s.length < 60);
       sections.skills.push(...skillItems);
     } else if (currentSection === 'certifications') {
       sections.certifications.push(line.replace(/^[•\-*]\s*/, ''));
     } else if (currentSection === 'achievements') {
-      sections.achievements.push(line.replace(/^[•\-*]\s*/, ''));
+      sections.achievements.push(line.replace(/^[•\-*►→]\s*/, ''));
     }
   }
   
   // Add last items
-  if (currentExperience) sections.experience.push(currentExperience);
+  if (currentExperience && currentExperience.title) sections.experience.push(currentExperience);
   if (currentEducation) sections.education.push(currentEducation);
   
   return sections;
@@ -425,15 +473,18 @@ const PreviewExport = ({ data, updateData, onBack, goToStep }) => {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("resume");
   const [editMode, setEditMode] = useState(false);
-  const [editedResume, setEditedResume] = useState(data.optimizedResume || "");
-  const [editedCoverLetter, setEditedCoverLetter] = useState(data.coverLetter || "");
+  const [editedResume, setEditedResume] = useState("");
+  const [editedCoverLetter, setEditedCoverLetter] = useState("");
   const [isExporting, setIsExporting] = useState(false);
   const resumeRef = useRef(null);
   const [parsedResume, setParsedResume] = useState(null);
 
+  // Clean and set initial data
   useEffect(() => {
-    setEditedResume(data.optimizedResume || "");
-    setEditedCoverLetter(data.coverLetter || "");
+    const cleanedResume = cleanResumeText(data.optimizedResume || "");
+    const cleanedCoverLetter = cleanResumeText(data.coverLetter || "");
+    setEditedResume(cleanedResume);
+    setEditedCoverLetter(cleanedCoverLetter);
   }, [data.optimizedResume, data.coverLetter]);
 
   useEffect(() => {
@@ -441,7 +492,7 @@ const PreviewExport = ({ data, updateData, onBack, goToStep }) => {
     setParsedResume(parsed);
   }, [editedResume]);
 
-  // Generate proper text-based PDF
+  // Generate proper text-based PDF with clean formatting
   const exportToPDF = async (type = "resume") => {
     if (!data.agreedToTerms) {
       toast({ title: "Agreement Required", description: "Please agree to the Terms of Use before downloading.", variant: "destructive" });
@@ -463,25 +514,32 @@ const PreviewExport = ({ data, updateData, onBack, goToStep }) => {
       const lines = content.split('\n');
       
       for (let i = 0; i < lines.length; i++) {
-        const line = lines[i].trim();
+        let line = lines[i].trim();
         
+        // Skip empty section headers that might have been cleaned
+        if (!line) {
+          yPosition += 3;
+          continue;
+        }
+
         if (yPosition > pageHeight - margin - 10) {
           pdf.addPage();
           yPosition = margin;
         }
 
-        const isHeader = /^[A-Z][A-Z\s&]+$/.test(line) && line.length < 40;
-        const isName = i === 0 || (i < 3 && line.length > 0 && line.length < 50 && !line.includes('@') && !line.includes('|'));
-        const isBullet = line.startsWith('•') || line.startsWith('-') || line.startsWith('*') || line.startsWith('►');
+        const isHeader = /^[A-Z][A-Z\s&]+$/.test(line) && line.length < 50;
+        const isName = i === 0 || (i < 3 && line.length > 0 && line.length < 50 && !line.includes('@') && !line.includes('|') && !line.includes('Ph:'));
+        const isBullet = line.startsWith('•') || line.startsWith('-') || line.startsWith('*') || line.startsWith('►') || line.startsWith('→');
+        const isDate = /^(JANUARY|FEBRUARY|MARCH|APRIL|MAY|JUNE|JULY|AUGUST|SEPTEMBER|OCTOBER|NOVEMBER|DECEMBER)\s+\d{4}/i.test(line);
 
-        if (isName && i < 3 && !line.includes('@')) {
-          pdf.setFontSize(18);
+        if (isName && i < 3 && !line.includes('@') && !line.includes('Ph:')) {
+          pdf.setFontSize(20);
           pdf.setFont("helvetica", "bold");
           pdf.setTextColor(0, 0, 0);
           pdf.text(line, pageWidth / 2, yPosition, { align: "center" });
           yPosition += 10;
         } else if (isHeader) {
-          yPosition += 4;
+          yPosition += 5;
           pdf.setFontSize(12);
           pdf.setFont("helvetica", "bold");
           pdf.setTextColor(42, 92, 130);
@@ -489,13 +547,19 @@ const PreviewExport = ({ data, updateData, onBack, goToStep }) => {
           yPosition += 2;
           pdf.setDrawColor(42, 92, 130);
           pdf.setLineWidth(0.5);
-          pdf.line(margin, yPosition, margin + pdf.getTextWidth(line), yPosition);
+          pdf.line(margin, yPosition, margin + Math.min(pdf.getTextWidth(line), maxWidth), yPosition);
           yPosition += 6;
+        } else if (isDate) {
+          pdf.setFontSize(10);
+          pdf.setFont("helvetica", "italic");
+          pdf.setTextColor(100, 100, 100);
+          pdf.text(line, margin, yPosition);
+          yPosition += 5;
         } else if (isBullet) {
           pdf.setFontSize(10);
           pdf.setFont("helvetica", "normal");
           pdf.setTextColor(60, 60, 60);
-          const bulletText = line.replace(/^[•\-*►]\s*/, '');
+          const bulletText = line.replace(/^[•\-*►→]\s*/, '');
           const wrappedLines = pdf.splitTextToSize(bulletText, maxWidth - 8);
           pdf.text('•', margin, yPosition);
           pdf.text(wrappedLines, margin + 5, yPosition);
@@ -507,15 +571,14 @@ const PreviewExport = ({ data, updateData, onBack, goToStep }) => {
           const wrappedLines = pdf.splitTextToSize(line, maxWidth);
           pdf.text(wrappedLines, margin, yPosition);
           yPosition += wrappedLines.length * 5 + 1;
-        } else {
-          yPosition += 3;
         }
       }
 
+      const templateName = data.selectedTemplate || 'resume';
       const date = new Date().toISOString().split("T")[0];
-      pdf.save(`Resume_${date}.pdf`);
+      pdf.save(`${templateName}_${date}.pdf`);
 
-      toast({ title: "Download Complete", description: "Your PDF has been downloaded." });
+      toast({ title: "Download Complete", description: "Your PDF has been downloaded with clean formatting." });
     } catch (error) {
       console.error("PDF Export error:", error);
       toast({ title: "Export Failed", description: "Could not generate PDF.", variant: "destructive" });
@@ -524,7 +587,7 @@ const PreviewExport = ({ data, updateData, onBack, goToStep }) => {
     }
   };
 
-  // Generate DOCX file
+  // Generate DOCX file with proper formatting
   const exportToDOCX = async (type = "resume") => {
     if (!data.agreedToTerms) {
       toast({ title: "Agreement Required", description: "Please agree to the Terms of Use before downloading.", variant: "destructive" });
@@ -539,16 +602,23 @@ const PreviewExport = ({ data, updateData, onBack, goToStep }) => {
       const children = [];
 
       for (let i = 0; i < lines.length; i++) {
-        const line = lines[i].trim();
+        let line = lines[i].trim();
         
-        const isHeader = /^[A-Z][A-Z\s&]+$/.test(line) && line.length < 40;
-        const isName = i === 0 || (i < 3 && line.length > 0 && line.length < 50 && !line.includes('@') && !line.includes('|'));
-        const isBullet = line.startsWith('•') || line.startsWith('-') || line.startsWith('*') || line.startsWith('►');
+        if (!line) {
+          children.push(new Paragraph({ text: "", spacing: { after: 100 } }));
+          continue;
+        }
+        
+        const isHeader = /^[A-Z][A-Z\s&]+$/.test(line) && line.length < 50;
+        const isName = i === 0 || (i < 3 && line.length > 0 && line.length < 50 && !line.includes('@') && !line.includes('|') && !line.includes('Ph:'));
+        const isBullet = line.startsWith('•') || line.startsWith('-') || line.startsWith('*') || line.startsWith('►') || line.startsWith('→');
+        const isDate = /^(JANUARY|FEBRUARY|MARCH|APRIL|MAY|JUNE|JULY|AUGUST|SEPTEMBER|OCTOBER|NOVEMBER|DECEMBER)\s+\d{4}/i.test(line);
+        const isJobTitle = line.includes('Sr.') || line.includes('Manager') || line.includes('Specialist') || line.includes('Director');
 
-        if (isName && i < 3 && !line.includes('@')) {
+        if (isName && i < 3 && !line.includes('@') && !line.includes('Ph:')) {
           children.push(
             new Paragraph({
-              children: [new TextRun({ text: line, bold: true, size: 36 })],
+              children: [new TextRun({ text: line, bold: true, size: 36, font: "Arial" })],
               alignment: AlignmentType.CENTER,
               spacing: { after: 200 },
             })
@@ -556,17 +626,31 @@ const PreviewExport = ({ data, updateData, onBack, goToStep }) => {
         } else if (isHeader) {
           children.push(
             new Paragraph({
-              children: [new TextRun({ text: line, bold: true, size: 24, color: "2A5C82" })],
+              children: [new TextRun({ text: line, bold: true, size: 24, color: "2A5C82", font: "Arial" })],
               heading: HeadingLevel.HEADING_2,
               spacing: { before: 300, after: 100 },
               border: { bottom: { color: "2A5C82", space: 1, size: 6, style: BorderStyle.SINGLE } },
             })
           );
-        } else if (isBullet) {
-          const bulletText = line.replace(/^[•\-*►]\s*/, '');
+        } else if (isDate) {
           children.push(
             new Paragraph({
-              children: [new TextRun({ text: bulletText, size: 22 })],
+              children: [new TextRun({ text: line, italics: true, size: 20, color: "666666", font: "Arial" })],
+              spacing: { after: 80 },
+            })
+          );
+        } else if (isJobTitle && !isBullet) {
+          children.push(
+            new Paragraph({
+              children: [new TextRun({ text: line, bold: true, size: 22, font: "Arial" })],
+              spacing: { before: 150, after: 50 },
+            })
+          );
+        } else if (isBullet) {
+          const bulletText = line.replace(/^[•\-*►→]\s*/, '');
+          children.push(
+            new Paragraph({
+              children: [new TextRun({ text: bulletText, size: 22, font: "Arial" })],
               bullet: { level: 0 },
               spacing: { after: 80 },
             })
@@ -574,24 +658,35 @@ const PreviewExport = ({ data, updateData, onBack, goToStep }) => {
         } else if (line.length > 0) {
           children.push(
             new Paragraph({
-              children: [new TextRun({ text: line, size: 22 })],
+              children: [new TextRun({ text: line, size: 22, font: "Arial" })],
               spacing: { after: 100 },
             })
           );
-        } else {
-          children.push(new Paragraph({ text: "", spacing: { after: 100 } }));
         }
       }
 
       const doc = new Document({
-        sections: [{ properties: {}, children }],
+        sections: [{ 
+          properties: {
+            page: {
+              margin: {
+                top: 720, // 0.5 inch
+                right: 720,
+                bottom: 720,
+                left: 720,
+              },
+            },
+          },
+          children 
+        }],
       });
 
       const blob = await Packer.toBlob(doc);
+      const templateName = data.selectedTemplate || 'resume';
       const date = new Date().toISOString().split("T")[0];
-      saveAs(blob, `Resume_${date}.docx`);
+      saveAs(blob, `${templateName}_${date}.docx`);
 
-      toast({ title: "Download Complete", description: "Your DOCX has been downloaded." });
+      toast({ title: "Download Complete", description: "Your DOCX has been downloaded with professional formatting." });
     } catch (error) {
       console.error("DOCX Export error:", error);
       toast({ title: "Export Failed", description: "Could not generate DOCX.", variant: "destructive" });
@@ -603,7 +698,7 @@ const PreviewExport = ({ data, updateData, onBack, goToStep }) => {
   const copyToClipboard = (type = "resume") => {
     const content = type === "resume" ? editedResume : editedCoverLetter;
     navigator.clipboard.writeText(content).then(() => {
-      toast({ title: "Copied!", description: "Content copied to clipboard." });
+      toast({ title: "Copied!", description: "Clean text copied to clipboard (no markdown symbols)." });
     });
   };
 
@@ -646,7 +741,7 @@ const PreviewExport = ({ data, updateData, onBack, goToStep }) => {
             <TabsContent value="resume">
               {editMode ? (
                 <div className="bg-yellow-50 border-2 border-yellow-300 rounded-lg p-4">
-                  <p className="text-sm text-yellow-700 mb-2">Edit mode: Modify the text below</p>
+                  <p className="text-sm text-yellow-700 mb-2">Edit mode: Modify the text below (markdown has been cleaned)</p>
                   <textarea
                     value={editedResume}
                     onChange={(e) => { setEditedResume(e.target.value); updateData({ optimizedResume: e.target.value }); }}
@@ -727,13 +822,14 @@ const PreviewExport = ({ data, updateData, onBack, goToStep }) => {
         </div>
       </div>
 
-      <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-start gap-3">
-        <Info className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
-        <div className="text-sm text-amber-700">
-          <p className="font-medium">Before you download:</p>
-          <ul className="mt-1 space-y-1 list-disc list-inside text-amber-600">
-            <li>Replace any [X%] placeholders with actual numbers</li>
-            <li>Verify all dates and company names</li>
+      <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-start gap-3">
+        <Info className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+        <div className="text-sm text-green-700">
+          <p className="font-medium">Clean & Ready to Use!</p>
+          <ul className="mt-1 space-y-1 list-disc list-inside text-green-600">
+            <li>All markdown formatting (**, *, ##) has been removed</li>
+            <li>Downloads are properly formatted PDF/DOCX files</li>
+            <li>Replace [X%] placeholders with your actual numbers</li>
           </ul>
         </div>
       </div>
