@@ -224,9 +224,18 @@ async def parse_document(
 async def analyze_resume(request: AnalyzeRequest):
     """Analyze resume against job description to calculate match score"""
     try:
-        prompt = f"""Analyze this resume against the job description and provide:
-1. A match score from 0-100 based on keyword density and skill alignment
-2. A list of top 10 missing high-priority keywords/skills from the JD that are NOT in the resume
+        prompt = f"""You are a strict ATS keyword analyzer. Compare the resume against the job description.
+
+STEP 1: Extract ALL important keywords, skills, tools, technologies, certifications, and phrases from the JOB DESCRIPTION.
+STEP 2: Check which of those keywords are MISSING or NOT EXPLICITLY MENTIONED in the RESUME.
+STEP 3: Calculate a match score (0-100) based on how many JD keywords appear in the resume.
+
+CRITICAL RULES:
+- You MUST find at least 3-5 missing keywords. No resume is a 100% match.
+- Look for specific tools, technologies, soft skills, certifications, and industry terms in the JD.
+- A keyword is "missing" if it does NOT appear in the resume text (even synonyms count as missing if the exact term is absent).
+- Be strict: if the JD says "Python" and the resume says "programming", Python is still missing.
+- Never return an empty missingKeywords list.
 
 RESUME:
 {request.resumeText}
@@ -234,14 +243,14 @@ RESUME:
 JOB DESCRIPTION:
 {request.jobDescription}
 
-Respond in this exact JSON format only, no other text:
+Respond in this exact JSON format ONLY, no other text or explanation:
 {{
-    "matchScore": <number between 0-100>,
-    "missingKeywords": ["keyword1", "keyword2", ...]
+    "matchScore": <number 0-100>,
+    "missingKeywords": ["keyword1", "keyword2", "keyword3", ...]
 }}
 """
         
-        system_message = "You are an ATS (Applicant Tracking System) expert. Analyze resumes objectively and provide accurate match scores. Always respond with valid JSON only."
+        system_message = "You are a strict ATS keyword matching engine. Always find gaps between resumes and job descriptions. Respond with valid JSON only, no markdown."
         
         response = await call_gemini_ai(prompt, system_message)
         
