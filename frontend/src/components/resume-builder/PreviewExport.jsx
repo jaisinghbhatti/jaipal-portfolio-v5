@@ -10,12 +10,12 @@ import jsPDF from "jspdf";
 import { 
   Document, Packer, Paragraph, TextRun, AlignmentType, 
   Table, TableRow, TableCell, WidthType, BorderStyle,
-  VerticalAlign, ShadingType, ImageRun, convertInchesToTwip
+  ShadingType, ImageRun, convertInchesToTwip
 } from "docx";
 import { saveAs } from "file-saver";
 
 // ============================================
-// TEXT CLEANUP UTILITIES
+// TEXT CLEANUP
 // ============================================
 const cleanText = (text) => {
   if (!text) return '';
@@ -23,18 +23,9 @@ const cleanText = (text) => {
     .replace(/&amp;/g, '&')
     .replace(/&quot;/g, '"')
     .replace(/&apos;/g, "'")
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&nbsp;/g, ' ')
-    .replace(/\*\*([^*]+)\*\*/g, '$1')  // Remove **bold**
-    .replace(/\*([^*\n]+)\*/g, '$1')     // Remove *italic*
-    .replace(/(\w)\*+\s/g, '$1 ')        // Remove trailing asterisks
-    .replace(/^\*\s+/gm, '')             // Remove bullet asterisks at line start
-    .replace(/^#{1,6}\s*/gm, '')         // Remove markdown headers
-    .replace(/\*\*Attention:\*\*\s*/gi, '')
-    .replace(/\*\*Interest:\*\*\s*/gi, '')
-    .replace(/\*\*Desire:\*\*\s*/gi, '')
-    .replace(/\*\*Action:\*\*\s*/gi, '')
+    .replace(/\*\*([^*]+)\*\*/g, '$1')
+    .replace(/\*([^*\n]+)\*/g, '$1')
+    .replace(/^#{1,6}\s*/gm, '')
     .replace(/Attention:\s*/gi, '')
     .replace(/Interest:\s*/gi, '')
     .replace(/Desire:\s*/gi, '')
@@ -42,8 +33,19 @@ const cleanText = (text) => {
     .trim();
 };
 
+// Check if line is a bullet point (starts with * or • but NOT bold markdown **)
+const isBulletPoint = (line) => {
+  const trimmed = line.trim();
+  // Bullet: starts with "* " or "• " or "- " (with space after)
+  // NOT bullet: starts with "**" (bold markdown)
+  if (trimmed.startsWith('**')) return false;
+  if (trimmed.startsWith('* ') || trimmed.startsWith('• ') || trimmed.startsWith('- ')) return true;
+  if (trimmed.startsWith('*   ') || trimmed.startsWith('•   ')) return true; // Multiple spaces
+  return false;
+};
+
 // ============================================
-// RESUME PARSER - Extract structured data
+// RESUME PARSER
 // ============================================
 const parseResume = (rawText) => {
   if (!rawText) return null;
@@ -58,36 +60,52 @@ const parseResume = (rawText) => {
     certifications: []
   };
   
-  const lines = rawText.split('\n').map(l => l.trim()).filter(l => l);
+  const lines = rawText.split('\n');
   let currentSection = 'header';
   let currentJob = null;
   let summaryLines = [];
   
+  console.log("=== PARSING RESUME ===");
+  
   for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
+    const rawLine = lines[i];
+    const line = rawLine.trim();
+    if (!line) continue;
+    
     const cleanedLine = cleanText(line);
     const upperLine = cleanedLine.toUpperCase();
     
     // Detect section headers
-    if (upperLine === 'SUMMARY' || upperLine === 'PROFESSIONAL SUMMARY' || upperLine === 'PROFILE') {
+    if (upperLine === 'SUMMARY' || upperLine === 'PROFESSIONAL SUMMARY' || upperLine === 'PROFILE' || upperLine === 'EXECUTIVE SUMMARY') {
+      console.log(">> Found SUMMARY section");
       currentSection = 'summary';
       continue;
     }
-    if (upperLine === 'EXPERIENCE' || upperLine === 'PROFESSIONAL EXPERIENCE' || upperLine === 'WORK EXPERIENCE' || upperLine === 'EMPLOYMENT HISTORY') {
-      if (currentJob) { result.experience.push(currentJob); currentJob = null; }
+    if (upperLine === 'EXPERIENCE' || upperLine === 'PROFESSIONAL EXPERIENCE' || upperLine === 'WORK EXPERIENCE' || upperLine === 'EMPLOYMENT' || upperLine === 'CAREER HISTORY') {
+      console.log(">> Found EXPERIENCE section");
+      if (currentJob && currentJob.title) {
+        result.experience.push(currentJob);
+        currentJob = null;
+      }
       currentSection = 'experience';
       continue;
     }
-    if (upperLine === 'EDUCATION' || upperLine === 'ACADEMIC BACKGROUND') {
-      if (currentJob) { result.experience.push(currentJob); currentJob = null; }
+    if (upperLine === 'EDUCATION' || upperLine === 'ACADEMIC BACKGROUND' || upperLine === 'EDUCATIONAL BACKGROUND') {
+      console.log(">> Found EDUCATION section");
+      if (currentJob && currentJob.title) {
+        result.experience.push(currentJob);
+        currentJob = null;
+      }
       currentSection = 'education';
       continue;
     }
-    if (upperLine === 'SKILLS' || upperLine === 'CORE SKILLS' || upperLine === 'KEY SKILLS' || upperLine.includes('SKILLS')) {
+    if (upperLine === 'SKILLS' || upperLine === 'KEY SKILLS' || upperLine === 'CORE SKILLS' || upperLine === 'TECHNICAL SKILLS' || upperLine.startsWith('SKILLS')) {
+      console.log(">> Found SKILLS section");
       currentSection = 'skills';
       continue;
     }
-    if (upperLine === 'CERTIFICATIONS' || upperLine === 'CERTIFICATES') {
+    if (upperLine === 'CERTIFICATIONS' || upperLine === 'CERTIFICATES' || upperLine === 'LICENSES') {
+      console.log(">> Found CERTIFICATIONS section");
       currentSection = 'certifications';
       continue;
     }
@@ -95,10 +113,16 @@ const parseResume = (rawText) => {
     // Parse content by section
     switch (currentSection) {
       case 'header':
-        if (!result.name && cleanedLine.length < 50 && !cleanedLine.includes('@') && !cleanedLine.includes('|') && !/\d{5,}/.test(cleanedLine)) {
+        if (!result.name && cleanedLine.length > 2 && cleanedLine.length < 50 && 
+            !cleanedLine.includes('@') && !cleanedLine.includes('|') && 
+            !/\d{5,}/.test(cleanedLine) && !cleanedLine.includes('http')) {
           result.name = cleanedLine;
-        } else if (cleanedLine.includes('@') || cleanedLine.includes('|') || cleanedLine.includes('Phone') || /\d{10}/.test(cleanedLine) || cleanedLine.includes('LinkedIn')) {
+          console.log(">> Found name:", result.name);
+        } else if (cleanedLine.includes('@') || cleanedLine.includes('|') || 
+                   cleanedLine.includes('Phone') || cleanedLine.includes('LinkedIn') ||
+                   /\+?\d{10,}/.test(cleanedLine.replace(/\D/g, ''))) {
           result.contact = cleanedLine;
+          console.log(">> Found contact");
         }
         break;
         
@@ -109,18 +133,23 @@ const parseResume = (rawText) => {
         break;
         
       case 'experience':
-        // Check if this is a job title line (contains ** or has company after |)
-        const isJobTitle = line.includes('**') || (cleanedLine.includes('|') && !cleanedLine.startsWith('*'));
-        const isBullet = line.trim().startsWith('*') || line.trim().startsWith('•') || line.trim().startsWith('-');
-        const isDateLine = /^\[?[A-Za-z]+,?\s*\d{4}\]?\s*[–-]/.test(cleanedLine) || /^(January|February|March|April|May|June|July|August|September|October|November|December)/i.test(cleanedLine);
+        const isBullet = isBulletPoint(rawLine);
+        // Job title line: contains ** for bold OR has | separator (but not a bullet)
+        const hasJobFormat = rawLine.includes('**') || (cleanedLine.includes('|') && cleanedLine.length < 150);
+        const isDateLine = /^\[?[A-Za-z]+,?\s*\d{4}\]?\s*[–\-—]/.test(cleanedLine) || 
+                          /^(January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{4}/i.test(cleanedLine) ||
+                          /^\d{4}\s*[–\-—]/.test(cleanedLine);
         
-        if (isJobTitle && !isBullet) {
+        console.log(`EXP: "${cleanedLine.substring(0,50)}..." | bullet:${isBullet} | job:${hasJobFormat} | date:${isDateLine}`);
+        
+        if (hasJobFormat && !isBullet) {
           // Save previous job
           if (currentJob && currentJob.title) {
             result.experience.push(currentJob);
+            console.log(">> Saved job:", currentJob.title, "with", currentJob.bullets.length, "bullets");
           }
-          // Parse: "**Job Title** | Company | Location" or "Job Title | Company"
-          const parts = cleanedLine.split('|').map(p => cleanText(p));
+          // Parse job title: "**Title** | Company | Location" or "Title | Company"
+          const parts = cleanedLine.split('|').map(p => cleanText(p).trim());
           currentJob = {
             title: parts[0] || '',
             company: parts[1] || '',
@@ -128,15 +157,17 @@ const parseResume = (rawText) => {
             dates: '',
             bullets: []
           };
-        } else if (isDateLine && currentJob) {
+          console.log(">> New job:", currentJob.title, "@", currentJob.company);
+        } else if (isDateLine && currentJob && !currentJob.dates) {
           currentJob.dates = cleanedLine;
+          console.log(">> Job dates:", currentJob.dates);
         } else if (isBullet && currentJob) {
-          const bulletText = cleanText(line.replace(/^[\s]*[\*•\-]\s*/, ''));
+          const bulletText = cleanText(rawLine.replace(/^[\s]*[\*•\-]\s*/, ''));
           if (bulletText.length > 10) {
             currentJob.bullets.push(bulletText);
           }
-        } else if (currentJob && cleanedLine.length > 20 && !isJobTitle) {
-          // Could be a continuation or standalone text - add as bullet
+        } else if (!isBullet && currentJob && cleanedLine.length > 20 && !hasJobFormat && !isDateLine) {
+          // Could be a continuation line, treat as bullet
           currentJob.bullets.push(cleanedLine);
         }
         break;
@@ -148,36 +179,42 @@ const parseResume = (rawText) => {
         break;
         
       case 'skills':
-        // Parse skills - they might be in format "**Category:** skill1, skill2" or just comma-separated
+        // Skills might be "**Category:** skill1, skill2" or just comma-separated
         const skillLine = cleanedLine.replace(/\*\*[^*]+\*\*:?\s*/g, '');
-        const skills = skillLine.split(/[,•|]/).map(s => cleanText(s)).filter(s => s.length > 2 && s.length < 50);
+        const skills = skillLine.split(/[,•|]/).map(s => cleanText(s).trim()).filter(s => s.length > 2 && s.length < 60);
         result.skills.push(...skills);
         break;
         
       case 'certifications':
         if (cleanedLine.length > 5) {
-          result.certifications.push(cleanedLine);
+          result.certifications.push(cleanedLine.replace(/^[\*•\-]\s*/, ''));
         }
         break;
     }
   }
   
-  // Don't forget the last job
+  // Save last job
   if (currentJob && currentJob.title) {
     result.experience.push(currentJob);
+    console.log(">> Final job saved:", currentJob.title);
   }
   
   // Combine summary
-  result.summary = summaryLines.join(' ');
+  result.summary = summaryLines.join(' ').substring(0, 1000);
   
   // Dedupe skills
   result.skills = [...new Set(result.skills)].slice(0, 25);
+  
+  console.log("=== PARSE COMPLETE ===");
+  console.log("Name:", result.name);
+  console.log("Experience jobs:", result.experience.length);
+  console.log("Skills:", result.skills.length);
   
   return result;
 };
 
 // ============================================
-// IMAGE TO UINT8ARRAY
+// IMAGE UTILITIES
 // ============================================
 const imageToUint8Array = async (src) => {
   if (!src) return null;
@@ -201,347 +238,204 @@ const imageToUint8Array = async (src) => {
 };
 
 // ============================================
-// MODERN TEMPLATE DOCX - Two Column with Blue Sidebar
+// MODERN DOCX - Two Column Layout
 // ============================================
 const createModernDOCX = async (parsed, photoSrc) => {
-  const sidebarColor = "1F4E79";  // Dark blue
-  const sidebarTextColor = "FFFFFF";
-  const accentColor = "1F4E79";
+  const BLUE = "1F4E79";
+  const WHITE = "FFFFFF";
   
-  // Get photo
-  let photoData = null;
-  if (photoSrc) {
-    photoData = await imageToUint8Array(photoSrc);
-  }
+  let photoData = await imageToUint8Array(photoSrc);
   
   // === LEFT SIDEBAR CONTENT ===
-  const sidebarCells = [];
+  const leftContent = [];
   
   // Photo
   if (photoData) {
-    sidebarCells.push(
-      new Paragraph({
-        children: [
-          new ImageRun({
-            data: photoData,
-            transformation: { width: 90, height: 90 },
-          }),
-        ],
-        alignment: AlignmentType.CENTER,
-        spacing: { after: 200 },
-      })
-    );
+    try {
+      leftContent.push(
+        new Paragraph({
+          children: [new ImageRun({ data: photoData, transformation: { width: 85, height: 85 } })],
+          alignment: AlignmentType.CENTER,
+          spacing: { after: 200 },
+        })
+      );
+    } catch (e) { console.log('Photo failed:', e); }
   }
   
-  // Name in sidebar
-  sidebarCells.push(
+  // Name
+  leftContent.push(
     new Paragraph({
-      children: [
-        new TextRun({
-          text: parsed.name || "YOUR NAME",
-          bold: true,
-          size: 28,
-          color: sidebarTextColor,
-          font: "Calibri",
-        }),
-      ],
+      children: [new TextRun({ text: parsed.name || "YOUR NAME", bold: true, size: 26, color: WHITE, font: "Calibri" })],
       alignment: AlignmentType.CENTER,
-      spacing: { after: 300 },
+      spacing: { after: 250 },
     })
   );
   
-  // Contact Section
-  sidebarCells.push(
+  // Contact header
+  leftContent.push(
     new Paragraph({
-      children: [
-        new TextRun({
-          text: "CONTACT",
-          bold: true,
-          size: 20,
-          color: sidebarTextColor,
-          font: "Calibri",
-        }),
-      ],
-      spacing: { before: 200, after: 100 },
-      border: { bottom: { color: "FFFFFF", size: 6, style: BorderStyle.SINGLE } },
+      children: [new TextRun({ text: "CONTACT", bold: true, size: 20, color: WHITE, font: "Calibri" })],
+      spacing: { before: 150, after: 80 },
+      border: { bottom: { color: WHITE, size: 6, style: BorderStyle.SINGLE } },
     })
   );
   
+  // Contact details
   if (parsed.contact) {
-    const contactParts = parsed.contact.split('|').map(c => cleanText(c));
-    contactParts.forEach(part => {
-      if (part.trim()) {
-        sidebarCells.push(
+    parsed.contact.split('|').forEach(part => {
+      const p = cleanText(part).trim();
+      if (p && p.length > 2) {
+        leftContent.push(
           new Paragraph({
-            children: [
-              new TextRun({
-                text: part.trim(),
-                size: 18,
-                color: sidebarTextColor,
-                font: "Calibri",
-              }),
-            ],
-            spacing: { after: 60 },
+            children: [new TextRun({ text: p, size: 17, color: WHITE, font: "Calibri" })],
+            spacing: { after: 50 },
           })
         );
       }
     });
   }
   
-  // Skills Section in Sidebar
+  // Skills
   if (parsed.skills.length > 0) {
-    sidebarCells.push(
+    leftContent.push(
       new Paragraph({
-        children: [
-          new TextRun({
-            text: "SKILLS",
-            bold: true,
-            size: 20,
-            color: sidebarTextColor,
-            font: "Calibri",
-          }),
-        ],
-        spacing: { before: 300, after: 100 },
-        border: { bottom: { color: "FFFFFF", size: 6, style: BorderStyle.SINGLE } },
+        children: [new TextRun({ text: "SKILLS", bold: true, size: 20, color: WHITE, font: "Calibri" })],
+        spacing: { before: 250, after: 80 },
+        border: { bottom: { color: WHITE, size: 6, style: BorderStyle.SINGLE } },
       })
     );
-    
-    parsed.skills.slice(0, 15).forEach(skill => {
-      sidebarCells.push(
+    parsed.skills.slice(0, 14).forEach(skill => {
+      leftContent.push(
         new Paragraph({
-          children: [
-            new TextRun({
-              text: "• " + skill,
-              size: 18,
-              color: sidebarTextColor,
-              font: "Calibri",
-            }),
-          ],
-          spacing: { after: 40 },
+          children: [new TextRun({ text: "• " + skill, size: 17, color: WHITE, font: "Calibri" })],
+          spacing: { after: 35 },
         })
       );
     });
   }
   
-  // Education in Sidebar
+  // Education
   if (parsed.education.length > 0) {
-    sidebarCells.push(
+    leftContent.push(
       new Paragraph({
-        children: [
-          new TextRun({
-            text: "EDUCATION",
-            bold: true,
-            size: 20,
-            color: sidebarTextColor,
-            font: "Calibri",
-          }),
-        ],
-        spacing: { before: 300, after: 100 },
-        border: { bottom: { color: "FFFFFF", size: 6, style: BorderStyle.SINGLE } },
+        children: [new TextRun({ text: "EDUCATION", bold: true, size: 20, color: WHITE, font: "Calibri" })],
+        spacing: { before: 250, after: 80 },
+        border: { bottom: { color: WHITE, size: 6, style: BorderStyle.SINGLE } },
       })
     );
-    
     parsed.education.forEach(edu => {
-      sidebarCells.push(
+      leftContent.push(
         new Paragraph({
-          children: [
-            new TextRun({
-              text: edu,
-              size: 18,
-              color: sidebarTextColor,
-              font: "Calibri",
-            }),
-          ],
-          spacing: { after: 80 },
-        })
-      );
-    });
-  }
-  
-  // === RIGHT MAIN CONTENT ===
-  const mainCells = [];
-  
-  // Summary Section
-  if (parsed.summary) {
-    mainCells.push(
-      new Paragraph({
-        children: [
-          new TextRun({
-            text: "PROFESSIONAL SUMMARY",
-            bold: true,
-            size: 24,
-            color: accentColor,
-            font: "Calibri",
-          }),
-        ],
-        spacing: { after: 100 },
-        border: { bottom: { color: accentColor, size: 6, style: BorderStyle.SINGLE } },
-      })
-    );
-    
-    mainCells.push(
-      new Paragraph({
-        children: [
-          new TextRun({
-            text: parsed.summary,
-            size: 21,
-            font: "Calibri",
-          }),
-        ],
-        spacing: { after: 300 },
-      })
-    );
-  }
-  
-  // Experience Section
-  if (parsed.experience.length > 0) {
-    mainCells.push(
-      new Paragraph({
-        children: [
-          new TextRun({
-            text: "PROFESSIONAL EXPERIENCE",
-            bold: true,
-            size: 24,
-            color: accentColor,
-            font: "Calibri",
-          }),
-        ],
-        spacing: { before: 100, after: 100 },
-        border: { bottom: { color: accentColor, size: 6, style: BorderStyle.SINGLE } },
-      })
-    );
-    
-    parsed.experience.forEach((job, idx) => {
-      // Job Title
-      mainCells.push(
-        new Paragraph({
-          children: [
-            new TextRun({
-              text: job.title,
-              bold: true,
-              size: 23,
-              font: "Calibri",
-            }),
-          ],
-          spacing: { before: 200, after: 40 },
-        })
-      );
-      
-      // Company and Location
-      if (job.company) {
-        mainCells.push(
-          new Paragraph({
-            children: [
-              new TextRun({
-                text: job.company + (job.location ? " | " + job.location : ""),
-                size: 21,
-                color: accentColor,
-                font: "Calibri",
-              }),
-            ],
-            spacing: { after: 40 },
-          })
-        );
-      }
-      
-      // Dates
-      if (job.dates) {
-        mainCells.push(
-          new Paragraph({
-            children: [
-              new TextRun({
-                text: job.dates,
-                italics: true,
-                size: 19,
-                color: "666666",
-                font: "Calibri",
-              }),
-            ],
-            spacing: { after: 80 },
-          })
-        );
-      }
-      
-      // Bullets
-      job.bullets.forEach(bullet => {
-        mainCells.push(
-          new Paragraph({
-            children: [
-              new TextRun({
-                text: bullet,
-                size: 20,
-                font: "Calibri",
-              }),
-            ],
-            bullet: { level: 0 },
-            spacing: { after: 60 },
-          })
-        );
-      });
-    });
-  }
-  
-  // Certifications (if any, in main area)
-  if (parsed.certifications.length > 0) {
-    mainCells.push(
-      new Paragraph({
-        children: [
-          new TextRun({
-            text: "CERTIFICATIONS",
-            bold: true,
-            size: 24,
-            color: accentColor,
-            font: "Calibri",
-          }),
-        ],
-        spacing: { before: 200, after: 100 },
-        border: { bottom: { color: accentColor, size: 6, style: BorderStyle.SINGLE } },
-      })
-    );
-    
-    parsed.certifications.forEach(cert => {
-      mainCells.push(
-        new Paragraph({
-          children: [
-            new TextRun({
-              text: "• " + cert,
-              size: 20,
-              font: "Calibri",
-            }),
-          ],
+          children: [new TextRun({ text: edu, size: 17, color: WHITE, font: "Calibri" })],
           spacing: { after: 60 },
         })
       );
     });
   }
   
-  // Create two-column table
+  // === RIGHT MAIN CONTENT ===
+  const rightContent = [];
+  
+  // Summary
+  if (parsed.summary) {
+    rightContent.push(
+      new Paragraph({
+        children: [new TextRun({ text: "PROFESSIONAL SUMMARY", bold: true, size: 24, color: BLUE, font: "Calibri" })],
+        spacing: { after: 80 },
+        border: { bottom: { color: BLUE, size: 8, style: BorderStyle.SINGLE } },
+      })
+    );
+    rightContent.push(
+      new Paragraph({
+        children: [new TextRun({ text: parsed.summary, size: 20, font: "Calibri" })],
+        spacing: { after: 250 },
+      })
+    );
+  }
+  
+  // Experience
+  if (parsed.experience.length > 0) {
+    rightContent.push(
+      new Paragraph({
+        children: [new TextRun({ text: "PROFESSIONAL EXPERIENCE", bold: true, size: 24, color: BLUE, font: "Calibri" })],
+        spacing: { before: 100, after: 80 },
+        border: { bottom: { color: BLUE, size: 8, style: BorderStyle.SINGLE } },
+      })
+    );
+    
+    parsed.experience.forEach(job => {
+      // Job Title
+      rightContent.push(
+        new Paragraph({
+          children: [new TextRun({ text: job.title, bold: true, size: 22, font: "Calibri" })],
+          spacing: { before: 180, after: 30 },
+        })
+      );
+      // Company
+      if (job.company) {
+        rightContent.push(
+          new Paragraph({
+            children: [new TextRun({ text: job.company + (job.location ? " | " + job.location : ""), size: 20, color: BLUE, font: "Calibri" })],
+            spacing: { after: 30 },
+          })
+        );
+      }
+      // Dates
+      if (job.dates) {
+        rightContent.push(
+          new Paragraph({
+            children: [new TextRun({ text: job.dates, italics: true, size: 18, color: "666666", font: "Calibri" })],
+            spacing: { after: 60 },
+          })
+        );
+      }
+      // Bullets
+      job.bullets.forEach(bullet => {
+        rightContent.push(
+          new Paragraph({
+            children: [new TextRun({ text: bullet, size: 19, font: "Calibri" })],
+            bullet: { level: 0 },
+            spacing: { after: 50 },
+          })
+        );
+      });
+    });
+  }
+  
+  // Certifications
+  if (parsed.certifications.length > 0) {
+    rightContent.push(
+      new Paragraph({
+        children: [new TextRun({ text: "CERTIFICATIONS", bold: true, size: 24, color: BLUE, font: "Calibri" })],
+        spacing: { before: 200, after: 80 },
+        border: { bottom: { color: BLUE, size: 8, style: BorderStyle.SINGLE } },
+      })
+    );
+    parsed.certifications.forEach(cert => {
+      rightContent.push(
+        new Paragraph({
+          children: [new TextRun({ text: "• " + cert, size: 19, font: "Calibri" })],
+          spacing: { after: 50 },
+        })
+      );
+    });
+  }
+  
+  // Create table for two-column layout
   const table = new Table({
     rows: [
       new TableRow({
         children: [
-          // Left sidebar cell (30%)
           new TableCell({
-            width: { size: 30, type: WidthType.PERCENTAGE },
-            shading: { fill: sidebarColor, type: ShadingType.CLEAR },
-            children: sidebarCells,
-            margins: {
-              top: convertInchesToTwip(0.3),
-              bottom: convertInchesToTwip(0.3),
-              left: convertInchesToTwip(0.2),
-              right: convertInchesToTwip(0.2),
-            },
+            width: { size: 28, type: WidthType.PERCENTAGE },
+            shading: { fill: BLUE, type: ShadingType.CLEAR },
+            children: leftContent,
+            margins: { top: 300, bottom: 300, left: 150, right: 150 },
           }),
-          // Right main content cell (70%)
           new TableCell({
-            width: { size: 70, type: WidthType.PERCENTAGE },
-            children: mainCells,
-            margins: {
-              top: convertInchesToTwip(0.3),
-              bottom: convertInchesToTwip(0.3),
-              left: convertInchesToTwip(0.3),
-              right: convertInchesToTwip(0.2),
-            },
+            width: { size: 72, type: WidthType.PERCENTAGE },
+            children: rightContent,
+            margins: { top: 300, bottom: 300, left: 250, right: 150 },
           }),
         ],
       }),
@@ -557,219 +451,182 @@ const createModernDOCX = async (parsed, photoSrc) => {
     },
   });
   
-  const doc = new Document({
+  return new Document({
     sections: [{
-      properties: {
-        page: {
-          margin: {
-            top: 0,
-            right: 0,
-            bottom: 0,
-            left: 0,
-          },
-        },
-      },
+      properties: { page: { margin: { top: 0, right: 0, bottom: 0, left: 0 } } },
       children: [table],
     }],
   });
-  
-  return doc;
 };
 
 // ============================================
-// MODERN TEMPLATE PDF
+// MODERN PDF
 // ============================================
 const createModernPDF = async (parsed, photoSrc) => {
   const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-  
   const pageWidth = pdf.internal.pageSize.getWidth();
   const pageHeight = pdf.internal.pageSize.getHeight();
-  const sidebarWidth = 65;
-  const mainStartX = sidebarWidth + 5;
-  const mainWidth = pageWidth - mainStartX - 10;
+  const sidebarW = 62;
+  const mainX = sidebarW + 6;
+  const mainW = pageWidth - mainX - 8;
   
-  // Draw blue sidebar
+  // Blue sidebar
   pdf.setFillColor(31, 78, 121);
-  pdf.rect(0, 0, sidebarWidth, pageHeight, 'F');
+  pdf.rect(0, 0, sidebarW, pageHeight, 'F');
   
-  let sidebarY = 15;
-  let mainY = 15;
+  let sY = 12;
+  let mY = 12;
   
-  // === SIDEBAR ===
   // Photo
   if (photoSrc) {
     try {
       const img = new Image();
       img.crossOrigin = 'Anonymous';
-      await new Promise((resolve, reject) => {
-        img.onload = resolve;
-        img.onerror = reject;
-        img.src = photoSrc;
-      });
+      await new Promise((res, rej) => { img.onload = res; img.onerror = rej; img.src = photoSrc; });
       const canvas = document.createElement('canvas');
-      canvas.width = img.width;
-      canvas.height = img.height;
+      canvas.width = img.width; canvas.height = img.height;
       canvas.getContext('2d').drawImage(img, 0, 0);
-      const imgData = canvas.toDataURL('image/jpeg', 0.8);
-      pdf.addImage(imgData, 'JPEG', (sidebarWidth - 25) / 2, sidebarY, 25, 25);
-      sidebarY += 30;
-    } catch (e) {
-      console.log('Photo error:', e);
-    }
+      pdf.addImage(canvas.toDataURL('image/jpeg', 0.8), 'JPEG', (sidebarW - 22) / 2, sY, 22, 22);
+      sY += 26;
+    } catch (e) {}
   }
   
-  // Name
+  // Sidebar text
   pdf.setTextColor(255, 255, 255);
-  pdf.setFontSize(14);
+  pdf.setFontSize(13);
   pdf.setFont("helvetica", "bold");
-  const nameLines = pdf.splitTextToSize(parsed.name || "YOUR NAME", sidebarWidth - 10);
-  pdf.text(nameLines, sidebarWidth / 2, sidebarY, { align: "center" });
-  sidebarY += nameLines.length * 6 + 10;
+  const nameLines = pdf.splitTextToSize(parsed.name || "YOUR NAME", sidebarW - 8);
+  pdf.text(nameLines, sidebarW / 2, sY, { align: "center" });
+  sY += nameLines.length * 5 + 8;
   
   // Contact
-  pdf.setFontSize(10);
+  pdf.setFontSize(9);
   pdf.setFont("helvetica", "bold");
-  pdf.text("CONTACT", 5, sidebarY);
-  sidebarY += 1;
+  pdf.text("CONTACT", 4, sY);
   pdf.setLineWidth(0.3);
   pdf.setDrawColor(255, 255, 255);
-  pdf.line(5, sidebarY, sidebarWidth - 5, sidebarY);
-  sidebarY += 5;
-  
+  pdf.line(4, sY + 1, sidebarW - 4, sY + 1);
+  sY += 5;
   pdf.setFont("helvetica", "normal");
-  pdf.setFontSize(8);
+  pdf.setFontSize(7);
   if (parsed.contact) {
-    const contactParts = parsed.contact.split('|').map(c => cleanText(c).trim());
-    contactParts.forEach(part => {
-      if (part) {
-        const lines = pdf.splitTextToSize(part, sidebarWidth - 10);
-        pdf.text(lines, 5, sidebarY);
-        sidebarY += lines.length * 3.5 + 2;
+    parsed.contact.split('|').forEach(p => {
+      const t = cleanText(p).trim();
+      if (t) {
+        const ls = pdf.splitTextToSize(t, sidebarW - 8);
+        pdf.text(ls, 4, sY);
+        sY += ls.length * 3 + 1;
       }
     });
   }
-  sidebarY += 5;
+  sY += 4;
   
   // Skills
   if (parsed.skills.length > 0) {
-    pdf.setFontSize(10);
+    pdf.setFontSize(9);
     pdf.setFont("helvetica", "bold");
-    pdf.text("SKILLS", 5, sidebarY);
-    sidebarY += 1;
-    pdf.line(5, sidebarY, sidebarWidth - 5, sidebarY);
-    sidebarY += 5;
-    
+    pdf.text("SKILLS", 4, sY);
+    pdf.line(4, sY + 1, sidebarW - 4, sY + 1);
+    sY += 5;
     pdf.setFont("helvetica", "normal");
-    pdf.setFontSize(8);
-    parsed.skills.slice(0, 12).forEach(skill => {
-      const lines = pdf.splitTextToSize("• " + skill, sidebarWidth - 10);
-      pdf.text(lines, 5, sidebarY);
-      sidebarY += lines.length * 3.5 + 1;
+    pdf.setFontSize(7);
+    parsed.skills.slice(0, 12).forEach(sk => {
+      const ls = pdf.splitTextToSize("• " + sk, sidebarW - 8);
+      pdf.text(ls, 4, sY);
+      sY += ls.length * 3 + 0.5;
     });
-    sidebarY += 5;
+    sY += 4;
   }
   
   // Education
   if (parsed.education.length > 0) {
-    pdf.setFontSize(10);
+    pdf.setFontSize(9);
     pdf.setFont("helvetica", "bold");
-    pdf.text("EDUCATION", 5, sidebarY);
-    sidebarY += 1;
-    pdf.line(5, sidebarY, sidebarWidth - 5, sidebarY);
-    sidebarY += 5;
-    
+    pdf.text("EDUCATION", 4, sY);
+    pdf.line(4, sY + 1, sidebarW - 4, sY + 1);
+    sY += 5;
     pdf.setFont("helvetica", "normal");
-    pdf.setFontSize(8);
-    parsed.education.forEach(edu => {
-      const lines = pdf.splitTextToSize(edu, sidebarWidth - 10);
-      pdf.text(lines, 5, sidebarY);
-      sidebarY += lines.length * 3.5 + 2;
+    pdf.setFontSize(7);
+    parsed.education.forEach(ed => {
+      const ls = pdf.splitTextToSize(ed, sidebarW - 8);
+      pdf.text(ls, 4, sY);
+      sY += ls.length * 3 + 1;
     });
   }
   
-  // === MAIN CONTENT ===
+  // Main content
   pdf.setTextColor(31, 78, 121);
   
-  // Summary
   if (parsed.summary) {
-    pdf.setFontSize(12);
+    pdf.setFontSize(11);
     pdf.setFont("helvetica", "bold");
-    pdf.text("PROFESSIONAL SUMMARY", mainStartX, mainY);
-    mainY += 1;
+    pdf.text("PROFESSIONAL SUMMARY", mainX, mY);
     pdf.setLineWidth(0.5);
     pdf.setDrawColor(31, 78, 121);
-    pdf.line(mainStartX, mainY, mainStartX + 60, mainY);
-    mainY += 5;
-    
-    pdf.setTextColor(60, 60, 60);
+    pdf.line(mainX, mY + 1, mainX + 55, mY + 1);
+    mY += 6;
+    pdf.setTextColor(50, 50, 50);
     pdf.setFontSize(9);
     pdf.setFont("helvetica", "normal");
-    const summaryLines = pdf.splitTextToSize(parsed.summary, mainWidth);
-    pdf.text(summaryLines, mainStartX, mainY);
-    mainY += summaryLines.length * 4 + 8;
+    const sumLines = pdf.splitTextToSize(parsed.summary, mainW);
+    pdf.text(sumLines, mainX, mY);
+    mY += sumLines.length * 4 + 6;
   }
   
-  // Experience
   if (parsed.experience.length > 0) {
     pdf.setTextColor(31, 78, 121);
-    pdf.setFontSize(12);
+    pdf.setFontSize(11);
     pdf.setFont("helvetica", "bold");
-    pdf.text("PROFESSIONAL EXPERIENCE", mainStartX, mainY);
-    mainY += 1;
-    pdf.line(mainStartX, mainY, mainStartX + 60, mainY);
-    mainY += 6;
+    pdf.text("PROFESSIONAL EXPERIENCE", mainX, mY);
+    pdf.line(mainX, mY + 1, mainX + 55, mY + 1);
+    mY += 6;
     
     parsed.experience.forEach(job => {
-      if (mainY > pageHeight - 30) {
+      if (mY > pageHeight - 25) {
         pdf.addPage();
-        // Redraw sidebar on new page
         pdf.setFillColor(31, 78, 121);
-        pdf.rect(0, 0, sidebarWidth, pageHeight, 'F');
-        mainY = 15;
+        pdf.rect(0, 0, sidebarW, pageHeight, 'F');
+        mY = 12;
       }
       
-      // Job title
       pdf.setTextColor(0, 0, 0);
-      pdf.setFontSize(11);
+      pdf.setFontSize(10);
       pdf.setFont("helvetica", "bold");
-      pdf.text(job.title, mainStartX, mainY);
-      mainY += 5;
+      pdf.text(job.title, mainX, mY);
+      mY += 4;
       
-      // Company
       if (job.company) {
         pdf.setTextColor(31, 78, 121);
         pdf.setFontSize(9);
         pdf.setFont("helvetica", "normal");
-        pdf.text(job.company + (job.location ? " | " + job.location : ""), mainStartX, mainY);
-        mainY += 4;
+        pdf.text(job.company + (job.location ? " | " + job.location : ""), mainX, mY);
+        mY += 4;
       }
       
-      // Dates
       if (job.dates) {
         pdf.setTextColor(100, 100, 100);
         pdf.setFontSize(8);
         pdf.setFont("helvetica", "italic");
-        pdf.text(job.dates, mainStartX, mainY);
-        mainY += 5;
+        pdf.text(job.dates, mainX, mY);
+        mY += 4;
       }
       
-      // Bullets
-      pdf.setTextColor(60, 60, 60);
-      pdf.setFontSize(9);
+      pdf.setTextColor(50, 50, 50);
+      pdf.setFontSize(8);
       pdf.setFont("helvetica", "normal");
-      job.bullets.forEach(bullet => {
-        if (mainY > pageHeight - 15) {
+      job.bullets.forEach(b => {
+        if (mY > pageHeight - 12) {
           pdf.addPage();
           pdf.setFillColor(31, 78, 121);
-          pdf.rect(0, 0, sidebarWidth, pageHeight, 'F');
-          mainY = 15;
+          pdf.rect(0, 0, sidebarW, pageHeight, 'F');
+          mY = 12;
         }
-        const bulletLines = pdf.splitTextToSize(bullet, mainWidth - 5);
-        pdf.text("•", mainStartX, mainY);
-        pdf.text(bulletLines, mainStartX + 4, mainY);
-        mainY += bulletLines.length * 4 + 2;
+        const bLines = pdf.splitTextToSize(b, mainW - 4);
+        pdf.text("•", mainX, mY);
+        pdf.text(bLines, mainX + 3, mY);
+        mY += bLines.length * 3.5 + 1;
       });
-      mainY += 5;
+      mY += 4;
     });
   }
   
@@ -777,84 +634,60 @@ const createModernPDF = async (parsed, photoSrc) => {
 };
 
 // ============================================
-// PREVIEW COMPONENT - Modern Template
+// PREVIEW
 // ============================================
-const ModernPreview = ({ parsed, profilePhoto }) => {
-  return (
-    <div className="flex min-h-[700px] bg-white overflow-hidden rounded-lg shadow-lg">
-      {/* Left Sidebar */}
-      <div className="w-[30%] bg-[#1F4E79] text-white p-6">
-        {profilePhoto && (
-          <img src={profilePhoto} alt="Profile" className="w-24 h-24 rounded-full mx-auto mb-4 object-cover border-4 border-white/30" />
-        )}
-        <h1 className="text-xl font-bold text-center mb-6">{parsed?.name || "YOUR NAME"}</h1>
-        
-        {/* Contact */}
-        <div className="mb-6">
-          <h3 className="text-xs uppercase tracking-wider font-bold mb-2 border-b border-white/50 pb-1">Contact</h3>
-          {parsed?.contact?.split('|').map((c, i) => (
-            <p key={i} className="text-xs mb-1 break-words">{cleanText(c)}</p>
-          ))}
-        </div>
-        
-        {/* Skills */}
-        {parsed?.skills?.length > 0 && (
-          <div className="mb-6">
-            <h3 className="text-xs uppercase tracking-wider font-bold mb-2 border-b border-white/50 pb-1">Skills</h3>
-            <div className="space-y-1">
-              {parsed.skills.slice(0, 12).map((skill, i) => (
-                <p key={i} className="text-xs">• {skill}</p>
-              ))}
-            </div>
-          </div>
-        )}
-        
-        {/* Education */}
-        {parsed?.education?.length > 0 && (
-          <div>
-            <h3 className="text-xs uppercase tracking-wider font-bold mb-2 border-b border-white/50 pb-1">Education</h3>
-            {parsed.education.map((edu, i) => (
-              <p key={i} className="text-xs mb-2">{edu}</p>
-            ))}
-          </div>
-        )}
+const ModernPreview = ({ parsed, profilePhoto }) => (
+  <div className="flex min-h-[700px] bg-white overflow-hidden rounded-lg shadow-lg">
+    <div className="w-[28%] bg-[#1F4E79] text-white p-5">
+      {profilePhoto && <img src={profilePhoto} alt="" className="w-20 h-20 rounded-full mx-auto mb-3 object-cover border-4 border-white/30" />}
+      <h1 className="text-lg font-bold text-center mb-5">{parsed?.name || "YOUR NAME"}</h1>
+      
+      <div className="mb-5">
+        <h3 className="text-xs uppercase tracking-wider font-bold mb-2 border-b border-white/50 pb-1">Contact</h3>
+        {parsed?.contact?.split('|').map((c, i) => <p key={i} className="text-xs mb-1 break-words">{cleanText(c)}</p>)}
       </div>
       
-      {/* Right Main Content */}
-      <div className="w-[70%] p-6">
-        {/* Summary */}
-        {parsed?.summary && (
-          <div className="mb-6">
-            <h2 className="text-sm font-bold text-[#1F4E79] uppercase tracking-wider mb-2 border-b-2 border-[#1F4E79] pb-1">Professional Summary</h2>
-            <p className="text-gray-700 text-sm leading-relaxed">{parsed.summary}</p>
-          </div>
-        )}
-        
-        {/* Experience */}
-        {parsed?.experience?.length > 0 && (
-          <div>
-            <h2 className="text-sm font-bold text-[#1F4E79] uppercase tracking-wider mb-3 border-b-2 border-[#1F4E79] pb-1">Professional Experience</h2>
-            {parsed.experience.map((job, i) => (
-              <div key={i} className="mb-4">
-                <h3 className="font-bold text-gray-900">{job.title}</h3>
-                {job.company && <p className="text-[#1F4E79] text-sm">{job.company} {job.location && `| ${job.location}`}</p>}
-                {job.dates && <p className="text-gray-500 text-xs italic mb-2">{job.dates}</p>}
-                <ul className="space-y-1">
-                  {job.bullets.slice(0, 4).map((bullet, j) => (
-                    <li key={j} className="text-gray-700 text-xs flex gap-2">
-                      <span className="text-[#1F4E79]">•</span>
-                      <span>{bullet}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+      {parsed?.skills?.length > 0 && (
+        <div className="mb-5">
+          <h3 className="text-xs uppercase tracking-wider font-bold mb-2 border-b border-white/50 pb-1">Skills</h3>
+          {parsed.skills.slice(0, 10).map((s, i) => <p key={i} className="text-xs mb-0.5">• {s}</p>)}
+        </div>
+      )}
+      
+      {parsed?.education?.length > 0 && (
+        <div>
+          <h3 className="text-xs uppercase tracking-wider font-bold mb-2 border-b border-white/50 pb-1">Education</h3>
+          {parsed.education.map((e, i) => <p key={i} className="text-xs mb-1">{e}</p>)}
+        </div>
+      )}
     </div>
-  );
-};
+    
+    <div className="w-[72%] p-5">
+      {parsed?.summary && (
+        <div className="mb-5">
+          <h2 className="text-sm font-bold text-[#1F4E79] uppercase mb-2 border-b-2 border-[#1F4E79] pb-1">Summary</h2>
+          <p className="text-gray-700 text-xs leading-relaxed">{parsed.summary}</p>
+        </div>
+      )}
+      
+      {parsed?.experience?.length > 0 && (
+        <div>
+          <h2 className="text-sm font-bold text-[#1F4E79] uppercase mb-2 border-b-2 border-[#1F4E79] pb-1">Experience</h2>
+          {parsed.experience.map((job, i) => (
+            <div key={i} className="mb-3">
+              <h3 className="font-bold text-gray-900 text-sm">{job.title}</h3>
+              {job.company && <p className="text-[#1F4E79] text-xs">{job.company}</p>}
+              {job.dates && <p className="text-gray-500 text-xs italic mb-1">{job.dates}</p>}
+              <ul className="space-y-0.5">
+                {job.bullets.slice(0, 3).map((b, j) => <li key={j} className="text-gray-700 text-xs">• {b}</li>)}
+              </ul>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  </div>
+);
 
 // ============================================
 // MAIN COMPONENT
@@ -875,13 +708,12 @@ const PreviewExport = ({ data, updateData, onBack, goToStep }) => {
 
   useEffect(() => {
     const result = parseResume(editedResume);
-    console.log("Parsed resume:", result);
     setParsed(result);
   }, [editedResume]);
 
   const handleExportDOCX = async () => {
     if (!data.agreedToTerms) {
-      toast({ title: "Agreement Required", description: "Please agree to Terms first.", variant: "destructive" });
+      toast({ title: "Please agree to Terms", variant: "destructive" });
       return;
     }
     setIsExporting(true);
@@ -889,7 +721,7 @@ const PreviewExport = ({ data, updateData, onBack, goToStep }) => {
       const doc = await createModernDOCX(parsed, data.profilePhotoPreview);
       const blob = await Packer.toBlob(doc);
       saveAs(blob, `modern_resume_${new Date().toISOString().split('T')[0]}.docx`);
-      toast({ title: "Success!", description: "Modern DOCX with sidebar downloaded!" });
+      toast({ title: "Downloaded!", description: "Modern DOCX with blue sidebar" });
     } catch (err) {
       console.error('DOCX error:', err);
       toast({ title: "Export Failed", description: err.message, variant: "destructive" });
@@ -899,14 +731,14 @@ const PreviewExport = ({ data, updateData, onBack, goToStep }) => {
 
   const handleExportPDF = async () => {
     if (!data.agreedToTerms) {
-      toast({ title: "Agreement Required", description: "Please agree to Terms first.", variant: "destructive" });
+      toast({ title: "Please agree to Terms", variant: "destructive" });
       return;
     }
     setIsExporting(true);
     try {
       const pdf = await createModernPDF(parsed, data.profilePhotoPreview);
       pdf.save(`modern_resume_${new Date().toISOString().split('T')[0]}.pdf`);
-      toast({ title: "Success!", description: "Modern PDF with sidebar downloaded!" });
+      toast({ title: "Downloaded!", description: "Modern PDF with blue sidebar" });
     } catch (err) {
       console.error('PDF error:', err);
       toast({ title: "Export Failed", description: err.message, variant: "destructive" });
@@ -914,28 +746,17 @@ const PreviewExport = ({ data, updateData, onBack, goToStep }) => {
     setIsExporting(false);
   };
 
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(editedResume.split('\n').map(l => cleanText(l)).join('\n'));
-    toast({ title: "Copied!" });
-  };
-
   return (
     <div className="space-y-6">
       <Card>
         <CardHeader className="pb-3">
-          <div className="flex items-center justify-between flex-wrap gap-2">
+          <div className="flex items-center justify-between">
             <CardTitle className="text-lg flex items-center gap-2">
-              <Eye className="w-5 h-5 text-[#1F4E79]" />
-              Modern Template Preview
+              <Eye className="w-5 h-5 text-[#1F4E79]" /> Modern Template
             </CardTitle>
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm" onClick={copyToClipboard}>
-                <Copy className="w-4 h-4 mr-1" />Copy
-              </Button>
-              <Button variant="outline" size="sm" onClick={() => setEditMode(!editMode)}>
-                <Edit3 className="w-4 h-4 mr-1" />{editMode ? "Done" : "Edit Raw"}
-              </Button>
-            </div>
+            <Button variant="outline" size="sm" onClick={() => setEditMode(!editMode)}>
+              <Edit3 className="w-4 h-4 mr-1" />{editMode ? "Preview" : "Edit"}
+            </Button>
           </div>
         </CardHeader>
         <CardContent>
@@ -947,27 +768,19 @@ const PreviewExport = ({ data, updateData, onBack, goToStep }) => {
             
             <TabsContent value="resume">
               {editMode ? (
-                <div className="border-2 border-amber-300 rounded-lg p-2 bg-amber-50">
-                  <p className="text-xs text-amber-700 mb-2">Edit raw AI output. Sections: SUMMARY, EXPERIENCE, EDUCATION, SKILLS</p>
-                  <textarea
-                    value={editedResume}
-                    onChange={(e) => {
-                      setEditedResume(e.target.value);
-                      updateData({ optimizedResume: e.target.value });
-                    }}
-                    className="w-full min-h-[600px] p-4 font-mono text-xs border rounded bg-white"
-                  />
-                </div>
+                <textarea
+                  value={editedResume}
+                  onChange={(e) => { setEditedResume(e.target.value); updateData({ optimizedResume: e.target.value }); }}
+                  className="w-full min-h-[600px] p-4 font-mono text-xs border rounded"
+                />
               ) : (
                 <ModernPreview parsed={parsed} profilePhoto={data.profilePhotoPreview} />
               )}
             </TabsContent>
             
             <TabsContent value="coverLetter">
-              <div className="bg-white border rounded-lg p-8 min-h-[400px]" style={{ fontFamily: 'Georgia, serif' }}>
-                <pre className="whitespace-pre-wrap text-sm leading-relaxed">
-                  {cleanText(editedCoverLetter) || "No cover letter generated."}
-                </pre>
+              <div className="bg-white border rounded-lg p-6 min-h-[300px]">
+                <pre className="whitespace-pre-wrap text-sm">{cleanText(editedCoverLetter)}</pre>
               </div>
             </TabsContent>
           </Tabs>
@@ -975,17 +788,10 @@ const PreviewExport = ({ data, updateData, onBack, goToStep }) => {
       </Card>
 
       {data.matchScore && (
-        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 flex items-center justify-between">
+        <div className="bg-blue-50 rounded-lg p-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-bold ${
-              data.matchScore >= 70 ? "bg-green-500" : data.matchScore >= 40 ? "bg-amber-500" : "bg-red-500"
-            }`}>
-              {data.matchScore}%
-            </div>
-            <div>
-              <p className="font-medium text-slate-700">ATS Match Score</p>
-              <p className="text-sm text-slate-500">{data.matchScore >= 70 ? "Excellent!" : "Add more keywords"}</p>
-            </div>
+            <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-bold ${data.matchScore >= 70 ? "bg-green-500" : "bg-amber-500"}`}>{data.matchScore}%</div>
+            <span className="font-medium">ATS Match Score</span>
           </div>
           <Button variant="outline" size="sm" onClick={() => goToStep(2)}>Improve</Button>
         </div>
@@ -993,45 +799,38 @@ const PreviewExport = ({ data, updateData, onBack, goToStep }) => {
 
       <Card>
         <CardContent className="pt-6">
-          <div className="flex items-start gap-3">
+          <div className="flex items-center gap-3">
             <Checkbox id="terms" checked={data.agreedToTerms} onCheckedChange={(c) => updateData({ agreedToTerms: c })} />
-            <label htmlFor="terms" className="text-sm text-slate-700 cursor-pointer">
-              I agree to the <Dialog><DialogTrigger className="text-[#1F4E79] underline">Terms of Use</DialogTrigger><DialogContent><DialogHeader><DialogTitle>Terms</DialogTitle></DialogHeader><p className="text-sm">Review and verify all info before submitting.</p></DialogContent></Dialog>
-            </label>
+            <label htmlFor="terms" className="text-sm cursor-pointer">I agree to the Terms of Use</label>
           </div>
         </CardContent>
       </Card>
 
-      <div className="bg-slate-50 rounded-lg p-6">
-        <h3 className="font-medium text-slate-700 mb-4 text-center">Download Modern Resume (Blue Sidebar)</h3>
-        <div className="flex flex-col sm:flex-row gap-3 justify-center">
-          <Button onClick={handleExportPDF} disabled={!data.agreedToTerms || isExporting} className="bg-[#1F4E79] hover:bg-[#163a5c] text-white">
-            {isExporting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Download className="w-4 h-4 mr-2" />}
-            Download PDF
+      <div className="bg-slate-50 rounded-lg p-6 text-center">
+        <h3 className="font-medium mb-4">Download Modern Resume</h3>
+        <div className="flex gap-3 justify-center">
+          <Button onClick={handleExportPDF} disabled={!data.agreedToTerms || isExporting} className="bg-[#1F4E79]">
+            {isExporting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Download className="w-4 h-4 mr-2" />}PDF
           </Button>
           <Button variant="outline" onClick={handleExportDOCX} disabled={!data.agreedToTerms || isExporting}>
-            <FileText className="w-4 h-4 mr-2" />
-            Download DOCX
+            <FileText className="w-4 h-4 mr-2" />DOCX
           </Button>
         </div>
       </div>
 
       <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-        <div className="flex items-start gap-3">
-          <Info className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+        <div className="flex gap-3">
+          <Info className="w-5 h-5 text-amber-600 flex-shrink-0" />
           <div className="text-sm text-amber-700">
-            <p className="font-medium">Before submitting:</p>
-            <ul className="mt-1 list-disc list-inside text-amber-600">
-              <li>Replace [X%], [N], [$Y] with your actual numbers</li>
-              <li>Verify all dates and company names</li>
-            </ul>
+            <p className="font-medium">Replace placeholders:</p>
+            <p>[X%], [N], [$Y] → your actual numbers</p>
           </div>
         </div>
       </div>
 
       <div className="flex justify-between">
         <Button variant="outline" onClick={onBack}>← Back</Button>
-        <Button variant="ghost" onClick={() => goToStep(1)} className="text-slate-500">New Resume</Button>
+        <Button variant="ghost" onClick={() => goToStep(1)}>New Resume</Button>
       </div>
     </div>
   );
