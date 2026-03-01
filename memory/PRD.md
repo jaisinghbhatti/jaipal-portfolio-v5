@@ -62,6 +62,12 @@ A personal portfolio website for Jaipal Singh (Digital Marketing Expert) with:
 
 ## Recent Fixes (Dec 2025)
 
+### Resume Export - Font & Margin Fix (Dec 2025)
+- Changed default font to Times New Roman across all 4 templates (DOCX + PDF + Preview)
+- Fixed Impact template body content margins — added proper left/right indentation for readability
+- Fixed `&amp;` HTML entity appearing in exported text
+- Increased internal padding in Impact header and Key Achievements table cells
+
 ### Resume Export - Complete Rewrite
 - Refactored PreviewExport.jsx from monolithic 840-line file into modular architecture
 - Created shared resumeUtils.js (parser, cleanText, image utilities)
