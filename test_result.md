@@ -70,7 +70,7 @@ frontend:
         comment: "❌ CRITICAL: Frontend cannot reach backend APIs. REACT_APP_BACKEND_URL is empty in .env file, causing API calls to fail. Navigation works but functionality blocked by missing backend URL configuration. When properly configured (localhost:8001), all features work perfectly."
       - working: true
         agent: "testing"
-        comment: "✅ PASS: Resume Builder UI Navigation - REACT_APP_BACKEND_URL now configured correctly (https://resume-optimizer-96.preview.emergentagent.com). Navigation works perfectly, page loads correctly with proper routing to /resume-builder. All UI components render properly."
+        comment: "✅ PASS: Resume Builder UI Navigation - REACT_APP_BACKEND_URL now configured correctly (https://layout-rebuild-v2.preview.emergentagent.com). Navigation works perfectly, page loads correctly with proper routing to /resume-builder. All UI components render properly."
 
   - task: "Step 1 - Input Module"
     implemented: true

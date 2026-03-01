@@ -120,7 +120,7 @@ A personal portfolio website for Jaipal Singh (Digital Marketing Expert) with:
 - `GET /api/health`
 
 ## Backend URL
-- **Production**: `https://resume-optimizer-96.preview.emergentagent.com`
+- **Production**: `https://layout-rebuild-v2.preview.emergentagent.com`
 - **Vercel Environment Variable**: `REACT_APP_BACKEND_URL`
 
 ## Credentials
