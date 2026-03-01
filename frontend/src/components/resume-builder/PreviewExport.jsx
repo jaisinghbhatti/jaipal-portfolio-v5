@@ -7,47 +7,51 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { useToast } from "../../hooks/use-toast";
 import jsPDF from "jspdf";
-import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, BorderStyle } from "docx";
+import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, BorderStyle, ImageRun, Table, TableRow, TableCell, WidthType, VerticalAlign, ShadingType } from "docx";
 import { saveAs } from "file-saver";
 
-// Clean markdown from text - remove **, *, etc. and return clean text
-const cleanMarkdown = (text) => {
+// Comprehensive markdown and placeholder cleanup
+const cleanText = (text) => {
   if (!text) return '';
   return text
-    // Fix broken markdown patterns like *text** or **text*
-    .replace(/\*([^*]+)\*\*/g, '$1')
-    .replace(/\*\*([^*]+)\*/g, '$1')
-    // Remove bold markdown **text**
+    // Remove AIDA markers like **A**ttention:, *I*nterest:, etc.
+    .replace(/\*?\*?[AIDA]\*?\*?[a-z]*:\s*/gi, '')
+    // Fix broken markdown patterns
     .replace(/\*\*([^*]+)\*\*/g, '$1')
-    // Remove italic markdown *text*
     .replace(/\*([^*]+)\*/g, '$1')
-    // Remove headers ## or ###
+    // Remove stray asterisks at end of words
+    .replace(/(\w)\*+/g, '$1')
+    .replace(/\*+(\w)/g, '$1')
+    // Remove headers ##
     .replace(/^#{1,6}\s*/gm, '')
-    // Remove code blocks ```
-    .replace(/```[^`]*```/g, '')
-    // Remove inline code `text`
+    // Remove inline code backticks
     .replace(/`([^`]+)`/g, '$1')
+    // Remove template instructions in brackets
+    .replace(/\[Add [^\]]+\]/g, '')
+    .replace(/\[if [^\]]+\]/gi, '')
+    .replace(/\[otherwise [^\]]+\]/gi, '')
+    // Clean up HTML entities
+    .replace(/&amp;/g, '&')
+    .replace(/&apos;/g, "'")
+    .replace(/&quot;/g, '"')
     // Remove extra whitespace
     .replace(/\s+/g, ' ')
     .trim();
 };
 
-// Clean entire resume text while preserving structure
+// Clean entire resume while preserving structure
 const cleanResumeText = (text) => {
   if (!text) return '';
   return text.split('\n').map(line => {
-    // Preserve empty lines
     if (!line.trim()) return '';
-    // Clean each line
-    return cleanMarkdown(line);
+    return cleanText(line);
   }).join('\n');
 };
 
-// Parse resume text into structured sections
+// Parse resume into structured sections
 const parseResumeText = (text) => {
   if (!text) return null;
   
-  // Clean the text first
   const cleanedText = cleanResumeText(text);
   const lines = cleanedText.split('\n').filter(line => line.trim());
   
@@ -60,28 +64,30 @@ const parseResumeText = (text) => {
     education: [],
     skills: [],
     certifications: [],
-    achievements: []
+    achievements: [],
+    tools: []
   };
   
   let currentSection = 'header';
   let currentExperience = null;
   let currentEducation = null;
+  let summaryLines = [];
   
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i].trim();
     const upperLine = line.toUpperCase();
     
     // Detect section headers
-    if (upperLine.includes('SUMMARY') || upperLine.includes('OBJECTIVE') || upperLine.includes('PROFILE') || upperLine.includes('ABOUT')) {
+    if (upperLine.includes('SUMMARY') || upperLine.includes('OBJECTIVE') || upperLine.includes('PROFILE') || upperLine === 'ABOUT') {
       currentSection = 'summary';
       continue;
-    } else if (upperLine.includes('EXPERIENCE') || upperLine.includes('EMPLOYMENT') || upperLine.includes('WORK HISTORY') || upperLine.includes('CAREER')) {
+    } else if (upperLine.includes('EXPERIENCE') || upperLine.includes('EMPLOYMENT') || upperLine.includes('WORK HISTORY') || upperLine.includes('CAREER HISTORY')) {
       currentSection = 'experience';
       continue;
     } else if (upperLine.includes('EDUCATION') || upperLine.includes('ACADEMIC')) {
       currentSection = 'education';
       continue;
-    } else if (upperLine.includes('SKILL') || upperLine.includes('COMPETENC') || upperLine.includes('TECHNICAL') || upperLine.includes('CORE COMPETENCIES') || upperLine.includes('KEY SKILLS')) {
+    } else if (upperLine.includes('SKILL') || upperLine.includes('COMPETENC') || upperLine.includes('CORE COMPETENCIES') || upperLine.includes('KEY SKILLS')) {
       currentSection = 'skills';
       continue;
     } else if (upperLine.includes('CERTIF') || upperLine.includes('LICENSE')) {
@@ -90,77 +96,109 @@ const parseResumeText = (text) => {
     } else if (upperLine.includes('ACHIEVEMENT') || upperLine.includes('AWARD') || upperLine.includes('KEY WINS')) {
       currentSection = 'achievements';
       continue;
-    } else if (upperLine.includes('TOOL STACK') || upperLine.includes('TOOLS')) {
-      currentSection = 'skills';
+    } else if (upperLine.includes('TOOL') || upperLine.includes('PLATFORM') || upperLine.includes('TECHNOLOGIES')) {
+      currentSection = 'tools';
       continue;
     }
     
     // Parse content based on section
     if (currentSection === 'header') {
-      if (!sections.name && line.length > 0 && line.length < 50 && !line.includes('@') && !line.includes('|') && !line.includes('Ph:')) {
+      if (!sections.name && line.length > 0 && line.length < 50 && !line.includes('@') && !line.includes('|') && !line.includes('Ph:') && !line.includes('+')) {
         sections.name = line;
-      } else if (line.includes('@') || line.includes('|') || line.includes('•') || /\d{3}[-.\s]?\d{3}[-.\s]?\d{4}/.test(line) || line.includes('Ph:') || line.includes('LinkedIn')) {
+      } else if (line.includes('@') || line.includes('|') || line.includes('•') || /\+?\d{1,3}[-.\s]?\d{3,}/.test(line) || line.includes('Ph:') || line.includes('LinkedIn') || line.includes('Website')) {
         sections.contact.push(line);
-      } else if (line.length < 80 && !sections.title && !line.includes('@')) {
-        sections.title = line;
       }
     } else if (currentSection === 'summary') {
-      // Skip AIDA markers like **A**ttention, **I**nterest, etc.
-      const cleanLine = line.replace(/^\*?\*?[AIDA]\*?\*?[a-z]*:\s*/i, '');
-      if (cleanLine.length > 0) {
-        sections.summary += (sections.summary ? ' ' : '') + cleanLine;
+      if (line.length > 10) {
+        summaryLines.push(line);
       }
     } else if (currentSection === 'experience') {
-      if (line.startsWith('•') || line.startsWith('-') || line.startsWith('*') || line.startsWith('►') || line.startsWith('→')) {
+      const isBullet = /^[•\-*►→▸]/.test(line);
+      const isDate = /^(JANUARY|FEBRUARY|MARCH|APRIL|MAY|JUNE|JULY|AUGUST|SEPTEMBER|OCTOBER|NOVEMBER|DECEMBER|\d{4})/i.test(line);
+      
+      if (isBullet) {
         if (currentExperience) {
-          const bulletText = line.replace(/^[•\-*►→]\s*/, '');
-          currentExperience.bullets.push(bulletText);
+          currentExperience.bullets.push(line.replace(/^[•\-*►→▸]\s*/, ''));
         }
-      } else if (line.length > 0) {
-        // Check for date patterns
-        const datePattern = /\b(JANUARY|FEBRUARY|MARCH|APRIL|MAY|JUNE|JULY|AUGUST|SEPTEMBER|OCTOBER|NOVEMBER|DECEMBER|\d{4})\b/i;
-        if (datePattern.test(line) && line.length < 60) {
-          if (currentExperience && !currentExperience.dates) {
-            currentExperience.dates = line;
-          }
-        } else if (!line.startsWith(' ') && line.length < 120 && !line.includes('•')) {
-          if (currentExperience && currentExperience.title) {
-            sections.experience.push(currentExperience);
-          }
+      } else if (isDate && line.length < 80) {
+        if (currentExperience && !currentExperience.dates) {
+          currentExperience.dates = line;
+        }
+      } else if (line.length > 0 && line.length < 120 && !isBullet) {
+        // Likely a job title or company
+        if (currentExperience && currentExperience.title && currentExperience.bullets.length > 0) {
+          sections.experience.push(currentExperience);
+          currentExperience = null;
+        }
+        if (!currentExperience) {
           currentExperience = { title: line, company: '', dates: '', bullets: [] };
-        } else if (currentExperience && !currentExperience.company && line.length < 80) {
+        } else if (!currentExperience.company) {
           currentExperience.company = line;
         }
       }
     } else if (currentSection === 'education') {
-      if (line.startsWith('•') || line.startsWith('-')) {
-        if (currentEducation) {
-          currentEducation.details.push(line.replace(/^[•\-*]\s*/, ''));
-        }
-      } else if (line.length > 0) {
-        if (currentEducation) sections.education.push(currentEducation);
-        currentEducation = { school: line, degree: '', year: '', details: [] };
-        const yearMatch = line.match(/\d{4}/);
-        if (yearMatch) currentEducation.year = yearMatch[0];
+      if (line.length > 0) {
+        sections.education.push(line);
       }
-    } else if (currentSection === 'skills') {
-      const skillItems = line.split(/[,•|]/).map(s => s.trim()).filter(s => s && s.length > 1 && s.length < 60);
-      sections.skills.push(...skillItems);
+    } else if (currentSection === 'skills' || currentSection === 'tools') {
+      // Split by common delimiters
+      const items = line.split(/[,•|]/).map(s => cleanText(s)).filter(s => s && s.length > 1 && s.length < 80);
+      if (currentSection === 'skills') {
+        sections.skills.push(...items);
+      } else {
+        sections.tools.push(...items);
+      }
     } else if (currentSection === 'certifications') {
-      sections.certifications.push(line.replace(/^[•\-*]\s*/, ''));
+      if (line.length > 5) {
+        sections.certifications.push(line.replace(/^[•\-*]\s*/, ''));
+      }
     } else if (currentSection === 'achievements') {
-      sections.achievements.push(line.replace(/^[•\-*►→]\s*/, ''));
+      if (line.length > 10) {
+        sections.achievements.push(line.replace(/^[•\-*►→▸]\s*/, ''));
+      }
     }
   }
   
-  // Add last items
-  if (currentExperience && currentExperience.title) sections.experience.push(currentExperience);
-  if (currentEducation) sections.education.push(currentEducation);
+  // Finalize
+  if (currentExperience && currentExperience.title) {
+    sections.experience.push(currentExperience);
+  }
+  sections.summary = summaryLines.join(' ');
+  
+  // Dedupe skills
+  sections.skills = [...new Set(sections.skills)];
   
   return sections;
 };
 
-// Harvard Executive Template - Classic single column
+// Convert image URL/data to base64 for embedding
+const getImageAsBase64 = async (imageSource) => {
+  if (!imageSource) return null;
+  
+  try {
+    // If already base64
+    if (imageSource.startsWith('data:image')) {
+      return imageSource.split(',')[1];
+    }
+    
+    // Fetch and convert
+    const response = await fetch(imageSource);
+    const blob = await response.blob();
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64 = reader.result.split(',')[1];
+        resolve(base64);
+      };
+      reader.readAsDataURL(blob);
+    });
+  } catch (error) {
+    console.error('Error converting image:', error);
+    return null;
+  }
+};
+
+// Template Components for Preview
 const HarvardTemplate = ({ data, parsed, profilePhoto }) => (
   <div className="bg-white p-8 font-serif min-h-[800px]" style={{ fontFamily: 'Georgia, serif' }}>
     <div className="text-center border-b-2 border-gray-800 pb-6 mb-6">
@@ -168,7 +206,6 @@ const HarvardTemplate = ({ data, parsed, profilePhoto }) => (
         <img src={profilePhoto} alt="Profile" className="w-24 h-24 rounded-full mx-auto mb-4 object-cover border-2 border-gray-300" />
       )}
       <h1 className="text-3xl font-bold text-gray-900 tracking-wide uppercase">{parsed?.name || 'Your Name'}</h1>
-      {parsed?.title && <p className="text-lg text-gray-600 mt-2 italic">{parsed.title}</p>}
       <div className="flex flex-wrap justify-center gap-4 mt-3 text-sm text-gray-600">
         {parsed?.contact?.map((c, i) => <span key={i}>{c}</span>)}
       </div>
@@ -201,30 +238,24 @@ const HarvardTemplate = ({ data, parsed, profilePhoto }) => (
       </div>
     )}
     
+    {parsed?.skills?.length > 0 && (
+      <div className="mb-6">
+        <h2 className="text-lg font-bold text-gray-800 uppercase tracking-widest border-b border-gray-300 pb-1 mb-3">Skills & Expertise</h2>
+        <p className="text-gray-700 text-sm">{parsed.skills.slice(0, 20).join(' • ')}</p>
+      </div>
+    )}
+    
     {parsed?.education?.length > 0 && (
       <div className="mb-6">
         <h2 className="text-lg font-bold text-gray-800 uppercase tracking-widest border-b border-gray-300 pb-1 mb-3">Education</h2>
         {parsed.education.map((edu, i) => (
-          <div key={i} className="mb-3">
-            <div className="flex justify-between">
-              <span className="font-semibold text-gray-900">{edu.school}</span>
-              <span className="text-sm text-gray-500">{edu.year}</span>
-            </div>
-          </div>
+          <p key={i} className="text-gray-700 text-sm">{edu}</p>
         ))}
-      </div>
-    )}
-    
-    {parsed?.skills?.length > 0 && (
-      <div className="mb-6">
-        <h2 className="text-lg font-bold text-gray-800 uppercase tracking-widest border-b border-gray-300 pb-1 mb-3">Skills</h2>
-        <p className="text-gray-700 text-sm">{parsed.skills.join(' • ')}</p>
       </div>
     )}
   </div>
 );
 
-// Modern Tech Template - 70/30 split with sidebar
 const ModernTemplate = ({ data, parsed, profilePhoto }) => (
   <div className="bg-white min-h-[800px] flex" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
     <div className="w-[30%] bg-gradient-to-b from-slate-800 to-slate-900 text-white p-6">
@@ -236,8 +267,7 @@ const ModernTemplate = ({ data, parsed, profilePhoto }) => (
         </div>
       )}
       
-      <h1 className="text-xl font-bold text-center mb-1">{parsed?.name || 'Your Name'}</h1>
-      {parsed?.title && <p className="text-sm text-slate-300 text-center mb-6">{parsed.title}</p>}
+      <h1 className="text-xl font-bold text-center mb-6">{parsed?.name || 'Your Name'}</h1>
       
       <div className="mb-6">
         <h3 className="text-xs uppercase tracking-widest text-slate-400 mb-2 border-b border-slate-700 pb-1">Contact</h3>
@@ -250,7 +280,7 @@ const ModernTemplate = ({ data, parsed, profilePhoto }) => (
         <div className="mb-6">
           <h3 className="text-xs uppercase tracking-widest text-slate-400 mb-2 border-b border-slate-700 pb-1">Skills</h3>
           <div className="flex flex-wrap gap-2">
-            {parsed.skills.slice(0, 12).map((skill, i) => (
+            {parsed.skills.slice(0, 15).map((skill, i) => (
               <span key={i} className="px-2 py-1 bg-slate-700 rounded text-xs">{skill}</span>
             ))}
           </div>
@@ -261,29 +291,22 @@ const ModernTemplate = ({ data, parsed, profilePhoto }) => (
     <div className="w-[70%] p-8">
       {parsed?.summary && (
         <div className="mb-6">
-          <h2 className="text-lg font-bold text-[#2A5C82] uppercase tracking-wider mb-3 flex items-center gap-2">
-            <span className="w-8 h-0.5 bg-[#2A5C82]"></span>About Me
-          </h2>
+          <h2 className="text-lg font-bold text-[#2A5C82] uppercase tracking-wider mb-3">Summary</h2>
           <p className="text-gray-600 leading-relaxed">{parsed.summary}</p>
         </div>
       )}
       
       {parsed?.experience?.length > 0 && (
         <div className="mb-6">
-          <h2 className="text-lg font-bold text-[#2A5C82] uppercase tracking-wider mb-4 flex items-center gap-2">
-            <span className="w-8 h-0.5 bg-[#2A5C82]"></span>Experience
-          </h2>
+          <h2 className="text-lg font-bold text-[#2A5C82] uppercase tracking-wider mb-4">Experience</h2>
           {parsed.experience.map((exp, i) => (
-            <div key={i} className="mb-5 relative pl-4 border-l-2 border-slate-200">
-              <div className="absolute -left-[5px] top-1 w-2 h-2 rounded-full bg-[#2A5C82]"></div>
-              <div className="flex justify-between items-start">
-                <h3 className="font-bold text-gray-900">{exp.title}</h3>
-                <span className="text-xs text-gray-500 bg-slate-100 px-2 py-1 rounded">{exp.dates}</span>
-              </div>
-              {exp.company && <p className="text-[#2A5C82] text-sm font-medium">{exp.company}</p>}
-              <ul className="mt-2 space-y-1">
+            <div key={i} className="mb-5 pl-4 border-l-2 border-slate-200">
+              <h3 className="font-bold text-gray-900">{exp.title}</h3>
+              {exp.company && <p className="text-[#2A5C82] text-sm">{exp.company}</p>}
+              <p className="text-xs text-gray-500 mb-2">{exp.dates}</p>
+              <ul className="space-y-1">
                 {exp.bullets?.map((bullet, j) => (
-                  <li key={j} className="text-gray-600 text-sm flex gap-2"><span className="text-[#2A5C82]">▸</span>{bullet}</li>
+                  <li key={j} className="text-gray-600 text-sm">• {bullet}</li>
                 ))}
               </ul>
             </div>
@@ -293,14 +316,9 @@ const ModernTemplate = ({ data, parsed, profilePhoto }) => (
       
       {parsed?.education?.length > 0 && (
         <div>
-          <h2 className="text-lg font-bold text-[#2A5C82] uppercase tracking-wider mb-3 flex items-center gap-2">
-            <span className="w-8 h-0.5 bg-[#2A5C82]"></span>Education
-          </h2>
+          <h2 className="text-lg font-bold text-[#2A5C82] uppercase tracking-wider mb-3">Education</h2>
           {parsed.education.map((edu, i) => (
-            <div key={i} className="mb-2 flex justify-between">
-              <span className="font-semibold text-gray-900">{edu.school}</span>
-              <span className="text-sm text-gray-500">{edu.year}</span>
-            </div>
+            <p key={i} className="text-gray-700 text-sm">{edu}</p>
           ))}
         </div>
       )}
@@ -308,7 +326,6 @@ const ModernTemplate = ({ data, parsed, profilePhoto }) => (
   </div>
 );
 
-// Impact-First Template
 const ImpactTemplate = ({ data, parsed, profilePhoto }) => (
   <div className="bg-white p-8 min-h-[800px]" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
     <div className="flex items-center gap-6 mb-6 pb-6 border-b-4 border-[#2A5C82]">
@@ -317,28 +334,11 @@ const ImpactTemplate = ({ data, parsed, profilePhoto }) => (
       )}
       <div className="flex-1">
         <h1 className="text-3xl font-black text-gray-900">{parsed?.name || 'Your Name'}</h1>
-        {parsed?.title && <p className="text-lg text-[#2A5C82] font-semibold mt-1">{parsed.title}</p>}
         <div className="flex flex-wrap gap-3 mt-2 text-sm text-gray-600">
           {parsed?.contact?.map((c, i) => <span key={i} className="bg-gray-100 px-2 py-1 rounded">{c}</span>)}
         </div>
       </div>
     </div>
-    
-    {parsed?.achievements?.length > 0 && (
-      <div className="bg-gradient-to-r from-[#2A5C82] to-[#1e4460] text-white p-5 rounded-lg mb-6 shadow-lg">
-        <h2 className="text-sm font-bold uppercase tracking-widest mb-3 flex items-center gap-2">
-          <span className="text-yellow-400">★</span> Key Wins & Achievements
-        </h2>
-        <div className="grid grid-cols-2 gap-3">
-          {parsed.achievements.slice(0, 4).map((achievement, i) => (
-            <div key={i} className="flex items-start gap-2">
-              <span className="text-yellow-400 text-lg">✓</span>
-              <span className="text-sm">{achievement}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-    )}
     
     {parsed?.summary && (
       <div className="mb-6">
@@ -355,15 +355,13 @@ const ImpactTemplate = ({ data, parsed, profilePhoto }) => (
             {parsed.experience.map((exp, i) => (
               <div key={i} className="mb-5">
                 <div className="bg-gray-50 p-3 rounded-lg">
-                  <div className="flex justify-between items-center">
-                    <h3 className="font-bold text-gray-900 text-lg">{exp.title}</h3>
-                    <span className="text-xs text-white bg-[#2A5C82] px-3 py-1 rounded-full">{exp.dates}</span>
-                  </div>
+                  <h3 className="font-bold text-gray-900 text-lg">{exp.title}</h3>
                   {exp.company && <p className="text-[#2A5C82] font-medium">{exp.company}</p>}
+                  <p className="text-xs text-gray-500">{exp.dates}</p>
                 </div>
                 <ul className="mt-3 space-y-2 pl-3">
                   {exp.bullets?.map((bullet, j) => (
-                    <li key={j} className="text-gray-700 text-sm flex gap-2"><span className="text-[#2A5C82] font-bold">→</span>{bullet}</li>
+                    <li key={j} className="text-gray-700 text-sm">→ {bullet}</li>
                   ))}
                 </ul>
               </div>
@@ -377,7 +375,7 @@ const ImpactTemplate = ({ data, parsed, profilePhoto }) => (
           <div className="bg-gray-50 p-4 rounded-lg">
             <h2 className="text-sm font-bold text-[#2A5C82] uppercase mb-3">Core Skills</h2>
             <div className="space-y-2">
-              {parsed.skills.slice(0, 8).map((skill, i) => (
+              {parsed.skills.slice(0, 10).map((skill, i) => (
                 <div key={i} className="flex items-center gap-2">
                   <div className="w-2 h-2 bg-[#2A5C82] rounded-full"></div>
                   <span className="text-sm text-gray-700">{skill}</span>
@@ -391,10 +389,7 @@ const ImpactTemplate = ({ data, parsed, profilePhoto }) => (
           <div className="bg-gray-50 p-4 rounded-lg">
             <h2 className="text-sm font-bold text-[#2A5C82] uppercase mb-3">Education</h2>
             {parsed.education.map((edu, i) => (
-              <div key={i} className="mb-2 text-sm">
-                <p className="font-semibold text-gray-900">{edu.school}</p>
-                <p className="text-gray-600">{edu.year}</p>
-              </div>
+              <p key={i} className="text-sm text-gray-700 mb-1">{edu}</p>
             ))}
           </div>
         )}
@@ -403,16 +398,14 @@ const ImpactTemplate = ({ data, parsed, profilePhoto }) => (
   </div>
 );
 
-// Minimalist ATS Template
 const MinimalTemplate = ({ data, parsed, profilePhoto }) => (
   <div className="bg-white p-8 min-h-[800px]" style={{ fontFamily: 'Arial, sans-serif' }}>
     <div className="flex items-center gap-6 mb-6">
       {profilePhoto && (
-        <img src={profilePhoto} alt="Profile" className="w-20 h-20 rounded-full object-cover grayscale" />
+        <img src={profilePhoto} alt="Profile" className="w-20 h-20 rounded-full object-cover" />
       )}
       <div>
         <h1 className="text-2xl font-bold text-gray-900">{parsed?.name || 'Your Name'}</h1>
-        {parsed?.title && <p className="text-gray-600">{parsed.title}</p>}
         <div className="flex flex-wrap gap-2 mt-1 text-sm text-gray-500">
           {parsed?.contact?.map((c, i) => <span key={i}>{c}{i < parsed.contact.length - 1 ? ' | ' : ''}</span>)}
         </div>
@@ -448,18 +441,6 @@ const MinimalTemplate = ({ data, parsed, profilePhoto }) => (
       </div>
     )}
     
-    {parsed?.education?.length > 0 && (
-      <div className="mb-6">
-        <h2 className="text-sm font-bold text-gray-700 uppercase tracking-wider mb-2">Education</h2>
-        {parsed.education.map((edu, i) => (
-          <div key={i} className="flex justify-between text-sm mb-1">
-            <span className="text-gray-900">{edu.school}</span>
-            <span className="text-gray-500">{edu.year}</span>
-          </div>
-        ))}
-      </div>
-    )}
-    
     {parsed?.skills?.length > 0 && (
       <div>
         <h2 className="text-sm font-bold text-gray-700 uppercase tracking-wider mb-2">Skills</h2>
@@ -479,7 +460,6 @@ const PreviewExport = ({ data, updateData, onBack, goToStep }) => {
   const resumeRef = useRef(null);
   const [parsedResume, setParsedResume] = useState(null);
 
-  // Clean and set initial data
   useEffect(() => {
     const cleanedResume = cleanResumeText(data.optimizedResume || "");
     const cleanedCoverLetter = cleanResumeText(data.coverLetter || "");
@@ -492,102 +472,7 @@ const PreviewExport = ({ data, updateData, onBack, goToStep }) => {
     setParsedResume(parsed);
   }, [editedResume]);
 
-  // Generate proper text-based PDF with clean formatting
-  const exportToPDF = async (type = "resume") => {
-    if (!data.agreedToTerms) {
-      toast({ title: "Agreement Required", description: "Please agree to the Terms of Use before downloading.", variant: "destructive" });
-      return;
-    }
-
-    setIsExporting(true);
-
-    try {
-      const content = type === "resume" ? editedResume : editedCoverLetter;
-      const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-      
-      const pageWidth = pdf.internal.pageSize.getWidth();
-      const pageHeight = pdf.internal.pageSize.getHeight();
-      const margin = 20;
-      const maxWidth = pageWidth - (margin * 2);
-      let yPosition = margin;
-
-      const lines = content.split('\n');
-      
-      for (let i = 0; i < lines.length; i++) {
-        let line = lines[i].trim();
-        
-        // Skip empty section headers that might have been cleaned
-        if (!line) {
-          yPosition += 3;
-          continue;
-        }
-
-        if (yPosition > pageHeight - margin - 10) {
-          pdf.addPage();
-          yPosition = margin;
-        }
-
-        const isHeader = /^[A-Z][A-Z\s&]+$/.test(line) && line.length < 50;
-        const isName = i === 0 || (i < 3 && line.length > 0 && line.length < 50 && !line.includes('@') && !line.includes('|') && !line.includes('Ph:'));
-        const isBullet = line.startsWith('•') || line.startsWith('-') || line.startsWith('*') || line.startsWith('►') || line.startsWith('→');
-        const isDate = /^(JANUARY|FEBRUARY|MARCH|APRIL|MAY|JUNE|JULY|AUGUST|SEPTEMBER|OCTOBER|NOVEMBER|DECEMBER)\s+\d{4}/i.test(line);
-
-        if (isName && i < 3 && !line.includes('@') && !line.includes('Ph:')) {
-          pdf.setFontSize(20);
-          pdf.setFont("helvetica", "bold");
-          pdf.setTextColor(0, 0, 0);
-          pdf.text(line, pageWidth / 2, yPosition, { align: "center" });
-          yPosition += 10;
-        } else if (isHeader) {
-          yPosition += 5;
-          pdf.setFontSize(12);
-          pdf.setFont("helvetica", "bold");
-          pdf.setTextColor(42, 92, 130);
-          pdf.text(line, margin, yPosition);
-          yPosition += 2;
-          pdf.setDrawColor(42, 92, 130);
-          pdf.setLineWidth(0.5);
-          pdf.line(margin, yPosition, margin + Math.min(pdf.getTextWidth(line), maxWidth), yPosition);
-          yPosition += 6;
-        } else if (isDate) {
-          pdf.setFontSize(10);
-          pdf.setFont("helvetica", "italic");
-          pdf.setTextColor(100, 100, 100);
-          pdf.text(line, margin, yPosition);
-          yPosition += 5;
-        } else if (isBullet) {
-          pdf.setFontSize(10);
-          pdf.setFont("helvetica", "normal");
-          pdf.setTextColor(60, 60, 60);
-          const bulletText = line.replace(/^[•\-*►→]\s*/, '');
-          const wrappedLines = pdf.splitTextToSize(bulletText, maxWidth - 8);
-          pdf.text('•', margin, yPosition);
-          pdf.text(wrappedLines, margin + 5, yPosition);
-          yPosition += wrappedLines.length * 5 + 2;
-        } else if (line.length > 0) {
-          pdf.setFontSize(10);
-          pdf.setFont("helvetica", "normal");
-          pdf.setTextColor(60, 60, 60);
-          const wrappedLines = pdf.splitTextToSize(line, maxWidth);
-          pdf.text(wrappedLines, margin, yPosition);
-          yPosition += wrappedLines.length * 5 + 1;
-        }
-      }
-
-      const templateName = data.selectedTemplate || 'resume';
-      const date = new Date().toISOString().split("T")[0];
-      pdf.save(`${templateName}_${date}.pdf`);
-
-      toast({ title: "Download Complete", description: "Your PDF has been downloaded with clean formatting." });
-    } catch (error) {
-      console.error("PDF Export error:", error);
-      toast({ title: "Export Failed", description: "Could not generate PDF.", variant: "destructive" });
-    } finally {
-      setIsExporting(false);
-    }
-  };
-
-  // Generate DOCX file with proper formatting
+  // Export to professional DOCX with photo and proper layout
   const exportToDOCX = async (type = "resume") => {
     if (!data.agreedToTerms) {
       toast({ title: "Agreement Required", description: "Please agree to the Terms of Use before downloading.", variant: "destructive" });
@@ -597,99 +482,405 @@ const PreviewExport = ({ data, updateData, onBack, goToStep }) => {
     setIsExporting(true);
 
     try {
-      const content = type === "resume" ? editedResume : editedCoverLetter;
-      const lines = content.split('\n');
+      const parsed = parsedResume;
       const children = [];
+      const template = data.selectedTemplate || 'harvard';
+      
+      // Get profile photo as base64
+      let photoData = null;
+      if (data.profilePhotoPreview) {
+        photoData = await getImageAsBase64(data.profilePhotoPreview);
+      }
 
-      for (let i = 0; i < lines.length; i++) {
-        let line = lines[i].trim();
-        
-        if (!line) {
-          children.push(new Paragraph({ text: "", spacing: { after: 100 } }));
-          continue;
-        }
-        
-        const isHeader = /^[A-Z][A-Z\s&]+$/.test(line) && line.length < 50;
-        const isName = i === 0 || (i < 3 && line.length > 0 && line.length < 50 && !line.includes('@') && !line.includes('|') && !line.includes('Ph:'));
-        const isBullet = line.startsWith('•') || line.startsWith('-') || line.startsWith('*') || line.startsWith('►') || line.startsWith('→');
-        const isDate = /^(JANUARY|FEBRUARY|MARCH|APRIL|MAY|JUNE|JULY|AUGUST|SEPTEMBER|OCTOBER|NOVEMBER|DECEMBER)\s+\d{4}/i.test(line);
-        const isJobTitle = line.includes('Sr.') || line.includes('Manager') || line.includes('Specialist') || line.includes('Director');
-
-        if (isName && i < 3 && !line.includes('@') && !line.includes('Ph:')) {
+      // Header section with photo
+      if (photoData && (template === 'harvard' || template === 'impact' || template === 'minimal')) {
+        try {
           children.push(
             new Paragraph({
-              children: [new TextRun({ text: line, bold: true, size: 36, font: "Arial" })],
+              children: [
+                new ImageRun({
+                  data: Buffer.from(photoData, 'base64'),
+                  transformation: { width: 100, height: 100 },
+                  type: 'png',
+                }),
+              ],
               alignment: AlignmentType.CENTER,
               spacing: { after: 200 },
             })
           );
-        } else if (isHeader) {
-          children.push(
-            new Paragraph({
-              children: [new TextRun({ text: line, bold: true, size: 24, color: "2A5C82", font: "Arial" })],
-              heading: HeadingLevel.HEADING_2,
-              spacing: { before: 300, after: 100 },
-              border: { bottom: { color: "2A5C82", space: 1, size: 6, style: BorderStyle.SINGLE } },
-            })
-          );
-        } else if (isDate) {
-          children.push(
-            new Paragraph({
-              children: [new TextRun({ text: line, italics: true, size: 20, color: "666666", font: "Arial" })],
-              spacing: { after: 80 },
-            })
-          );
-        } else if (isJobTitle && !isBullet) {
-          children.push(
-            new Paragraph({
-              children: [new TextRun({ text: line, bold: true, size: 22, font: "Arial" })],
-              spacing: { before: 150, after: 50 },
-            })
-          );
-        } else if (isBullet) {
-          const bulletText = line.replace(/^[•\-*►→]\s*/, '');
-          children.push(
-            new Paragraph({
-              children: [new TextRun({ text: bulletText, size: 22, font: "Arial" })],
-              bullet: { level: 0 },
-              spacing: { after: 80 },
-            })
-          );
-        } else if (line.length > 0) {
-          children.push(
-            new Paragraph({
-              children: [new TextRun({ text: line, size: 22, font: "Arial" })],
-              spacing: { after: 100 },
-            })
-          );
+        } catch (imgErr) {
+          console.log('Could not embed image:', imgErr);
         }
       }
 
+      // Name - centered, large
+      if (parsed?.name) {
+        children.push(
+          new Paragraph({
+            children: [new TextRun({ text: parsed.name.toUpperCase(), bold: true, size: 36, font: "Calibri" })],
+            alignment: AlignmentType.CENTER,
+            spacing: { after: 100 },
+          })
+        );
+      }
+
+      // Contact info - centered
+      if (parsed?.contact?.length > 0) {
+        children.push(
+          new Paragraph({
+            children: [new TextRun({ text: parsed.contact.join(' | '), size: 20, color: "666666", font: "Calibri" })],
+            alignment: AlignmentType.CENTER,
+            spacing: { after: 300 },
+          })
+        );
+      }
+
+      // Divider
+      children.push(
+        new Paragraph({
+          border: { bottom: { color: "2A5C82", size: 12, style: BorderStyle.SINGLE } },
+          spacing: { after: 300 },
+        })
+      );
+
+      // Summary
+      if (parsed?.summary) {
+        children.push(
+          new Paragraph({
+            children: [new TextRun({ text: "PROFESSIONAL SUMMARY", bold: true, size: 24, color: "2A5C82", font: "Calibri" })],
+            spacing: { before: 200, after: 100 },
+          })
+        );
+        children.push(
+          new Paragraph({
+            children: [new TextRun({ text: parsed.summary, size: 22, font: "Calibri" })],
+            spacing: { after: 200 },
+          })
+        );
+      }
+
+      // Skills
+      if (parsed?.skills?.length > 0) {
+        children.push(
+          new Paragraph({
+            children: [new TextRun({ text: "SKILLS & EXPERTISE", bold: true, size: 24, color: "2A5C82", font: "Calibri" })],
+            spacing: { before: 200, after: 100 },
+          })
+        );
+        children.push(
+          new Paragraph({
+            children: [new TextRun({ text: parsed.skills.slice(0, 25).join(' • '), size: 20, font: "Calibri" })],
+            spacing: { after: 200 },
+          })
+        );
+      }
+
+      // Experience
+      if (parsed?.experience?.length > 0) {
+        children.push(
+          new Paragraph({
+            children: [new TextRun({ text: "PROFESSIONAL EXPERIENCE", bold: true, size: 24, color: "2A5C82", font: "Calibri" })],
+            spacing: { before: 200, after: 150 },
+          })
+        );
+
+        parsed.experience.forEach((exp) => {
+          // Job title and dates on same line
+          children.push(
+            new Paragraph({
+              children: [
+                new TextRun({ text: exp.title, bold: true, size: 22, font: "Calibri" }),
+                new TextRun({ text: exp.dates ? `  |  ${exp.dates}` : '', size: 20, color: "666666", font: "Calibri" }),
+              ],
+              spacing: { before: 150, after: 50 },
+            })
+          );
+
+          // Company
+          if (exp.company) {
+            children.push(
+              new Paragraph({
+                children: [new TextRun({ text: exp.company, italics: true, size: 20, color: "2A5C82", font: "Calibri" })],
+                spacing: { after: 80 },
+              })
+            );
+          }
+
+          // Bullets
+          exp.bullets?.forEach((bullet) => {
+            children.push(
+              new Paragraph({
+                children: [new TextRun({ text: bullet, size: 20, font: "Calibri" })],
+                bullet: { level: 0 },
+                spacing: { after: 60 },
+              })
+            );
+          });
+        });
+      }
+
+      // Education
+      if (parsed?.education?.length > 0) {
+        children.push(
+          new Paragraph({
+            children: [new TextRun({ text: "EDUCATION", bold: true, size: 24, color: "2A5C82", font: "Calibri" })],
+            spacing: { before: 200, after: 100 },
+          })
+        );
+        parsed.education.forEach((edu) => {
+          children.push(
+            new Paragraph({
+              children: [new TextRun({ text: edu, size: 20, font: "Calibri" })],
+              spacing: { after: 60 },
+            })
+          );
+        });
+      }
+
+      // Certifications
+      if (parsed?.certifications?.length > 0) {
+        children.push(
+          new Paragraph({
+            children: [new TextRun({ text: "CERTIFICATIONS", bold: true, size: 24, color: "2A5C82", font: "Calibri" })],
+            spacing: { before: 200, after: 100 },
+          })
+        );
+        parsed.certifications.forEach((cert) => {
+          children.push(
+            new Paragraph({
+              children: [new TextRun({ text: cert, size: 20, font: "Calibri" })],
+              bullet: { level: 0 },
+              spacing: { after: 60 },
+            })
+          );
+        });
+      }
+
+      // Achievements
+      if (parsed?.achievements?.length > 0) {
+        children.push(
+          new Paragraph({
+            children: [new TextRun({ text: "KEY ACHIEVEMENTS", bold: true, size: 24, color: "2A5C82", font: "Calibri" })],
+            spacing: { before: 200, after: 100 },
+          })
+        );
+        parsed.achievements.forEach((ach) => {
+          children.push(
+            new Paragraph({
+              children: [new TextRun({ text: ach, size: 20, font: "Calibri" })],
+              bullet: { level: 0 },
+              spacing: { after: 60 },
+            })
+          );
+        });
+      }
+
       const doc = new Document({
-        sections: [{ 
+        sections: [{
           properties: {
             page: {
-              margin: {
-                top: 720, // 0.5 inch
-                right: 720,
-                bottom: 720,
-                left: 720,
-              },
+              margin: { top: 720, right: 720, bottom: 720, left: 720 },
             },
           },
-          children 
+          children,
         }],
       });
 
       const blob = await Packer.toBlob(doc);
-      const templateName = data.selectedTemplate || 'resume';
+      const templateName = template;
       const date = new Date().toISOString().split("T")[0];
-      saveAs(blob, `${templateName}_${date}.docx`);
+      saveAs(blob, `${templateName}_resume_${date}.docx`);
 
-      toast({ title: "Download Complete", description: "Your DOCX has been downloaded with professional formatting." });
+      toast({ title: "Download Complete", description: "Your professionally formatted DOCX has been downloaded." });
     } catch (error) {
       console.error("DOCX Export error:", error);
-      toast({ title: "Export Failed", description: "Could not generate DOCX.", variant: "destructive" });
+      toast({ title: "Export Failed", description: "Could not generate DOCX: " + error.message, variant: "destructive" });
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  // Export to PDF
+  const exportToPDF = async (type = "resume") => {
+    if (!data.agreedToTerms) {
+      toast({ title: "Agreement Required", description: "Please agree to the Terms of Use before downloading.", variant: "destructive" });
+      return;
+    }
+
+    setIsExporting(true);
+
+    try {
+      const parsed = parsedResume;
+      const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+      
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const margin = 15;
+      const maxWidth = pageWidth - (margin * 2);
+      let y = margin;
+
+      // Add profile photo if available
+      if (data.profilePhotoPreview) {
+        try {
+          const img = new Image();
+          img.crossOrigin = 'Anonymous';
+          await new Promise((resolve, reject) => {
+            img.onload = resolve;
+            img.onerror = reject;
+            img.src = data.profilePhotoPreview;
+          });
+          
+          const canvas = document.createElement('canvas');
+          canvas.width = img.width;
+          canvas.height = img.height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0);
+          const imgData = canvas.toDataURL('image/jpeg', 0.8);
+          
+          pdf.addImage(imgData, 'JPEG', (pageWidth - 25) / 2, y, 25, 25);
+          y += 30;
+        } catch (imgErr) {
+          console.log('Could not add photo to PDF:', imgErr);
+        }
+      }
+
+      // Name
+      if (parsed?.name) {
+        pdf.setFontSize(22);
+        pdf.setFont("helvetica", "bold");
+        pdf.setTextColor(0, 0, 0);
+        pdf.text(parsed.name.toUpperCase(), pageWidth / 2, y, { align: "center" });
+        y += 8;
+      }
+
+      // Contact
+      if (parsed?.contact?.length > 0) {
+        pdf.setFontSize(9);
+        pdf.setFont("helvetica", "normal");
+        pdf.setTextColor(100, 100, 100);
+        const contactText = parsed.contact.join(' | ');
+        const contactLines = pdf.splitTextToSize(contactText, maxWidth);
+        pdf.text(contactLines, pageWidth / 2, y, { align: "center" });
+        y += contactLines.length * 4 + 3;
+      }
+
+      // Divider
+      pdf.setDrawColor(42, 92, 130);
+      pdf.setLineWidth(0.8);
+      pdf.line(margin, y, pageWidth - margin, y);
+      y += 8;
+
+      // Helper function for section header
+      const addSectionHeader = (title) => {
+        if (y > pageHeight - 30) {
+          pdf.addPage();
+          y = margin;
+        }
+        pdf.setFontSize(12);
+        pdf.setFont("helvetica", "bold");
+        pdf.setTextColor(42, 92, 130);
+        pdf.text(title, margin, y);
+        y += 2;
+        pdf.setDrawColor(42, 92, 130);
+        pdf.setLineWidth(0.3);
+        pdf.line(margin, y, margin + pdf.getTextWidth(title), y);
+        y += 6;
+      };
+
+      // Summary
+      if (parsed?.summary) {
+        addSectionHeader("PROFESSIONAL SUMMARY");
+        pdf.setFontSize(10);
+        pdf.setFont("helvetica", "normal");
+        pdf.setTextColor(60, 60, 60);
+        const summaryLines = pdf.splitTextToSize(parsed.summary, maxWidth);
+        pdf.text(summaryLines, margin, y);
+        y += summaryLines.length * 4.5 + 5;
+      }
+
+      // Skills
+      if (parsed?.skills?.length > 0) {
+        addSectionHeader("SKILLS & EXPERTISE");
+        pdf.setFontSize(9);
+        pdf.setFont("helvetica", "normal");
+        pdf.setTextColor(60, 60, 60);
+        const skillsText = parsed.skills.slice(0, 25).join(' • ');
+        const skillLines = pdf.splitTextToSize(skillsText, maxWidth);
+        pdf.text(skillLines, margin, y);
+        y += skillLines.length * 4 + 5;
+      }
+
+      // Experience
+      if (parsed?.experience?.length > 0) {
+        addSectionHeader("PROFESSIONAL EXPERIENCE");
+        
+        parsed.experience.forEach((exp) => {
+          if (y > pageHeight - 40) {
+            pdf.addPage();
+            y = margin;
+          }
+
+          // Title and dates
+          pdf.setFontSize(11);
+          pdf.setFont("helvetica", "bold");
+          pdf.setTextColor(0, 0, 0);
+          pdf.text(exp.title, margin, y);
+          
+          if (exp.dates) {
+            pdf.setFontSize(9);
+            pdf.setFont("helvetica", "italic");
+            pdf.setTextColor(100, 100, 100);
+            pdf.text(exp.dates, pageWidth - margin, y, { align: "right" });
+          }
+          y += 5;
+
+          // Company
+          if (exp.company) {
+            pdf.setFontSize(10);
+            pdf.setFont("helvetica", "italic");
+            pdf.setTextColor(42, 92, 130);
+            pdf.text(exp.company, margin, y);
+            y += 5;
+          }
+
+          // Bullets
+          pdf.setFontSize(9);
+          pdf.setFont("helvetica", "normal");
+          pdf.setTextColor(60, 60, 60);
+          exp.bullets?.forEach((bullet) => {
+            if (y > pageHeight - 15) {
+              pdf.addPage();
+              y = margin;
+            }
+            const bulletLines = pdf.splitTextToSize(bullet, maxWidth - 5);
+            pdf.text('•', margin, y);
+            pdf.text(bulletLines, margin + 4, y);
+            y += bulletLines.length * 4 + 2;
+          });
+          y += 3;
+        });
+      }
+
+      // Education
+      if (parsed?.education?.length > 0) {
+        addSectionHeader("EDUCATION");
+        pdf.setFontSize(10);
+        pdf.setFont("helvetica", "normal");
+        pdf.setTextColor(60, 60, 60);
+        parsed.education.forEach((edu) => {
+          pdf.text(edu, margin, y);
+          y += 5;
+        });
+      }
+
+      const templateName = data.selectedTemplate || 'resume';
+      const date = new Date().toISOString().split("T")[0];
+      pdf.save(`${templateName}_resume_${date}.pdf`);
+
+      toast({ title: "Download Complete", description: "Your PDF has been downloaded." });
+    } catch (error) {
+      console.error("PDF Export error:", error);
+      toast({ title: "Export Failed", description: "Could not generate PDF.", variant: "destructive" });
     } finally {
       setIsExporting(false);
     }
@@ -698,7 +889,7 @@ const PreviewExport = ({ data, updateData, onBack, goToStep }) => {
   const copyToClipboard = (type = "resume") => {
     const content = type === "resume" ? editedResume : editedCoverLetter;
     navigator.clipboard.writeText(content).then(() => {
-      toast({ title: "Copied!", description: "Clean text copied to clipboard (no markdown symbols)." });
+      toast({ title: "Copied!", description: "Clean text copied to clipboard." });
     });
   };
 
@@ -719,7 +910,7 @@ const PreviewExport = ({ data, updateData, onBack, goToStep }) => {
           <div className="flex items-center justify-between flex-wrap gap-2">
             <CardTitle className="text-lg flex items-center gap-2">
               <Eye className="w-5 h-5 text-[#2A5C82]" />
-              Live Preview - {data.selectedTemplate?.charAt(0).toUpperCase() + data.selectedTemplate?.slice(1)} Template
+              Preview - {data.selectedTemplate?.charAt(0).toUpperCase() + data.selectedTemplate?.slice(1)} Template
             </CardTitle>
             <div className="flex gap-2">
               <Button variant="outline" size="sm" onClick={() => copyToClipboard(activeTab)}>
@@ -741,7 +932,7 @@ const PreviewExport = ({ data, updateData, onBack, goToStep }) => {
             <TabsContent value="resume">
               {editMode ? (
                 <div className="bg-yellow-50 border-2 border-yellow-300 rounded-lg p-4">
-                  <p className="text-sm text-yellow-700 mb-2">Edit mode: Modify the text below (markdown has been cleaned)</p>
+                  <p className="text-sm text-yellow-700 mb-2">Edit mode: Modify the text below</p>
                   <textarea
                     value={editedResume}
                     onChange={(e) => { setEditedResume(e.target.value); updateData({ optimizedResume: e.target.value }); }}
@@ -825,10 +1016,10 @@ const PreviewExport = ({ data, updateData, onBack, goToStep }) => {
       <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-start gap-3">
         <Info className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
         <div className="text-sm text-green-700">
-          <p className="font-medium">Clean & Ready to Use!</p>
+          <p className="font-medium">Professional Export Ready!</p>
           <ul className="mt-1 space-y-1 list-disc list-inside text-green-600">
-            <li>All markdown formatting (**, *, ##) has been removed</li>
-            <li>Downloads are properly formatted PDF/DOCX files</li>
+            <li>Photo included (if uploaded)</li>
+            <li>Clean formatting - no markdown symbols</li>
             <li>Replace [X%] placeholders with your actual numbers</li>
           </ul>
         </div>
