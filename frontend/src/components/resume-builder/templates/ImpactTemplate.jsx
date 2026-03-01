@@ -193,6 +193,7 @@ export const createImpactDOCX = async (parsed, photoSrc) => {
       children: [new TextRun({ text: title, bold: true, size: 22, color: PRIMARY, font: "Times New Roman" })],
       spacing: { before: 250, after: 60 },
       border: { bottom: { color: PRIMARY, size: 8, style: BorderStyle.SINGLE } },
+      indent: { left: BODY_INDENT, right: BODY_INDENT },
     }));
     content();
   };
@@ -202,6 +203,7 @@ export const createImpactDOCX = async (parsed, photoSrc) => {
       children.push(new Paragraph({
         children: [new TextRun({ text: parsed.summary, size: 20, font: "Times New Roman", color: "333333" })],
         spacing: { after: 150 },
+        indent: { left: BODY_INDENT, right: BODY_INDENT },
       }));
     });
   }
@@ -212,6 +214,7 @@ export const createImpactDOCX = async (parsed, photoSrc) => {
         children.push(new Paragraph({
           children: [new TextRun({ text: job.title, bold: true, size: 21, font: "Times New Roman" })],
           spacing: { before: 150, after: 20 },
+          indent: { left: BODY_INDENT, right: BODY_INDENT },
         }));
         const subParts = [];
         if (job.company) subParts.push(new TextRun({ text: job.company + (job.location ? " | " + job.location : ""), size: 19, color: PRIMARY, font: "Times New Roman" }));
@@ -220,13 +223,14 @@ export const createImpactDOCX = async (parsed, photoSrc) => {
           subParts.push(new TextRun({ text: job.dates, italics: true, size: 18, color: "777777", font: "Times New Roman" }));
         }
         if (subParts.length) {
-          children.push(new Paragraph({ children: subParts, spacing: { after: 50 } }));
+          children.push(new Paragraph({ children: subParts, spacing: { after: 50 }, indent: { left: BODY_INDENT, right: BODY_INDENT } }));
         }
         job.bullets.forEach(bullet => {
           children.push(new Paragraph({
             children: [new TextRun({ text: bullet, size: 19, font: "Times New Roman" })],
             bullet: { level: 0 },
             spacing: { after: 40 },
+            indent: { left: BODY_INDENT + 200, right: BODY_INDENT },
           }));
         });
       });
@@ -238,6 +242,7 @@ export const createImpactDOCX = async (parsed, photoSrc) => {
       children.push(new Paragraph({
         children: [new TextRun({ text: parsed.skills.join("  |  "), size: 19, font: "Times New Roman" })],
         spacing: { after: 100 },
+        indent: { left: BODY_INDENT, right: BODY_INDENT },
       }));
     });
   }
@@ -248,6 +253,7 @@ export const createImpactDOCX = async (parsed, photoSrc) => {
         children.push(new Paragraph({
           children: [new TextRun({ text: edu, size: 19, font: "Times New Roman" })],
           spacing: { after: 50 },
+          indent: { left: BODY_INDENT, right: BODY_INDENT },
         }));
       });
     });
@@ -260,6 +266,7 @@ export const createImpactDOCX = async (parsed, photoSrc) => {
           children: [new TextRun({ text: cert, size: 19, font: "Times New Roman" })],
           bullet: { level: 0 },
           spacing: { after: 40 },
+          indent: { left: BODY_INDENT + 200, right: BODY_INDENT },
         }));
       });
     });
