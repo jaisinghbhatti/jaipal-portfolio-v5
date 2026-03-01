@@ -21,7 +21,7 @@ A personal portfolio website for Jaipal Singh (Digital Marketing Expert) with:
 
 ## Completed Features
 
-### 1. Portfolio Website ✅
+### 1. Portfolio Website
 - Homepage with hero section
 - About Me page
 - Experience section
@@ -30,63 +30,53 @@ A personal portfolio website for Jaipal Singh (Digital Marketing Expert) with:
 - Contact section
 - Responsive design
 
-### 2. Blog System ✅
+### 2. Blog System
 - **Sanity.io Integration** for content storage
-- **Modern Blog Editor (TipTap v3)** - Completed Jan 25, 2025
+- **Modern Blog Editor (TipTap v3)**
   - Rich text formatting (Bold, Italic, Underline, Strikethrough, Highlight, Code)
-  - Headings (H1, H2, H3)
-  - Lists (Bullet, Numbered, Blockquote)
-  - Text alignment (Left, Center, Right)
-  - Inline image upload to Sanity
-  - Link insertion
-  - YouTube video embedding
-  - Bubble menu for selected text
-  - Floating menu for empty lines
-  - Dark/Light mode toggle
-  - Live preview mode
-  - Auto-save drafts to localStorage
-  - Cover image upload
-  - Tags, Read Time, Publish Date, Status fields
+  - Headings (H1, H2, H3), Lists, Blockquotes
+  - Text alignment, Inline image upload, Link insertion
+  - YouTube embedding, Bubble menu, Floating menu
+  - Dark/Light mode, Live preview, Auto-save drafts
+  - Cover image, Tags, Read Time, Status fields
   - Edit and delete existing posts
-  - **Sticky floating toolbar** - Jan 25, 2025
-  - **Insert Image by URL feature** - Jan 25, 2025
 - Blog listing page (/blog)
 - Individual blog post pages (/blog/:slug)
 
-### 3. Resume Builder ✅
-- Multi-step UI workflow
+### 3. Resume Builder - FULLY FUNCTIONAL
+- Multi-step UI workflow (4 steps: Upload, Customize, Select Style, Export)
 - PDF/DOCX resume parsing
 - AI-powered resume analysis (ATS score, missing keywords)
 - AI optimization with tone selection (Executive, Disruptor, Human)
-- 4 professional resume templates (Harvard, Modern, Impact, Minimal)
-- **Clean markdown-free export** - Fixed Jan 25, 2025
-  - PDF export with proper formatting (no **, *, ## symbols)
-  - DOCX export with professional styling
-  - Automatic markdown cleanup on AI response
-- Route: /resume-builder
+- **4 Professional Resume Templates with Preview + DOCX + PDF Export** (Dec 2025):
+  - **Harvard Executive**: Classic single-column, serif fonts, centered header
+  - **Modern Tech**: Two-column layout with blue sidebar, profile photo
+  - **Impact-First**: Bold headers, Key Achievements box, accent colors
+  - **Minimalist ATS**: Ultra-clean, minimal styling, maximum readability
+- Template selector respects user choice through to export
+- Clean markdown-free export for all templates
+- Profile photo support in all templates (DOCX + PDF)
+- "Change Template" button in Step 4 for easy switching
 
 ---
 
-## Recent Fixes (Jan 25, 2025)
+## Recent Fixes (Dec 2025)
 
-### Resume Builder Export Fix
-- **Problem**: Downloaded DOCX/PDF files contained raw markdown symbols like `**bold**`, `*italic*`, `##headers`
-- **Solution**: Added `cleanMarkdown()` and `cleanResumeText()` functions to strip all markdown from AI output before display and export
-- **Result**: Clean, professional, ready-to-use resume documents
+### Resume Export - Complete Rewrite
+- Refactored PreviewExport.jsx from monolithic 840-line file into modular architecture
+- Created shared resumeUtils.js (parser, cleanText, image utilities)
+- Built 4 individual template files under templates/ directory
+- Fixed critical parser bug: `**bold**` no longer misinterpreted as bullet `*`
+- All templates produce professional DOCX and PDF exports
 
----
+### Missing Keywords Analysis Fix
+- Improved AI prompt to be more aggressive about finding keyword gaps
+- Enhanced JSON parsing with better code block extraction
+- Added fallback to prevent empty keyword lists
+- Verified: endpoint now correctly identifies missing keywords
 
-## Pending Issues
-
-### P1 - Missing Keywords Bug
-- **Description**: The "Missing Keywords" analysis sometimes incorrectly shows "No missing keywords detected" even when gaps exist
-- **Status**: NOT STARTED
-- **File**: backend/resume_builder.py
-
-### P2 - Blog Image Saving
-- **Description**: Images added in blog editor may not persist after save
-- **Status**: IN PROGRESS
-- **Files**: frontend/src/components/ModernBlogEditor.jsx
+### Backend Cleanup
+- Removed obsolete files: email_service.py, models.py, migrate_blogs.py, railway.toml, nixpacks.toml
 
 ---
 
@@ -94,17 +84,27 @@ A personal portfolio website for Jaipal Singh (Digital Marketing Expert) with:
 ```
 /app/
 ├── backend/
-│   ├── resume_builder.py     # FastAPI router with AI logic
+│   ├── resume_builder.py     # FastAPI router with AI logic (Gemini 2.5 Flash)
 │   ├── server.py             # Main server file
 │   └── requirements.txt
 └── frontend/
     ├── src/
     │   ├── components/
     │   │   ├── resume-builder/
-    │   │   │   ├── PreviewExport.jsx   # UPDATED: Clean markdown export
-    │   │   │   └── ...
+    │   │   │   ├── PreviewExport.jsx       # Orchestrator: dispatches to template
+    │   │   │   ├── resumeUtils.js          # Shared parser + utilities
+    │   │   │   ├── templates/
+    │   │   │   │   ├── ModernTemplate.jsx  # Two-column blue sidebar
+    │   │   │   │   ├── HarvardTemplate.jsx # Classic serif single-column
+    │   │   │   │   ├── ImpactTemplate.jsx  # Bold headers + Key Wins
+    │   │   │   │   └── MinimalTemplate.jsx # Ultra-clean minimalist
+    │   │   │   ├── TemplateSelector.jsx
+    │   │   │   ├── ResumeBuilderPage.jsx
+    │   │   │   ├── InputModule.jsx
+    │   │   │   ├── CustomizeModule.jsx
+    │   │   │   └── ProgressStepper.jsx
     │   │   ├── ModernBlogEditor.jsx
-    │   │   ├── BlogLogin.jsx
+    │   │   ├── BlogPage.jsx
     │   │   └── ui/
     │   ├── services/
     │   │   ├── sanityService.js
@@ -114,14 +114,10 @@ A personal portfolio website for Jaipal Singh (Digital Marketing Expert) with:
 ```
 
 ## Key API Endpoints
-- `POST /api/resume-builder/parse`
-- `POST /api/resume-builder/analyze`
-- `POST /api/resume-builder/optimize`
+- `POST /api/resume-builder/parse` - Parse uploaded PDF/DOCX
+- `POST /api/resume-builder/analyze` - Analyze resume vs job description
+- `POST /api/resume-builder/optimize` - AI-optimize resume + generate cover letter
 - `GET /api/health`
-
-## Backend URL
-- **Production**: `https://layout-rebuild-v2.preview.emergentagent.com`
-- **Vercel Environment Variable**: `REACT_APP_BACKEND_URL`
 
 ## Credentials
 - **Blog Editor**: username: `jaipal`, password: `blog2025!`
@@ -129,4 +125,13 @@ A personal portfolio website for Jaipal Singh (Digital Marketing Expert) with:
 
 ---
 
-*Last Updated: January 25, 2025*
+## Pending Issues
+None critical.
+
+## Backlog (P2+)
+- Blog Image Saving: Images in blog editor may not persist after save
+- Consider server-side PDF generation for higher fidelity exports
+
+---
+
+*Last Updated: December 2025*
