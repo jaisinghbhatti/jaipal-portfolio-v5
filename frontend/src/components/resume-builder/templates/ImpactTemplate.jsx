@@ -141,13 +141,15 @@ export const createImpactDOCX = async (parsed, photoSrc) => {
     }));
   }
 
+  const BODY_INDENT = 600; // ~0.42 inches left/right margin for body content
+
   const headerTable = new Table({
     rows: [new TableRow({
       children: [new TableCell({
         width: { size: 100, type: WidthType.PERCENTAGE },
         shading: { fill: PRIMARY, type: ShadingType.CLEAR },
         children: headerContent,
-        margins: { top: 200, bottom: 200, left: 200, right: 200 },
+        margins: { top: 200, bottom: 200, left: 400, right: 400 },
       })],
     })],
     width: { size: 100, type: WidthType.PERCENTAGE },
