@@ -297,11 +297,11 @@ export const createImpactPDF = async (parsed, photoSrc) => {
 
   pdf.setTextColor(255, 255, 255);
   pdf.setFontSize(16);
-  pdf.setFont("helvetica", "bold");
+  pdf.setFont("times", "bold");
   pdf.text(parsed.name || "YOUR NAME", photoSrc ? margin + 22 : margin, y + 3);
   if (parsed.contact) {
     pdf.setFontSize(7.5);
-    pdf.setFont("helvetica", "normal");
+    pdf.setFont("times", "normal");
     const cLines = pdf.splitTextToSize(parsed.contact, contentW - 25);
     pdf.text(cLines, photoSrc ? margin + 22 : margin, y + 9);
   }
@@ -319,11 +319,11 @@ export const createImpactPDF = async (parsed, photoSrc) => {
     pdf.roundedRect(margin, y, contentW, boxH, 2, 2, 'F');
     pdf.setTextColor(245, 158, 11);
     pdf.setFontSize(8);
-    pdf.setFont("helvetica", "bold");
+    pdf.setFont("times", "bold");
     pdf.text("KEY ACHIEVEMENTS", margin + 4, y + 4);
     pdf.setTextColor(255, 255, 255);
     pdf.setFontSize(7.5);
-    pdf.setFont("helvetica", "normal");
+    pdf.setFont("times", "normal");
     let wy = y + 8;
     keyWins.forEach(w => {
       const wLines = pdf.splitTextToSize(w, contentW - 12);
@@ -338,7 +338,7 @@ export const createImpactPDF = async (parsed, photoSrc) => {
     checkPage(15);
     pdf.setTextColor(42, 92, 130);
     pdf.setFontSize(11);
-    pdf.setFont("helvetica", "bold");
+    pdf.setFont("times", "bold");
     pdf.text(title, margin, y);
     pdf.setDrawColor(42, 92, 130);
     pdf.setLineWidth(0.5);
@@ -350,7 +350,7 @@ export const createImpactPDF = async (parsed, photoSrc) => {
     addSectionHeader("PROFESSIONAL SUMMARY");
     pdf.setTextColor(50, 50, 50);
     pdf.setFontSize(9);
-    pdf.setFont("helvetica", "normal");
+    pdf.setFont("times", "normal");
     const sLines = pdf.splitTextToSize(parsed.summary, contentW);
     pdf.text(sLines, margin, y);
     y += sLines.length * 4 + 4;
@@ -362,20 +362,20 @@ export const createImpactPDF = async (parsed, photoSrc) => {
       checkPage(20);
       pdf.setTextColor(0, 0, 0);
       pdf.setFontSize(10);
-      pdf.setFont("helvetica", "bold");
+      pdf.setFont("times", "bold");
       pdf.text(job.title, margin, y);
       y += 4;
       if (job.company) {
         pdf.setTextColor(42, 92, 130);
         pdf.setFontSize(9);
-        pdf.setFont("helvetica", "normal");
+        pdf.setFont("times", "normal");
         const compText = job.company + (job.location ? " | " + job.location : "") + (job.dates ? "  |  " + job.dates : "");
         pdf.text(compText, margin, y);
         y += 4;
       }
       pdf.setTextColor(50, 50, 50);
       pdf.setFontSize(8.5);
-      pdf.setFont("helvetica", "normal");
+      pdf.setFont("times", "normal");
       job.bullets.forEach(b => {
         checkPage(10);
         const bLines = pdf.splitTextToSize(b, contentW - 5);
@@ -391,7 +391,7 @@ export const createImpactPDF = async (parsed, photoSrc) => {
     addSectionHeader("SKILLS");
     pdf.setTextColor(50, 50, 50);
     pdf.setFontSize(9);
-    pdf.setFont("helvetica", "normal");
+    pdf.setFont("times", "normal");
     const skillText = parsed.skills.join("  |  ");
     const sLines = pdf.splitTextToSize(skillText, contentW);
     pdf.text(sLines, margin, y);
@@ -402,7 +402,7 @@ export const createImpactPDF = async (parsed, photoSrc) => {
     addSectionHeader("EDUCATION");
     pdf.setTextColor(50, 50, 50);
     pdf.setFontSize(9);
-    pdf.setFont("helvetica", "normal");
+    pdf.setFont("times", "normal");
     parsed.education.forEach(edu => {
       checkPage(8);
       const lines = pdf.splitTextToSize(edu, contentW);
@@ -415,7 +415,7 @@ export const createImpactPDF = async (parsed, photoSrc) => {
     addSectionHeader("CERTIFICATIONS");
     pdf.setTextColor(50, 50, 50);
     pdf.setFontSize(9);
-    pdf.setFont("helvetica", "normal");
+    pdf.setFont("times", "normal");
     parsed.certifications.forEach(cert => {
       checkPage(8);
       pdf.text("• " + cert, margin, y);

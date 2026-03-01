@@ -261,20 +261,20 @@ export const createModernPDF = async (parsed, photoSrc) => {
 
   pdf.setTextColor(255, 255, 255);
   pdf.setFontSize(13);
-  pdf.setFont("helvetica", "bold");
+  pdf.setFont("times", "bold");
   const nameLines = pdf.splitTextToSize(parsed.name || "YOUR NAME", sidebarW - 8);
   pdf.text(nameLines, sidebarW / 2, sY, { align: "center" });
   sY += nameLines.length * 5 + 8;
 
   // Contact
   pdf.setFontSize(9);
-  pdf.setFont("helvetica", "bold");
+  pdf.setFont("times", "bold");
   pdf.text("CONTACT", 4, sY);
   pdf.setLineWidth(0.3);
   pdf.setDrawColor(255, 255, 255);
   pdf.line(4, sY + 1, sidebarW - 4, sY + 1);
   sY += 5;
-  pdf.setFont("helvetica", "normal");
+  pdf.setFont("times", "normal");
   pdf.setFontSize(7);
   if (parsed.contact) {
     parsed.contact.split('|').forEach(p => {
@@ -291,11 +291,11 @@ export const createModernPDF = async (parsed, photoSrc) => {
   // Skills
   if (parsed.skills.length > 0) {
     pdf.setFontSize(9);
-    pdf.setFont("helvetica", "bold");
+    pdf.setFont("times", "bold");
     pdf.text("SKILLS", 4, sY);
     pdf.line(4, sY + 1, sidebarW - 4, sY + 1);
     sY += 5;
-    pdf.setFont("helvetica", "normal");
+    pdf.setFont("times", "normal");
     pdf.setFontSize(7);
     parsed.skills.slice(0, 12).forEach(sk => {
       const ls = pdf.splitTextToSize("• " + sk, sidebarW - 8);
@@ -308,11 +308,11 @@ export const createModernPDF = async (parsed, photoSrc) => {
   // Education
   if (parsed.education.length > 0) {
     pdf.setFontSize(9);
-    pdf.setFont("helvetica", "bold");
+    pdf.setFont("times", "bold");
     pdf.text("EDUCATION", 4, sY);
     pdf.line(4, sY + 1, sidebarW - 4, sY + 1);
     sY += 5;
-    pdf.setFont("helvetica", "normal");
+    pdf.setFont("times", "normal");
     pdf.setFontSize(7);
     parsed.education.forEach(ed => {
       const ls = pdf.splitTextToSize(ed, sidebarW - 8);
@@ -325,7 +325,7 @@ export const createModernPDF = async (parsed, photoSrc) => {
   pdf.setTextColor(31, 78, 121);
   if (parsed.summary) {
     pdf.setFontSize(11);
-    pdf.setFont("helvetica", "bold");
+    pdf.setFont("times", "bold");
     pdf.text("PROFESSIONAL SUMMARY", mainX, mY);
     pdf.setLineWidth(0.5);
     pdf.setDrawColor(31, 78, 121);
@@ -333,7 +333,7 @@ export const createModernPDF = async (parsed, photoSrc) => {
     mY += 6;
     pdf.setTextColor(50, 50, 50);
     pdf.setFontSize(9);
-    pdf.setFont("helvetica", "normal");
+    pdf.setFont("times", "normal");
     const sumLines = pdf.splitTextToSize(parsed.summary, mainW);
     pdf.text(sumLines, mainX, mY);
     mY += sumLines.length * 4 + 6;
@@ -342,7 +342,7 @@ export const createModernPDF = async (parsed, photoSrc) => {
   if (parsed.experience.length > 0) {
     pdf.setTextColor(31, 78, 121);
     pdf.setFontSize(11);
-    pdf.setFont("helvetica", "bold");
+    pdf.setFont("times", "bold");
     pdf.text("PROFESSIONAL EXPERIENCE", mainX, mY);
     pdf.line(mainX, mY + 1, mainX + 55, mY + 1);
     mY += 6;
@@ -356,26 +356,26 @@ export const createModernPDF = async (parsed, photoSrc) => {
       }
       pdf.setTextColor(0, 0, 0);
       pdf.setFontSize(10);
-      pdf.setFont("helvetica", "bold");
+      pdf.setFont("times", "bold");
       pdf.text(job.title, mainX, mY);
       mY += 4;
       if (job.company) {
         pdf.setTextColor(31, 78, 121);
         pdf.setFontSize(9);
-        pdf.setFont("helvetica", "normal");
+        pdf.setFont("times", "normal");
         pdf.text(job.company + (job.location ? " | " + job.location : ""), mainX, mY);
         mY += 4;
       }
       if (job.dates) {
         pdf.setTextColor(100, 100, 100);
         pdf.setFontSize(8);
-        pdf.setFont("helvetica", "italic");
+        pdf.setFont("times", "italic");
         pdf.text(job.dates, mainX, mY);
         mY += 4;
       }
       pdf.setTextColor(50, 50, 50);
       pdf.setFontSize(8);
-      pdf.setFont("helvetica", "normal");
+      pdf.setFont("times", "normal");
       job.bullets.forEach(b => {
         if (mY > pageHeight - 12) {
           pdf.addPage();

@@ -220,13 +220,13 @@ export const createMinimalPDF = async (parsed, photoSrc) => {
 
   pdf.setTextColor(50, 50, 50);
   pdf.setFontSize(16);
-  pdf.setFont("helvetica", "bold");
+  pdf.setFont("times", "bold");
   pdf.text(parsed.name || "YOUR NAME", nameX, y + 3);
   y += 8;
 
   if (parsed.contact) {
     pdf.setFontSize(7.5);
-    pdf.setFont("helvetica", "normal");
+    pdf.setFont("times", "normal");
     pdf.setTextColor(130, 130, 130);
     const cLines = pdf.splitTextToSize(parsed.contact, contentW);
     pdf.text(cLines, margin, y);
@@ -243,7 +243,7 @@ export const createMinimalPDF = async (parsed, photoSrc) => {
     checkPage(12);
     pdf.setTextColor(140, 140, 140);
     pdf.setFontSize(8);
-    pdf.setFont("helvetica", "bold");
+    pdf.setFont("times", "bold");
     pdf.text(title, margin, y);
     y += 5;
   };
@@ -252,7 +252,7 @@ export const createMinimalPDF = async (parsed, photoSrc) => {
     addSectionHeader("SUMMARY");
     pdf.setTextColor(70, 70, 70);
     pdf.setFontSize(9);
-    pdf.setFont("helvetica", "normal");
+    pdf.setFont("times", "normal");
     const sLines = pdf.splitTextToSize(parsed.summary, contentW);
     pdf.text(sLines, margin, y);
     y += sLines.length * 4 + 5;
@@ -264,25 +264,25 @@ export const createMinimalPDF = async (parsed, photoSrc) => {
       checkPage(18);
       pdf.setTextColor(50, 50, 50);
       pdf.setFontSize(10);
-      pdf.setFont("helvetica", "bold");
+      pdf.setFont("times", "bold");
       pdf.text(job.title, margin, y);
       if (job.dates) {
         pdf.setFontSize(7.5);
-        pdf.setFont("helvetica", "normal");
+        pdf.setFont("times", "normal");
         pdf.setTextColor(150, 150, 150);
         pdf.text(job.dates, pageW - margin, y, { align: "right" });
       }
       y += 4;
       if (job.company) {
         pdf.setFontSize(8.5);
-        pdf.setFont("helvetica", "normal");
+        pdf.setFont("times", "normal");
         pdf.setTextColor(110, 110, 110);
         pdf.text(job.company + (job.location ? " — " + job.location : ""), margin, y);
         y += 4;
       }
       pdf.setTextColor(70, 70, 70);
       pdf.setFontSize(8.5);
-      pdf.setFont("helvetica", "normal");
+      pdf.setFont("times", "normal");
       job.bullets.forEach(b => {
         checkPage(10);
         const bLines = pdf.splitTextToSize(b, contentW - 5);
@@ -298,7 +298,7 @@ export const createMinimalPDF = async (parsed, photoSrc) => {
     addSectionHeader("EDUCATION");
     pdf.setTextColor(70, 70, 70);
     pdf.setFontSize(9);
-    pdf.setFont("helvetica", "normal");
+    pdf.setFont("times", "normal");
     parsed.education.forEach(edu => {
       checkPage(8);
       const lines = pdf.splitTextToSize(edu, contentW);
@@ -311,7 +311,7 @@ export const createMinimalPDF = async (parsed, photoSrc) => {
     addSectionHeader("SKILLS");
     pdf.setTextColor(70, 70, 70);
     pdf.setFontSize(9);
-    pdf.setFont("helvetica", "normal");
+    pdf.setFont("times", "normal");
     const skillText = parsed.skills.join(", ");
     const sLines = pdf.splitTextToSize(skillText, contentW);
     pdf.text(sLines, margin, y);
@@ -322,7 +322,7 @@ export const createMinimalPDF = async (parsed, photoSrc) => {
     addSectionHeader("CERTIFICATIONS");
     pdf.setTextColor(70, 70, 70);
     pdf.setFontSize(9);
-    pdf.setFont("helvetica", "normal");
+    pdf.setFont("times", "normal");
     parsed.certifications.forEach(cert => {
       checkPage(8);
       pdf.text("– " + cert, margin, y);
