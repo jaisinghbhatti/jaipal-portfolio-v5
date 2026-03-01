@@ -12,7 +12,7 @@ const GRAY = "555555";
 // PREVIEW
 // ============================================
 export const HarvardPreview = ({ parsed, profilePhoto }) => (
-  <div className="min-h-[700px] bg-white overflow-hidden rounded-lg shadow-lg p-8" data-testid="harvard-preview">
+  <div className="min-h-[700px] bg-white overflow-hidden rounded-lg shadow-lg p-8" style={{ fontFamily: "'Times New Roman', Times, serif" }} data-testid="harvard-preview">
     {/* Header - centered, classic */}
     <div className="text-center border-b-2 border-gray-800 pb-4 mb-5">
       {profilePhoto && <img src={profilePhoto} alt="" className="w-16 h-16 rounded-full mx-auto mb-2 object-cover" />}

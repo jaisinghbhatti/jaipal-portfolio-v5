@@ -20,7 +20,7 @@ export const ImpactPreview = ({ parsed, profilePhoto }) => {
     : [];
 
   return (
-    <div className="min-h-[700px] bg-white overflow-hidden rounded-lg shadow-lg" data-testid="impact-preview">
+    <div className="min-h-[700px] bg-white overflow-hidden rounded-lg shadow-lg" style={{ fontFamily: "'Times New Roman', Times, serif" }} data-testid="impact-preview">
       {/* Header with accent bar */}
       <div className="bg-[#2A5C82] text-white p-5">
         <div className="flex items-center gap-4">

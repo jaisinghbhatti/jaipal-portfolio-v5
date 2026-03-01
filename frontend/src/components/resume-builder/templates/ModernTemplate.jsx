@@ -14,7 +14,7 @@ const WHITE = "FFFFFF";
 // PREVIEW
 // ============================================
 export const ModernPreview = ({ parsed, profilePhoto }) => (
-  <div className="flex min-h-[700px] bg-white overflow-hidden rounded-lg shadow-lg" data-testid="modern-preview">
+  <div className="flex min-h-[700px] bg-white overflow-hidden rounded-lg shadow-lg" style={{ fontFamily: "'Times New Roman', Times, serif" }} data-testid="modern-preview">
     <div className="w-[28%] bg-[#1F4E79] text-white p-5">
       {profilePhoto && <img src={profilePhoto} alt="" className="w-20 h-20 rounded-full mx-auto mb-3 object-cover border-4 border-white/30" />}
       <h1 className="text-lg font-bold text-center mb-5">{parsed?.name || "YOUR NAME"}</h1>

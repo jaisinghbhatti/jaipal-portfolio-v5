@@ -9,7 +9,7 @@ import { cleanText, imageToUint8Array, loadImageForPDF } from "../resumeUtils";
 // PREVIEW
 // ============================================
 export const MinimalPreview = ({ parsed, profilePhoto }) => (
-  <div className="min-h-[700px] bg-white overflow-hidden rounded-lg shadow-lg p-8" data-testid="minimal-preview">
+  <div className="min-h-[700px] bg-white overflow-hidden rounded-lg shadow-lg p-8" style={{ fontFamily: "'Times New Roman', Times, serif" }} data-testid="minimal-preview">
     {/* Header - clean, left-aligned */}
     <div className="flex items-center gap-3 mb-4 pb-4 border-b border-gray-200">
       {profilePhoto && <img src={profilePhoto} alt="" className="w-12 h-12 rounded-full object-cover" />}
