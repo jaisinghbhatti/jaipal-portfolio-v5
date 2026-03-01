@@ -12,10 +12,10 @@ A personal portfolio website for Jaipal Singh (Digital Marketing Expert) with:
 
 ## Tech Stack
 - **Frontend**: React 19, TailwindCSS, Shadcn/UI components
-- **Backend**: FastAPI (Python) - hosted on Railway
+- **Backend**: FastAPI (Python) - hosted on Emergent Preview
 - **Database**: Sanity.io (Blog CMS)
 - **AI Provider**: Gemini 2.5 Flash via Emergent LLM Key
-- **Deployment**: Vercel (Frontend), Railway (Backend)
+- **Deployment**: Vercel (Frontend), Emergent Preview (Backend)
 
 ---
 
@@ -48,6 +48,8 @@ A personal portfolio website for Jaipal Singh (Digital Marketing Expert) with:
   - Cover image upload
   - Tags, Read Time, Publish Date, Status fields
   - Edit and delete existing posts
+  - **Sticky floating toolbar** - Jan 25, 2025
+  - **Insert Image by URL feature** - Jan 25, 2025
 - Blog listing page (/blog)
 - Individual blog post pages (/blog/:slug)
 
@@ -55,10 +57,22 @@ A personal portfolio website for Jaipal Singh (Digital Marketing Expert) with:
 - Multi-step UI workflow
 - PDF/DOCX resume parsing
 - AI-powered resume analysis (ATS score, missing keywords)
-- AI optimization with tone selection
-- 4 professional resume templates
-- Text-based PDF and DOCX export
+- AI optimization with tone selection (Executive, Disruptor, Human)
+- 4 professional resume templates (Harvard, Modern, Impact, Minimal)
+- **Clean markdown-free export** - Fixed Jan 25, 2025
+  - PDF export with proper formatting (no **, *, ## symbols)
+  - DOCX export with professional styling
+  - Automatic markdown cleanup on AI response
 - Route: /resume-builder
+
+---
+
+## Recent Fixes (Jan 25, 2025)
+
+### Resume Builder Export Fix
+- **Problem**: Downloaded DOCX/PDF files contained raw markdown symbols like `**bold**`, `*italic*`, `##headers`
+- **Solution**: Added `cleanMarkdown()` and `cleanResumeText()` functions to strip all markdown from AI output before display and export
+- **Result**: Clean, professional, ready-to-use resume documents
 
 ---
 
@@ -69,17 +83,10 @@ A personal portfolio website for Jaipal Singh (Digital Marketing Expert) with:
 - **Status**: NOT STARTED
 - **File**: backend/resume_builder.py
 
-### P2 - PDF/DOCX Export Quality Verification
-- **Description**: User needs to verify the text-based exports meet quality expectations
-- **Status**: USER VERIFICATION PENDING
-
----
-
-## Future/Backlog Tasks
-
-### P2 - Codebase Cleanup
-- Remove obsolete backend files (email_service.py, models.py)
-- Review frontend services for redundant files
+### P2 - Blog Image Saving
+- **Description**: Images added in blog editor may not persist after save
+- **Status**: IN PROGRESS
+- **Files**: frontend/src/components/ModernBlogEditor.jsx
 
 ---
 
@@ -93,13 +100,12 @@ A personal portfolio website for Jaipal Singh (Digital Marketing Expert) with:
 └── frontend/
     ├── src/
     │   ├── components/
-    │   │   ├── ModernBlogEditor.jsx  # NEW: TipTap-based editor
-    │   │   ├── BlogEditor.jsx        # OLD: Legacy editor (replaced)
-    │   │   ├── BlogLogin.jsx
-    │   │   ├── BlogIndex.jsx
-    │   │   ├── BlogPage.jsx
     │   │   ├── resume-builder/
-    │   │   └── ui/                   # Shadcn components
+    │   │   │   ├── PreviewExport.jsx   # UPDATED: Clean markdown export
+    │   │   │   └── ...
+    │   │   ├── ModernBlogEditor.jsx
+    │   │   ├── BlogLogin.jsx
+    │   │   └── ui/
     │   ├── services/
     │   │   ├── sanityService.js
     │   │   └── resumeBuilderService.js
@@ -112,6 +118,10 @@ A personal portfolio website for Jaipal Singh (Digital Marketing Expert) with:
 - `POST /api/resume-builder/analyze`
 - `POST /api/resume-builder/optimize`
 - `GET /api/health`
+
+## Backend URL
+- **Production**: `https://resume-optimizer-96.preview.emergentagent.com`
+- **Vercel Environment Variable**: `REACT_APP_BACKEND_URL`
 
 ## Credentials
 - **Blog Editor**: username: `jaipal`, password: `blog2025!`
