@@ -76,13 +76,15 @@ export const parseDocument = async (file, type) => {
     if (!response.ok) {
       let errorDetail = 'Failed to parse file';
       try {
-        const errorJson = await response.json();
-        errorDetail = errorJson.detail || errorDetail;
-        console.error('Parse error JSON:', errorJson);
-      } catch (e) {
         const errorText = await response.text();
-        console.error('Parse error text:', errorText);
-        errorDetail = errorText || errorDetail;
+        try {
+          const errorJson = JSON.parse(errorText);
+          errorDetail = errorJson.detail || errorDetail;
+        } catch (e) {
+          errorDetail = errorText || errorDetail;
+        }
+      } catch (e) {
+        console.error('Could not read error response:', e);
       }
       throw new Error(errorDetail);
     }
