@@ -9,7 +9,7 @@ import { parseDocumentClientSide } from './clientSideParser';
 
 // Get the backend API URL for AI features only
 const getAiApiUrl = () => {
-  // Check env var first
+  // Check env var first (set in Vercel or Emergent)
   if (process.env.REACT_APP_BACKEND_URL) {
     return process.env.REACT_APP_BACKEND_URL;
   }
@@ -26,8 +26,8 @@ const getAiApiUrl = () => {
     return 'http://localhost:8001';
   }
   
-  // For jaisingh.in or any other domain: use Vercel API routes (same origin)
-  // This will work once Vercel serverless functions are deployed
+  // For jaisingh.in: AI features require REACT_APP_BACKEND_URL to be set in Vercel env vars
+  // If not set, AI calls will fail gracefully (users can still upload, edit, and export)
   return '';
 };
 
