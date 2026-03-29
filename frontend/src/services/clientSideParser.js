@@ -1,11 +1,12 @@
 /**
- * Client-side document parsing - NO backend needed.
- * Uses mammoth (DOCX) and pdfjs-dist (PDF) to extract text in the browser.
+ * Client-side document parsing — NO backend, NO web workers, NO CDN dependencies.
+ * - DOCX: mammoth.js (reliable, battle-tested)
+ * - PDF:  unpdf (lightweight pdf.js wrapper, no workers needed)
  */
 import mammoth from 'mammoth';
 
 /**
- * Parse a DOCX file entirely in the browser using mammoth
+ * Parse a DOCX file in the browser using mammoth
  */
 const parseDOCX = async (file) => {
   const arrayBuffer = await file.arrayBuffer();
@@ -14,32 +15,19 @@ const parseDOCX = async (file) => {
 };
 
 /**
- * Parse a PDF file entirely in the browser using pdf.js
+ * Parse a PDF file in the browser using unpdf (no workers)
  */
 const parsePDF = async (file) => {
-  // Dynamic import to avoid bundling issues with pdf.js worker
-  const pdfjsLib = await import('pdfjs-dist');
-  
-  // Set the worker source
-  pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
-  
+  const { extractText, getDocumentProxy } = await import('unpdf');
   const arrayBuffer = await file.arrayBuffer();
-  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-  
-  const textParts = [];
-  for (let i = 1; i <= pdf.numPages; i++) {
-    const page = await pdf.getPage(i);
-    const content = await page.getTextContent();
-    const pageText = content.items.map(item => item.str).join(' ');
-    textParts.push(pageText);
-  }
-  
-  return textParts.join('\n\n');
+  const pdf = await getDocumentProxy(new Uint8Array(arrayBuffer));
+  const { text } = await extractText(pdf, { mergePages: true });
+  return text || '';
 };
 
 /**
  * Parse a document (PDF or DOCX) client-side.
- * Returns { text, parsed } matching the old backend response format.
+ * Returns { text, parsed } matching the expected response format.
  */
 export const parseDocumentClientSide = async (file) => {
   const filename = file.name?.toLowerCase() || '';
@@ -51,15 +39,20 @@ export const parseDocumentClientSide = async (file) => {
     text = await parseDOCX(file);
   } else if (filename.endsWith('.pdf') || mimeType.includes('pdf')) {
     text = await parsePDF(file);
+    if (!text || text.trim().length < 20) {
+      throw new Error(
+        'Could not extract text from this PDF. It may be image-based. ' +
+        'Please paste your resume text in the box below.'
+      );
+    }
   } else {
     throw new Error('Unsupported file type. Please upload a PDF or DOCX file.');
   }
   
   if (!text || text.trim().length < 10) {
-    throw new Error('Could not extract text from this file. The file may be image-based or empty. Please paste your text manually.');
+    throw new Error('Could not extract text from this file. Please paste your text manually.');
   }
   
-  // Basic structured parsing (matches old backend response)
   const lines = text.split('\n').filter(l => l.trim());
   const parsed = {
     fullName: lines[0]?.trim() || '',
