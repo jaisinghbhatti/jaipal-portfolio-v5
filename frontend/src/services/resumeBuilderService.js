@@ -1,155 +1,81 @@
 /**
- * Resume Builder API Service
- * Handles all API calls to the backend for the Resume Builder feature
+ * Resume Builder Service
+ * 
+ * Architecture:
+ * - File parsing: ALWAYS client-side (mammoth + pdf.js) — no backend dependency
+ * - AI calls (analyze/optimize): Try backend, gracefully degrade if unavailable
  */
+import { parseDocumentClientSide } from './clientSideParser';
 
-// Get the API URL - use relative path for same-origin or configured URL
-const getApiUrl = () => {
-  // If REACT_APP_BACKEND_URL is set, use it
+// Get the backend API URL for AI features only
+const getAiApiUrl = () => {
+  // Check env var first
   if (process.env.REACT_APP_BACKEND_URL) {
-    console.log('Using REACT_APP_BACKEND_URL:', process.env.REACT_APP_BACKEND_URL);
     return process.env.REACT_APP_BACKEND_URL;
   }
   
   const hostname = window.location.hostname;
   
-  // For Emergent preview environment
+  // Emergent preview environments
   if (hostname.includes('preview.emergentagent.com')) {
-    const previewUrl = `https://${hostname}`;
-    console.log('Auto-detected Emergent preview URL:', previewUrl);
-    return previewUrl;
+    return `https://${hostname}`;
   }
   
-  // For deployed site (jaisingh.in) - use Emergent backend
-  // This is temporary until you deploy a dedicated backend
-  if (hostname.includes('jaisingh.in')) {
-    const emergentBackend = 'https://layout-rebuild-v2.preview.emergentagent.com';
-    console.log('Using Emergent backend for jaisingh.in:', emergentBackend);
-    return emergentBackend;
-  }
-  
-  // For local development
+  // Local development
   if (hostname === 'localhost' || hostname === '127.0.0.1') {
-    console.log('Using localhost backend');
     return 'http://localhost:8001';
   }
   
-  // Fallback: use empty string for relative paths
-  console.log('No backend URL configured, using relative paths');
+  // For jaisingh.in or any other domain: use Vercel API routes (same origin)
+  // This will work once Vercel serverless functions are deployed
   return '';
 };
 
-const API_URL = getApiUrl();
-console.log('Resume Builder API_URL initialized:', API_URL);
+const AI_API_URL = getAiApiUrl();
 
 /**
- * Parse uploaded document (PDF/DOCX)
+ * Parse uploaded document (PDF/DOCX) — runs entirely in the browser.
+ * No backend call needed.
  */
 export const parseDocument = async (file, type) => {
-  console.log('parseDocument called:', { 
-    fileName: file.name, 
-    fileType: file.type, 
-    fileSize: file.size, 
-    type,
-    apiUrl: API_URL 
-  });
-  
-  const formData = new FormData();
-  formData.append('file', file);
-  formData.append('type', type);
-
-  const url = `${API_URL}/api/resume-builder/parse`;
-  console.log('Fetching URL:', url);
-
-  try {
-    const response = await fetch(url, {
-      method: 'POST',
-      body: formData,
-    });
-
-    console.log('Parse response:', { 
-      status: response.status, 
-      statusText: response.statusText,
-      ok: response.ok 
-    });
-
-    if (!response.ok) {
-      let errorDetail = 'Failed to parse file';
-      try {
-        const errorText = await response.text();
-        try {
-          const errorJson = JSON.parse(errorText);
-          errorDetail = errorJson.detail || errorDetail;
-        } catch (e) {
-          errorDetail = errorText || errorDetail;
-        }
-      } catch (e) {
-        console.error('Could not read error response:', e);
-      }
-      throw new Error(errorDetail);
-    }
-
-    const result = await response.json();
-    console.log('Parse success, extracted characters:', result.text?.length);
-    return result;
-  } catch (error) {
-    console.error('Parse fetch error:', error.message, error);
-    throw error;
-  }
+  return parseDocumentClientSide(file);
 };
 
 /**
- * Analyze resume against job description
+ * Analyze resume against job description using AI
  */
 export const analyzeResume = async (resumeText, resumeParsed, jobDescription) => {
-  console.log('analyzeResume called:', { resumeLength: resumeText?.length, jdLength: jobDescription?.length });
-  
-  try {
-    const response = await fetch(`${API_URL}/api/resume-builder/analyze`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        resumeText,
-        resumeParsed,
-        jobDescription,
-      }),
-    });
+  const response = await fetch(`${AI_API_URL}/api/resume-builder/analyze`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ resumeText, resumeParsed, jobDescription }),
+  });
 
-    console.log('Analyze response status:', response.status);
-
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ detail: 'Analysis failed' }));
-      console.error('Analyze error response:', error);
-      throw new Error(error.detail || 'Analysis failed');
-    }
-
-    const result = await response.json();
-    console.log('Analyze success:', result);
-    return result;
-  } catch (error) {
-    console.error('Analyze fetch error:', error);
-    throw error;
+  if (!response.ok) {
+    const errorText = await response.text().catch(() => '');
+    let detail = 'Analysis failed';
+    try { detail = JSON.parse(errorText).detail || detail; } catch (e) { detail = errorText || detail; }
+    throw new Error(detail);
   }
+
+  return response.json();
 };
 
 /**
  * Optimize resume with AI
  */
 export const optimizeResume = async (resumeText, resumeParsed, jobDescription, tone) => {
-  const response = await fetch(`${API_URL}/api/resume-builder/optimize`, {
+  const response = await fetch(`${AI_API_URL}/api/resume-builder/optimize`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      resumeText,
-      resumeParsed,
-      jobDescription,
-      tone,
-    }),
+    body: JSON.stringify({ resumeText, resumeParsed, jobDescription, tone }),
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ detail: 'Optimization failed' }));
-    throw new Error(error.detail || 'Optimization failed');
+    const errorText = await response.text().catch(() => '');
+    let detail = 'Optimization failed';
+    try { detail = JSON.parse(errorText).detail || detail; } catch (e) { detail = errorText || detail; }
+    throw new Error(detail);
   }
 
   return response.json();

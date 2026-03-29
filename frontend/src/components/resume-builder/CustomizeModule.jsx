@@ -114,7 +114,19 @@ const CustomizeModule = ({ data, updateData, onNext, onBack, isLoading, setIsLoa
     }
   };
 
-  const canProceed = data.optimizedResume;
+  const canProceed = data.optimizedResume || data.resumeText;
+
+  const handleSkipOptimization = () => {
+    updateData({
+      optimizedResume: data.resumeText,
+      coverLetter: '',
+    });
+    toast({
+      title: "Skipping AI Optimization",
+      description: "You can still select a template and export your resume.",
+    });
+    onNext();
+  };
 
   return (
     <div className="space-y-6">
@@ -291,17 +303,24 @@ const CustomizeModule = ({ data, updateData, onNext, onBack, isLoading, setIsLoa
       )}
 
       {/* Navigation */}
-      <div className="flex justify-between">
+      <div className="flex justify-between items-center">
         <Button variant="outline" onClick={onBack}>
           Back
         </Button>
-        <Button
-          onClick={onNext}
-          disabled={!canProceed}
-          className="bg-[#2A5C82] hover:bg-[#1e4460] text-white px-8"
-        >
-          Continue to Templates
-        </Button>
+        <div className="flex gap-3">
+          {!data.optimizedResume && (
+            <Button variant="ghost" onClick={handleSkipOptimization} className="text-slate-500" data-testid="skip-ai-btn">
+              Skip AI &rarr; Use Original
+            </Button>
+          )}
+          <Button
+            onClick={onNext}
+            disabled={!canProceed}
+            className="bg-[#2A5C82] hover:bg-[#1e4460] text-white px-8"
+          >
+            Continue to Templates
+          </Button>
+        </div>
       </div>
     </div>
   );
