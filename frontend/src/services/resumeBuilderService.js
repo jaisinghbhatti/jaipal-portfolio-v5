@@ -7,17 +7,13 @@
  */
 import { parseDocumentClientSide } from './clientSideParser';
 
-// Get the backend API URL for AI features only
+// Get the backend API URL for AI features
 const getAiApiUrl = () => {
-  // Check env var first (set in Vercel or Emergent)
-  if (process.env.REACT_APP_BACKEND_URL) {
-    return process.env.REACT_APP_BACKEND_URL;
-  }
-  
   const hostname = window.location.hostname;
   
-  // Emergent preview environments
+  // Emergent preview environments — use the FastAPI backend
   if (hostname.includes('preview.emergentagent.com')) {
+    if (process.env.REACT_APP_BACKEND_URL) return process.env.REACT_APP_BACKEND_URL;
     return `https://${hostname}`;
   }
   
@@ -26,8 +22,8 @@ const getAiApiUrl = () => {
     return 'http://localhost:8001';
   }
   
-  // For jaisingh.in: AI features require REACT_APP_BACKEND_URL to be set in Vercel env vars
-  // If not set, AI calls will fail gracefully (users can still upload, edit, and export)
+  // For jaisingh.in and all other domains: use same-origin Vercel serverless functions
+  // The api/ directory deploys as serverless functions on Vercel
   return '';
 };
 
