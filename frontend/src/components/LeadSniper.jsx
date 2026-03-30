@@ -187,7 +187,7 @@ const LeadSniper = () => {
                       placeholder="Enter your business name"
                       value={formData.user_business_name}
                       onChange={(e) => handleInputChange("user_business_name", e.target.value)}
-                      className="form-input pl-10"
+                      className="w-full bg-white border border-gray-300 rounded-md pl-10 py-2 text-gray-900 placeholder:text-gray-400 focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 focus:outline-none"
                     />
                   </div>
                 </div>
@@ -205,7 +205,7 @@ const LeadSniper = () => {
                       placeholder="City, Area or Address"
                       value={formData.user_location}
                       onChange={(e) => handleInputChange("user_location", e.target.value)}
-                      className="form-input pl-10"
+                      className="w-full bg-white border border-gray-300 rounded-md pl-10 py-2 text-gray-900 placeholder:text-gray-400 focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 focus:outline-none"
                     />
                   </div>
                 </div>
@@ -223,7 +223,7 @@ const LeadSniper = () => {
                       placeholder="What do you sell/offer?"
                       value={formData.user_core_offering}
                       onChange={(e) => handleInputChange("user_core_offering", e.target.value)}
-                      className="form-input pl-10 min-h-[80px] resize-none"
+                      className="w-full bg-white border border-gray-300 rounded-md pl-10 py-2 min-h-[80px] resize-none text-gray-900 placeholder:text-gray-400 focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 focus:outline-none"
                       rows={3}
                     />
                   </div>
@@ -242,7 +242,7 @@ const LeadSniper = () => {
                       placeholder="e.g., Shoe manufacturers, E-commerce"
                       value={formData.target_industry}
                       onChange={(e) => handleInputChange("target_industry", e.target.value)}
-                      className="form-input pl-10"
+                      className="w-full bg-white border border-gray-300 rounded-md pl-10 py-2 text-gray-900 placeholder:text-gray-400 focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 focus:outline-none"
                     />
                   </div>
                 </div>
