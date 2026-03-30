@@ -1,0 +1,107 @@
+{
+  "theme": "dark",
+  "archetype": "4 (Swiss & High-Contrast)",
+  "color_palette": {
+    "background": {
+      "base": "#0A0A0A",
+      "surface": "#141414",
+      "surface_elevated": "#1A1A1A"
+    },
+    "text": {
+      "primary": "#FFFFFF",
+      "secondary": "#A1A1AA",
+      "muted": "#71717A"
+    },
+    "accent": {
+      "primary": "#EAB308",
+      "primary_hover": "#FACC15",
+      "whatsapp": "#22C55E",
+      "whatsapp_hover": "#16A34A",
+      "border": "rgba(255,255,255,0.1)"
+    }
+  },
+  "typography": {
+    "headings": {
+      "family": "'Cabinet Grotesk', sans-serif",
+      "weights": [400, 700, 900],
+      "styles": "uppercase or tight-tracking for authority"
+    },
+    "body": {
+      "family": "'Satoshi', sans-serif",
+      "weights": [400, 500, 600]
+    },
+    "hierarchy": {
+      "h1": "text-4xl sm:text-5xl lg:text-6xl tracking-tighter font-black",
+      "h2": "text-2xl sm:text-3xl lg:text-4xl tracking-tight font-bold",
+      "h3": "text-xl sm:text-2xl font-bold",
+      "body": "text-base text-gray-400",
+      "overline": "text-xs tracking-[0.2em] uppercase text-yellow-500"
+    }
+  },
+  "layout_and_spacing": {
+    "container_padding": "p-6 md:p-8 lg:p-12",
+    "section_gap": "gap-24",
+    "bento_grid": {
+      "base": "grid-cols-1 md:grid-cols-12",
+      "gap": "gap-6",
+      "form_span": "md:col-span-4",
+      "table_span": "md:col-span-8"
+    }
+  },
+  "surfaces_and_borders": {
+    "hero_overlay": "bg-black/40",
+    "glass": "bg-black/60 backdrop-blur-xl border-white/10",
+    "card": "bg-[#141414] border border-white/5 rounded-none",
+    "input": "bg-black border border-white/10 focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500"
+  },
+  "components": {
+    "button": {
+      "primary": "bg-yellow-500 text-black font-bold uppercase tracking-wide hover:bg-yellow-400 transition-colors",
+      "whatsapp": "bg-green-500 text-black font-bold uppercase tracking-wide hover:bg-green-400 transition-colors"
+    },
+    "table": {
+      "container": "border border-white/10 rounded-none overflow-hidden",
+      "header": "bg-[#1A1A1A] text-white text-xs uppercase tracking-wider",
+      "row": "border-b border-white/5 hover:bg-white/5 transition-colors"
+    }
+  },
+  "motion": {
+    "hover": "transition-all duration-200 ease-in-out",
+    "focus": "focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500",
+    "entry": "animate-in fade-in slide-in-from-bottom-4 duration-500"
+  },
+  "icons": {
+    "library": "lucide-react",
+    "style": "stroke-2"
+  },
+  "accessibility": {
+    "contrast": "APCA standard compliant, primary yellow accent over black backgrounds",
+    "focus_states": "All inputs and buttons must have visible focus rings",
+    "testing_attributes": "All interactive elements must include 'data-testid' (e.g. data-testid='submit-discovery-btn')"
+  },
+  "media_urls": {
+    "hero_background": {
+      "url": "https://static.prod-images.emergentagent.com/jobs/8680fd6d-59ad-49a9-8136-85b3839c9183/images/8fac6a863a3b0d89169c258ca78926b129d974753819e97b82e1e93c13ea523f.png",
+      "description": "Minimalist dark 3D radar/target grid"
+    },
+    "abstract_nodes": {
+      "url": "https://images.pexels.com/photos/17483874/pexels-photo-17483874.png?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "description": "Abstract data nodes"
+    },
+    "author_portrait": {
+      "url": "https://images.unsplash.com/photo-1733231291514-06895ab0f5e1?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjY2NzF8MHwxfHNlYXJjaHwxfHxwcm9mZXNzaW9uYWwlMjBtYXJrZXRpbmclMjBleHBlcnQlMjBwb3J0cmFpdHxlbnwwfHx8fDE3NzQ4NzE4NDh8MA&ixlib=rb-4.1.0&q=85",
+      "description": "Jaisingh portrait / Digital Marketing Expert"
+    }
+  },
+  "instructions_to_main_agent": [
+    "Build a hybrid tool where the Hero Section feels like a tactical command center, followed seamlessly by the Discovery Tool.",
+    "Use Archetype 4 (Swiss & High Contrast). The UI should be predominantly black (#0A0A0A) with Warning Yellow (#EAB308) used sparingly for core actions (Search, Run Snipe).",
+    "Headings MUST use Cabinet Grotesk (fallback to purely geometric sans if unavailable). Body text uses Satoshi.",
+    "Use pure HTML/Tailwind for the Marketing sections (Hero), and heavily customized Shadcn components for the functional part (Forms, Inputs, Table).",
+    "Grid strategy: Use 'Control Room' grid for the tool section. The Discovery Form takes 4 columns, and the Results Table takes 8 columns on large screens.",
+    "CRITICAL: The results table must look like a high-end data terminal. Sharp 1px borders, no soft shadows, strict monochrome with bright green for the WhatsApp CTA button.",
+    "CRITICAL: Add `data-testid` to all interactive elements, e.g., `data-testid='business-name-input'`, `data-testid='search-leads-button'`, `data-testid='whatsapp-link-row-1'`.",
+    "Do NOT use 'Inter' for headings. Do NOT use generic Vercel gradients. If needed, use extremely subtle structural radial glows.",
+    "Ensure 'Run Snipe' or main CTA interactions have clear loading states."
+  ]
+}
