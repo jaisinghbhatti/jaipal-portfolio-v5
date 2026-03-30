@@ -4,6 +4,7 @@ from starlette.middleware.cors import CORSMiddleware
 import os
 import logging
 from pathlib import Path
+from lead_sniper import router as lead_sniper_router
 from resume_builder import router as resume_builder_router
 
 ROOT_DIR = Path(__file__).parent
@@ -14,6 +15,7 @@ app = FastAPI(title="Resume Builder API")
 
 # Include the resume builder router
 app.include_router(resume_builder_router)
+app.include_router(lead_sniper_router)
 
 # Add CORS middleware
 app.add_middleware(
