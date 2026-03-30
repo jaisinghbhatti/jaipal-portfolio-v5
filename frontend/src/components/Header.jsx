@@ -40,6 +40,12 @@ const Header = () => {
             >
               Resume Builder
             </Link>
+ <Link
+              to="/leads"
+              className="text-slate-600 hover:text-blue-600 transition-colors duration-200 font-medium"
+            >
+              Lead Sniper
+            </Link>
           </nav>
           
           <div className="hidden md:flex">
@@ -90,6 +96,13 @@ const Header = () => {
               >
                 Resume Builder
               </Link>
+ <Link
+                  to="/leads"
+                  className="block px-3 py-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 w-full text-left rounded-md font-medium"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Lead Sniper
+                </Link>
               <div className="px-3 py-2">
                 <Link to="/about-me#contact" onClick={() => setIsMenuOpen(false)}>
                   <Button
