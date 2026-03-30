@@ -31,7 +31,7 @@ import {
 } from "../components/ui/table";
 import { Toaster, toast } from "sonner";
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+const API_URL = "";
 const API = `${BACKEND_URL}/api`;
 
 const LeadSniper = () => {
@@ -65,7 +65,7 @@ const LeadSniper = () => {
     setSearchMeta(null);
 
     try {
-      const response = await axios.post(`${API}/leads/search`, formData);
+      const response = await axios.post(`/api/leads/search`, formData);
       
       if (response.data.success) {
         setLeads(response.data.leads);
