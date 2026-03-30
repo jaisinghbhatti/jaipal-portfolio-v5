@@ -9,6 +9,7 @@ import BlogPage from "./components/BlogPage";
 import ModernBlogEditor from "./components/ModernBlogEditor";
 import { ResumeBuilderPage } from "./components/resume-builder";
 import { Toaster } from "./components/ui/toaster";
+import LeadSniper from "./components/LeadSniper";
 import { Analytics } from '@vercel/analytics/react';
 
 function App() {
@@ -22,6 +23,7 @@ function App() {
             <Route path="/blog" element={<BlogIndex />} />
             <Route path="/blog/:slug" element={<BlogPage />} />
             <Route path="/blog-editor" element={<ModernBlogEditor />} />
+            <Route path="/leads" element={<LeadSniper />} />          
             <Route path="/resume-builder" element={<ResumeBuilderPage />} />
           </Routes>
           <Toaster />
