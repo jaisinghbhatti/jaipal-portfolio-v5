@@ -1,34 +1,199 @@
-.App-logo {
-    height: 40vmin;
-    pointer-events: none;
-}
+/* Lead Sniper App Styles */
 
-@media (prefers-reduced-motion: no-preference) {
-    .App-logo {
-        animation: App-logo-spin infinite 20s linear;
-    }
-}
-
-.App-header {
-    background-color: #0f0f10;
+/* Base App Styles */
+.App {
     min-height: 100vh;
-    display: flex;
-    flex-direction: column;
+    background-color: #0A0A0A;
+}
+
+/* Hero Section */
+.hero-section {
+    min-height: 40vh;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    position: relative;
+}
+
+.hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, rgba(10, 10, 10, 0.4), rgba(10, 10, 10, 0.95));
+}
+
+/* Control Room Grid */
+.control-room {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+}
+
+@media (min-width: 1024px) {
+    .control-room {
+        grid-template-columns: 1fr 2fr;
+    }
+}
+
+/* Form Card */
+.form-card {
+    background-color: #141414;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Results Table */
+.results-table-container {
+    background-color: #141414;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    overflow: hidden;
+}
+
+.results-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.results-table th {
+    background-color: #1A1A1A;
+    color: #FFFFFF;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.results-table td {
+    padding: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    color: #A1A1AA;
+    font-size: 0.875rem;
+}
+
+.results-table tr:hover {
+    background-color: rgba(255, 255, 255, 0.02);
+}
+
+/* Form Inputs */
+.form-input {
+    width: 100%;
+    background-color: #000000;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #FFFFFF;
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+}
+
+.form-input:focus {
+    border-color: #EAB308;
+    box-shadow: 0 0 0 1px #EAB308;
+    outline: none;
+}
+
+.form-input::placeholder {
+    color: #71717A;
+}
+
+/* Primary Button */
+.btn-primary-yellow {
+    background-color: #EAB308;
+    color: #000000;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.875rem 1.5rem;
+    transition: all 0.2s ease;
+    width: 100%;
+}
+
+.btn-primary-yellow:hover {
+    background-color: #FACC15;
+}
+
+.btn-primary-yellow:disabled {
+    background-color: #71717A;
+    cursor: not-allowed;
+}
+
+/* WhatsApp Button */
+.btn-whatsapp-green {
+    background-color: #22C55E;
+    color: #000000;
+    font-weight: 600;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    display: inline-flex;
     align-items: center;
-    justify-content: center;
-    font-size: calc(10px + 2vmin);
-    color: white;
+    gap: 0.375rem;
+    transition: all 0.2s ease;
+    text-decoration: none;
 }
 
-.App-link {
-    color: #61dafb;
+.btn-whatsapp-green:hover {
+    background-color: #16A34A;
 }
 
-@keyframes App-logo-spin {
-    from {
-        transform: rotate(0deg);
+/* Copy Button */
+.btn-copy {
+    background-color: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #A1A1AA;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.75rem;
+    transition: all 0.2s ease;
+}
+
+.btn-copy:hover {
+    border-color: #EAB308;
+    color: #EAB308;
+}
+
+/* Badge */
+.industry-badge {
+    background-color: rgba(234, 179, 8, 0.1);
+    color: #EAB308;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+/* Loading State */
+.loading-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
     }
-    to {
-        transform: rotate(360deg);
+    50% {
+        opacity: 0.5;
     }
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: #71717A;
+}
+
+.empty-state-icon {
+    width: 4rem;
+    height: 4rem;
+    margin: 0 auto 1rem;
+    opacity: 0.5;
+}
+
+/* Footer */
+.footer-text {
+    color: #71717A;
+    font-size: 0.875rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 2rem 0;
+    margin-top: 4rem;
 }
