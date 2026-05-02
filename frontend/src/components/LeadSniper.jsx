@@ -1,7 +1,3 @@
-Go to: https://github.com/jaisinghbhatti/jaipal-portfolio-v5/blob/main/frontend/src/components/LeadSniper.jsx
-Click the pencil icon (Edit)
-Select ALL and DELETE everything
-Then paste this clean code:
 import { useState } from "react";
 import axios from "axios";
 import { Target, MapPin, Phone, MessageCircle, Search, Building2, Package, Copy, Check, Loader2, Crosshair, ExternalLink, AlertCircle, Download, ArrowLeft } from "lucide-react";
