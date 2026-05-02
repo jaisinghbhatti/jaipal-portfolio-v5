@@ -48,8 +48,25 @@ function calculateDistance(lat1, lng1, lat2, lng2) {
   return Math.round(R * c * 100) / 100;
 }
 
+// Clean phone number - remove leading 0, spaces, and non-digits
+function cleanPhoneNumber(phone) {
+  if (!phone) return '';
+  // Remove all non-digit characters (spaces, dashes, etc.)
+  let cleaned = phone.replace(/\D/g, '');
+  // Remove leading 0 if present (for Indian numbers like 099114...)
+  if (cleaned.startsWith('0')) {
+    cleaned = cleaned.substring(1);
+  }
+  // If it starts with 91 and has extra 0 after country code, remove it
+  if (cleaned.startsWith('910') && cleaned.length > 12) {
+    cleaned = '91' + cleaned.substring(3);
+  }
+  return cleaned;
+}
+
 function generateWhatsAppLink(phone, message) {
-  let cleanPhone = phone.replace(/\D/g, '');
+  let cleanPhone = cleanPhoneNumber(phone);
+  // Add country code if not present (10 digit Indian number)
   if (cleanPhone.length === 10 && !cleanPhone.startsWith('91')) {
     cleanPhone = '91' + cleanPhone;
   }
@@ -109,12 +126,13 @@ export default async function handler(req, res) {
       });
     }
 
-    // Process leads
+    // Process leads and FILTER by radius
     const leads = places.map(place => {
       const placeLat = place.location?.latitude || 0;
       const placeLng = place.location?.longitude || 0;
       const distance = calculateDistance(coordinates.latitude, coordinates.longitude, placeLat, placeLng);
-      const phone = place.nationalPhoneNumber || place.internationalPhoneNumber || '';
+      const rawPhone = place.nationalPhoneNumber || place.internationalPhoneNumber || '';
+      const phone = cleanPhoneNumber(rawPhone);
       const types = place.types || [];
       const industry = types[0]?.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) || 'Business';
       const name = place.displayName?.text || 'Unknown Business';
@@ -129,9 +147,11 @@ export default async function handler(req, res) {
         industry,
         status: place.businessStatus || 'OPERATIONAL',
         power_pitch: powerPitch,
-        whatsapp_link: phone ? generateWhatsAppLink(phone, powerPitch) : ''
+        whatsapp_link: phone ? generateWhatsAppLink(rawPhone, powerPitch) : ''
       };
-    });
+    })
+    // STRICT FILTER: Only include leads within the specified radius
+    .filter(lead => lead.distance_km <= search_radius_km);
 
     // Sort by distance
     leads.sort((a, b) => a.distance_km - b.distance_km);
@@ -143,7 +163,9 @@ export default async function handler(req, res) {
       user_coordinates: coordinates,
       search_radius_km,
       leads,
-      message: `Found ${leads.length} potential leads in ${target_industry} within ${search_radius_km}km of ${user_location}.`
+      message: leads.length > 0 
+        ? `Found ${leads.length} potential leads in ${target_industry} within ${search_radius_km}km of ${user_location}.`
+        : `No ${target_industry} businesses found within ${search_radius_km}km. Try increasing the radius.`
     });
 
   } catch (error) {
