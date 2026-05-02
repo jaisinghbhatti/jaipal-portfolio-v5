@@ -137,7 +137,7 @@ export default async function handler(req, res) {
       const industry = types[0]?.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) || 'Business';
       const name = place.displayName?.text || 'Unknown Business';
       
-      const powerPitch = `Hi ${name} team, Greetings From ${user_business_name}. We are veterans specializing in ${user_core_offering}. We offer premium service with world-class products that fit your needs. Can we share our 2026 Price List/Portfolio?`;
+      const powerPitch = `Hi ${name} team, Greetings From ${user_business_name}. We are veterans specializing in ${user_core_offering}. We offer premium service with world-class products that fit your needs. Let us know if we can get in touch for further discussion? Thanks`;
       
       return {
         name,
